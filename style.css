@@ -1,0 +1,733 @@
+/* Aqui faço um reset geral para que todos os elementos comecem
+   sem margens nem espaçamentos vindos por defeito do navegador.
+   O box-sizing garante que o padding não "estica" os elementos,
+   e defino a fonte Arial para todo o site de uma vez só. */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+/* Criei variáveis de cor no :root para não ter de repetir
+   os mesmos códigos de cor em todo o ficheiro.
+   Assim se quiser mudar uma cor, mudo apenas aqui. */
+:root {
+    --verde: #2ecc71;           /* cor principal dos botões */
+    --verde-hover: #27ae60;     /* versão mais escura para o efeito hover */
+    --amarelo: #FFCC29;         /* usado no título do header */
+    --azul: #0033A0;            /* reservado para uso futuro */
+    --fundo: #0d0d0d;           /* fundo geral da página, quase preto */
+    --painel: rgba(255, 255, 255, 0.05);  /* fundo dos cards, muito transparente */
+    --borda: rgba(255, 255, 255, 0.08);   /* bordas subtis em elementos escuros */
+}
+
+/* O body recebe o fundo escuro e o texto branco como base,
+   para que todo o conteúdo já herde essas cores por defeito. */
+body {
+    background: var(--fundo);
+    color: white;
+}
+
+/* O header fica fixo no topo (sticky) para acompanhar o scroll.
+   Usei backdrop-filter para criar um efeito de vidro fosco,
+   como se o conteúdo atrás ficasse desfocado. */
+header {
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(12px);
+    padding: 20px 30px;
+    color: white;
+    display: flex;
+    justify-content: flex-end;     /* empurra a nav para a direita */
+    align-items: center;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.6);
+    border-bottom: 1px solid var(--borda);
+    position: sticky;
+    top: 0;
+    z-index: 100;                  /* fica sempre por cima dos outros elementos */
+    height: 100px;
+}
+
+/* O título h1 usa um gradiente aplicado diretamente no texto,
+   com um efeito de brilho amarelo dourado. */
+header h1 {
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 3px;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    background: linear-gradient(135deg, var(--amarelo) 0%, #FFD700 50%, var(--amarelo) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    filter: drop-shadow(0 4px 8px rgba(255, 204, 41, 0.4));
+    text-transform: uppercase;
+    cursor: pointer;
+    position: relative;
+}
+
+/* O logótipo fica posicionado do lado esquerdo do header.
+   Usei position absolute + translateY para o centrar verticalmente. */
+header .logo {
+    height: 200px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    position: absolute;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Pequeno zoom no logótipo ao passar o rato por cima. */
+header .logo:hover {
+    transform: translateY(-50%) scale(1.05);
+}
+
+/* Este pseudo-elemento é invisível por defeito.
+   Serve para criar o efeito de brilho que aparece
+   ao fazer hover no título h1. */
+header h1::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    background: linear-gradient(135deg, var(--amarelo), #FFD700);
+    border-radius: 50%;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    filter: blur(15px);
+}
+
+/* Ao fazer hover no h1, ele cresce ligeiramente e roda um pouco,
+   dando um efeito 3D. */
+header h1:hover {
+    transform: scale(1.1) rotateY(5deg);
+    filter: drop-shadow(0 8px 16px rgba(255, 204, 41, 0.8));
+}
+
+/* Aqui torno o brilho visível quando o h1 está em hover. */
+header h1:hover::before {
+    opacity: 0.3;
+}
+
+/* A navegação é organizada em linha com um espaçamento entre os links. */
+nav {
+    display: flex;
+    gap: 15px;
+}
+
+/* Cada link do menu tem um fundo levemente transparente
+   com bordas arredondadas, parecendo uma pílula. */
+nav a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-weight: bold;
+    padding: 12px 20px;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.06);
+    transition: all 0.3s ease;
+    border: 1px solid var(--borda);
+    font-size: 15px;
+    letter-spacing: 0.5px;
+}
+
+/* Ao passar o rato, o link fica verde e sobe um pouco,
+   dando a sensação de que está a "flutuar". */
+nav a:hover {
+    background: var(--verde);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(46, 204, 113, 0.35);
+    border-color: var(--verde);
+}
+
+/* O banner ocupa a altura total do ecrã (100vh).
+   Apliquei uma camada escura sobre a imagem de fundo
+   para o texto ficar legível. */
+.banner {
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('flags/imagem_trofeu_copa.webp') center/cover no-repeat;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    text-shadow: 3px 3px 10px rgba(0,0,0,0.8);
+    padding: 40px 20px;
+}
+
+/* Título grande do banner com muito espaçamento entre letras. */
+.banner h2 {
+    font-size: 48px;
+    margin-bottom: 20px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+/* Parágrafo do banner com largura limitada para não ficar
+   demasiado espalhado em ecrãs grandes. */
+.banner p {
+    font-size: 24px;
+    max-width: 700px;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+/* Esta secção envolve o título e o carousel de jogos.
+   Uso flexbox para centrar tudo verticalmente. */
+.jogos-container {
+    padding: 60px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Título "Jogos Disponíveis" centrado e em branco. */
+.jogos-container h2 {
+    margin-bottom: 50px;
+    color: white;
+    font-size: 36px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    width: 100%;
+    text-align: center;
+}
+
+/* O grid organiza os cards em 3 colunas iguais.
+   Usei 1fr para que as colunas se ajustem automaticamente
+   ao espaço disponível, sem cortar nenhum card. */
+.jogos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    width: 100%;
+    max-width: 1500px;
+}
+
+/* Cada card representa um jogo disponível.
+   Apliquei glassmorphism: fundo transparente com blur,
+   para encaixar no tema escuro da página. */
+.card {
+    background: var(--painel);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--borda);
+    padding: 18px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 300px;
+    height: auto;
+    color: white;
+}
+
+/* Imagem do card ocupa toda a largura disponível. */
+.card img {
+    width: 100%;
+    border-radius: 10px;
+}
+
+/* Título do card com os nomes dos dois países a verde. */
+.card h3 {
+    margin: 10px 0;
+    color: var(--verde);
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* Os parágrafos de data e local ficam ligeiramente transparentes
+   para criar hierarquia visual em relação ao título. */
+.card p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Os nomes das equipas ficam em linha com a bandeira. */
+.card h3 .team-home,
+.card h3 .team-away {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+/* Usei o pseudo-elemento ::before para mostrar a bandeira
+   de cada país antes do nome da equipa. A imagem em si
+   é definida abaixo por classe de jogo. */
+.card h3 .team-home::before,
+.card h3 .team-away::before {
+    content: "";
+    display: inline-block;
+    width: 28px;
+    height: 18px;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* Aqui defino a bandeira de cada equipa em cada jogo.
+   Cada jogo tem uma classe própria no HTML (ex: .mexico-canada)
+   que serve para saber que bandeiras mostrar. */
+
+.mexico-canada .team-home::before {
+    background-image: url('flags/mexico.svg');
+}
+.mexico-canada .team-away::before {
+    background-image: url('flags/canada.svg');
+}
+
+.eua-uruguai .team-home::before {
+    background-image: url('flags/usa.svg');
+}
+.eua-uruguai .team-away::before {
+    background-image: url('flags/uruguay.svg');
+}
+
+.brasil-servia .team-home::before {
+    background-image: url('flags/brazil.svg');
+}
+.brasil-servia .team-away::before {
+    background-image: url('flags/serbia.svg');
+}
+
+.argentina-dinamarca .team-home::before {
+    background-image: url('flags/argentina.svg');
+}
+.argentina-dinamarca .team-away::before {
+    background-image: url('flags/denmark.svg');
+}
+
+.franca-chile .team-home::before {
+    background-image: url('flags/france.svg');
+}
+.franca-chile .team-away::before {
+    background-image: url('flags/chile.svg');
+}
+
+.alemanha-japao .team-home::before {
+    background-image: url('flags/germany.svg');
+}
+.alemanha-japao .team-away::before {
+    background-image: url('flags/japan.svg');
+}
+
+/* O carousel do Bootstrap foi personalizado com um fundo
+   escuro e bordas subtis para combinar com o resto da página. */
+#carouselJogos {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--borda);
+    border-radius: 20px;
+    padding: 40px 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+    max-width: 1560px;
+    margin: 0 auto;
+}
+
+/* Área interna do carousel com altura mínima para não colapsar. */
+.carousel-inner {
+    border-radius: 15px;
+    min-height: 380px;
+}
+
+/* Cada slide tem um padding vertical para respirar. */
+.carousel-item {
+    padding: 20px 0;
+    min-height: 380px;
+}
+
+/* As setas de navegação do carousel são circulares e verdes. */
+.carousel-control-prev,
+.carousel-control-next {
+    width: 60px;
+    height: 60px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(46, 204, 113, 0.25);
+    border-radius: 50%;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+/* A seta esquerda fica ligeiramente fora do carousel. */
+.carousel-control-prev {
+    left: -65px;
+}
+
+/* A seta direita fica ligeiramente fora do carousel. */
+.carousel-control-next {
+    right: -65px;
+}
+
+/* Ao passar o rato nas setas, ficam mais visiveis com brilho verde. */
+.carousel-control-prev:hover,
+.carousel-control-next:hover {
+    background: rgba(46, 204, 113, 0.75);
+    opacity: 1;
+    box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4);
+}
+
+/* Os indicadores (pontos de navegação) ficam abaixo do carousel. */
+.carousel-indicators {
+    bottom: -50px;
+}
+
+/* Cada ponto indicador é um círculo verde pequeno. */
+.carousel-indicators button {
+    background-color: var(--verde);
+    border-radius: 50%;
+    width: 12px;
+    height: 12px;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+}
+
+/* Estilo base para todos os botões do site. */
+.btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 10px;
+}
+
+/* O botão primário fica verde, igual ao estilo da página de pagamento. */
+.btn-primary {
+    background: var(--verde);
+    color: white;
+    border: none;
+}
+
+/* Ao passar o rato, o botão fica verde mais escuro. */
+.btn-primary:hover {
+    background: var(--verde-hover);
+    color: white;
+}
+
+/* ============================================================
+   A partir daqui aplico adaptações de layout para que o site
+   funcione bem em diferentes tamanhos de ecrã.
+   ============================================================ */
+
+/* Em tablets (até 1024px), o grid passa para 2 colunas
+   e o texto e espaçamentos são reduzidos. */
+@media (max-width: 1024px) {
+    .jogos-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+
+    header {
+        padding: 15px 20px;
+        height: auto;
+        min-height: 80px;
+    }
+
+    header .logo {
+        height: 140px;
+        left: 20px;
+    }
+
+    nav {
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    nav a {
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+
+    .banner h2 {
+        font-size: 36px;
+        letter-spacing: 1px;
+    }
+
+    .banner p {
+        font-size: 18px;
+    }
+
+    .jogos-container {
+        padding: 40px 20px;
+    }
+
+    .jogos-container h2 {
+        font-size: 28px;
+        margin-bottom: 30px;
+    }
+}
+
+/* Em telemóveis (até 768px), o grid passa para 1 coluna
+   e os elementos ficam mais compactos. */
+@media (max-width: 768px) {
+    .jogos-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    header {
+        padding: 10px 15px;
+        height: auto;
+        min-height: 70px;
+        justify-content: flex-end;
+    }
+
+    header .logo {
+        height: 80px;
+        left: 15px;
+    }
+
+    nav {
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    nav a {
+        font-size: 11px;
+        padding: 6px 10px;
+        border-radius: 15px;
+    }
+
+    .banner {
+        min-height: 60vh;
+        padding: 20px 15px;
+    }
+
+    .banner h2 {
+        font-size: 24px;
+        margin-bottom: 15px;
+    }
+
+    .banner p {
+        font-size: 16px;
+        max-width: 95%;
+        line-height: 1.4;
+    }
+
+    .jogos-container {
+        padding: 20px 15px;
+    }
+
+    .jogos-container h2 {
+        font-size: 20px;
+        margin-bottom: 20px;
+    }
+
+    .card {
+        padding: 15px;
+        min-height: auto;
+        margin-bottom: 15px;
+        gap: 8px;
+    }
+
+    .card h3 {
+        font-size: 16px;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin: 0;
+    }
+
+    /* Bandeiras reduzidas para caber melhor em ecrãs pequenos. */
+    .card h3 .team-home::before,
+    .card h3 .team-away::before {
+        width: 20px;
+        height: 14px;
+    }
+
+    .card p {
+        font-size: 14px;
+        margin-bottom: 8px;
+        line-height: 1.3;
+    }
+
+    /* Em telemóvel, o botão ocupa toda a largura do card. */
+    .btn {
+        width: 100%;
+        padding: 10px 15px;
+        font-size: 14px;
+        margin-top: auto;
+    }
+
+    #carouselJogos {
+        padding: 20px 15px;
+        max-width: 100%;
+    }
+
+    .carousel-inner {
+        min-height: auto;
+    }
+
+    .carousel-item {
+        padding: 10px 0;
+        min-height: auto;
+    }
+
+    /* As setas do carousel ficam dentro dos limites em telemóvel. */
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 40px;
+        height: 40px;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .carousel-control-prev {
+        left: 5px;
+    }
+
+    .carousel-control-next {
+        right: 5px;
+    }
+
+    .carousel-indicators {
+        bottom: -40px;
+    }
+}
+
+/* Em ecrãs muito pequenos (até 480px), reduzo ainda mais
+   todos os tamanhos para garantir que nada fica cortado. */
+@media (max-width: 480px) {
+    header {
+        padding: 8px 10px;
+        min-height: 60px;
+    }
+
+    header .logo {
+        height: 70px;
+        left: 10px;
+    }
+
+    nav {
+        gap: 4px;
+    }
+
+    nav a {
+        font-size: 10px;
+        padding: 5px 8px;
+        border-radius: 12px;
+    }
+
+    .banner {
+        min-height: 50vh;
+        padding: 15px 10px;
+    }
+
+    .banner h2 {
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+
+    .banner p {
+        font-size: 14px;
+        line-height: 1.3;
+    }
+
+    .jogos-container {
+        padding: 15px 10px;
+    }
+
+    .jogos-container h2 {
+        font-size: 18px;
+        margin-bottom: 15px;
+    }
+
+    .card {
+        padding: 12px;
+        gap: 6px;
+    }
+
+    .card h3 {
+        font-size: 14px;
+        gap: 4px;
+    }
+
+    .card h3 .team-home::before,
+    .card h3 .team-away::before {
+        width: 18px;
+        height: 12px;
+    }
+
+    .card p {
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 35px;
+        height: 35px;
+    }
+
+    .carousel-control-prev {
+        left: 5px;
+    }
+
+    .carousel-control-next {
+        right: 5px;
+    }
+}
+
+/* Em desktops grandes (a partir de 1400px), aproveito
+   o espaço extra para aumentar fontes, padding e tamanho dos cards. */
+@media (min-width: 1400px) {
+    .jogos-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 35px;
+    }
+
+    .jogos-container {
+        padding: 80px 40px;
+    }
+
+    .jogos-container h2 {
+        font-size: 40px;
+        margin-bottom: 60px;
+    }
+
+    .card {
+        padding: 25px;
+        min-height: 320px;
+    }
+
+    .card h3 {
+        font-size: 20px;
+        gap: 10px;
+    }
+
+    .card h3 .team-home::before,
+    .card h3 .team-away::before {
+        width: 32px;
+        height: 20px;
+    }
+
+    .card p {
+        font-size: 16px;
+        margin-bottom: 12px;
+    }
+
+    .btn {
+        padding: 15px 25px;
+        font-size: 18px;
+    }
+
+    #carouselJogos {
+        padding: 50px 30px;
+        max-width: 1600px;
+    }
+}
