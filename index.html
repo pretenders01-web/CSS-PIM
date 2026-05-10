@@ -8,6 +8,9 @@
     <!-- Importo o Bootstrap para usar o carousel e outros componentes prontos -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
+    <!-- Fonte Poppins — padronizada com as páginas de login e cadastro -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+
     <!-- Importo o meu ficheiro CSS com todos os estilos personalizados -->
     <link rel="stylesheet" href="index.css">
 </head>
@@ -17,11 +20,12 @@
      Do lado esquerdo fica o logótipo e do lado direito
      os links de navegação para as outras páginas. -->
 <header>
-    <img src="flags/logo 3 - Editado.png" alt="Mundial Tickets" class="logo">
+    <a href="index.html"><img src="flags/logo 3 - Editado.png" alt="Mundial Tickets" class="logo"></a>
     <nav>
         <a href="index.html">Início</a>
-        <a href="login.html">Login</a>
-        <a href="cadastro.html">Cadastro</a>
+        <a href="LOGIN.html">Login</a>
+        <a href="INGRESSOS.html">Ingressos</a>
+        <a href="#" class="nav-cart">🛒 Carrinho</a>
     </nav>
 </header>
 
@@ -38,6 +42,8 @@
      Dividi os 6 jogos em 2 slides de 3 jogos cada. -->
 <section class="jogos-container">
     <h2>Jogos Disponíveis</h2>
+
+    <div class="carousel-area">
 
     <!-- Carousel do Bootstrap — o data-bs-ride faz avançar automaticamente -->
     <div id="carouselJogos" class="carousel slide carousel-dark" data-bs-ride="carousel">
@@ -62,7 +68,7 @@
                         <h3><span class="team-home">México</span> x <span class="team-away">Canadá</span></h3>
                         <p><strong>Data:</strong> 11/06/2026</p>
                         <p><strong>Local:</strong> Estádio Azteca — Cidade do México</p>
-                        <a class="btn btn-primary" href="pagamento.html">Comprar Ingresso</a>
+                        <a class="btn btn-primary" href="LOGIN.html">Comprar Ingresso</a>
                     </div>
 
                     <!-- Card do jogo Estados Unidos vs Uruguai -->
@@ -70,7 +76,7 @@
                         <h3><span class="team-home">Estados Unidos</span> x <span class="team-away">Uruguai</span></h3>
                         <p><strong>Data:</strong> 12/06/2026</p>
                         <p><strong>Local:</strong> SoFi Stadium — Los Angeles</p>
-                        <a class="btn btn-primary" href="pagamento.html">Comprar Ingresso</a>
+                        <a class="btn btn-primary" href="LOGIN.html">Comprar Ingresso</a>
                     </div>
 
                     <!-- Card do jogo Brasil vs Sérvia -->
@@ -78,7 +84,7 @@
                         <h3><span class="team-home">Brasil</span> x <span class="team-away">Sérvia</span></h3>
                         <p><strong>Data:</strong> 15/06/2026</p>
                         <p><strong>Local:</strong> AT&T Stadium — Dallas</p>
-                        <a class="btn btn-primary" href="pagamento.html">Comprar Ingresso</a>
+                        <a class="btn btn-primary" href="LOGIN.html">Comprar Ingresso</a>
                     </div>
 
                 </div>
@@ -93,7 +99,7 @@
                         <h3><span class="team-home">Argentina</span> x <span class="team-away">Dinamarca</span></h3>
                         <p><strong>Data:</strong> 16/06/2026</p>
                         <p><strong>Local:</strong> Mercedes-Benz Stadium — Atlanta</p>
-                        <a class="btn btn-primary" href="pagamento.html">Comprar Ingresso</a>
+                        <a class="btn btn-primary" href="LOGIN.html">Comprar Ingresso</a>
                     </div>
 
                     <!-- Card do jogo França vs Chile -->
@@ -101,7 +107,7 @@
                         <h3><span class="team-home">França</span> x <span class="team-away">Chile</span></h3>
                         <p><strong>Data:</strong> 17/06/2026</p>
                         <p><strong>Local:</strong> BC Place — Vancouver</p>
-                        <a class="btn btn-primary" href="pagamento.html">Comprar Ingresso</a>
+                        <a class="btn btn-primary" href="LOGIN.html">Comprar Ingresso</a>
                     </div>
 
                     <!-- Card do jogo Alemanha vs Japão -->
@@ -109,7 +115,7 @@
                         <h3><span class="team-home">Alemanha</span> x <span class="team-away">Japão</span></h3>
                         <p><strong>Data:</strong> 18/06/2026</p>
                         <p><strong>Local:</strong> MetLife Stadium — Nova Jersey</p>
-                        <a class="btn btn-primary" href="pagamento.html">Comprar Ingresso</a>
+                        <a class="btn btn-primary" href="LOGIN.html">Comprar Ingresso</a>
                     </div>
 
                 </div>
@@ -117,21 +123,23 @@
 
         </div>
 
-        <!-- Setas para navegar manualmente entre os slides -->
-        <button class="carousel-control-prev" type="button" data-bs-target="#carouselJogos" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Anterior</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#carouselJogos" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Próximo</span>
-        </button>
+    </div>
+
+    <!-- Setas para fora do carousel, mas dentro do wrapper posicionado -->
+    <button class="carousel-control-prev" type="button" data-bs-target="#carouselJogos" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Anterior</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#carouselJogos" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Próximo</span>
+    </button>
 
     </div>
 
 </section>
 
-<!-- Bootstrap JS — necessário para o carousel funcionar corretamente -->
+<!-- Bootstrap em JS — necessário para o carousel funcionar corretamente (Unico JS do arquivo)-->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

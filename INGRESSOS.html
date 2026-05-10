@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mundial Tickets | Ingressos de Futebol</title>
+
+    <!-- Importo a fonte Poppins com todos os pesos necessários,
+         igual às outras páginas para manter consistência visual. -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Ficheiro CSS exclusivo desta página com todos os estilos dos cards,
+         header, grid de jogos e responsividade. -->
+    <link rel="stylesheet" href="INGRESSOS.css">
+</head>
+<body>
+
+    <!-- Header fixo no topo com o logo à esquerda e a navegação à direita.
+         O botão Carrinho ainda não tem funcionalidade implementada. -->
+    <header>
+        <a href="index.html"><img src="flags/logo 3 - Editado.png" alt="Mundial Tickets" class="logo"></a>
+        <nav>
+            <a href="index.html">Início</a>
+            <a href="LOGIN.html">Login</a>
+            <a href="INGRESSOS.html">Ingressos</a>
+            <a href="#" class="nav-cart">🛒 Carrinho</a>
+        </nav>
+    </header>
+
+    <!-- Conteúdo principal da página com o grid de jogos disponíveis. -->
+    <main class="main-content">
+        <h2 class="category-title">PRÓXIMOS JOGOS</h2>
+
+        <!-- Grid com os 6 jogos da Copa 2026.
+             Cada card tem classe do jogo (ex: mexico-canada) para
+             o CSS saber quais bandeiras exibir no banner. -->
+        <div class="events-grid">
+
+            <!-- JOGO 01 — México vs Canadá
+                 O banner exibe as bandeiras verticalmente: casa em cima, visitante em baixo. -->
+            <div class="event-card mexico-canada">
+                <div class="image-frame">
+                    <div class="match-banner">
+                        <div class="flag-side flag-home"></div>
+                        <span class="vs-text">VS</span>
+                        <div class="flag-side flag-away"></div>
+                    </div>
+                </div>
+                <div class="event-details">
+                    <h3><span class="team-home">México</span> x <span class="team-away">Canadá</span></h3>
+                    <p class="event-date">📅 11/06/2026</p>
+                    <p class="event-location">Estádio Azteca — Cidade do México</p>
+                    <form class="event-actions">
+                        <input type="number" value="1" min="1" class="qty-input">
+                        <div class="button-group">
+                            <button type="button" class="secondary-button">Carrinho</button>
+                            <button type="submit" class="primary-button">Comprar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- JOGO 02 — Estados Unidos vs Uruguai -->
+            <div class="event-card eua-uruguai">
+                <div class="image-frame">
+                    <div class="match-banner">
+                        <div class="flag-side flag-home"></div>
+                        <span class="vs-text">VS</span>
+                        <div class="flag-side flag-away"></div>
+                    </div>
+                </div>
+                <div class="event-details">
+                    <h3><span class="team-home">Estados Unidos</span> x <span class="team-away">Uruguai</span></h3>
+                    <p class="event-date">📅 12/06/2026</p>
+                    <p class="event-location">SoFi Stadium — Los Angeles</p>
+                    <form class="event-actions">
+                        <input type="number" value="1" min="1" class="qty-input">
+                        <div class="button-group">
+                            <button type="button" class="secondary-button">Carrinho</button>
+                            <button type="submit" class="primary-button">Comprar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- JOGO 03 — Brasil vs Sérvia -->
+            <div class="event-card brasil-servia">
+                <div class="image-frame">
+                    <div class="match-banner">
+                        <div class="flag-side flag-home"></div>
+                        <span class="vs-text">VS</span>
+                        <div class="flag-side flag-away"></div>
+                    </div>
+                </div>
+                <div class="event-details">
+                    <h3><span class="team-home">Brasil</span> x <span class="team-away">Sérvia</span></h3>
+                    <p class="event-date">📅 15/06/2026</p>
+                    <p class="event-location">AT&T Stadium — Dallas</p>
+                    <form class="event-actions">
+                        <input type="number" value="1" min="1" class="qty-input">
+                        <div class="button-group">
+                            <button type="button" class="secondary-button">Carrinho</button>
+                            <button type="submit" class="primary-button">Comprar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- JOGO 04 — Argentina vs Dinamarca -->
+            <div class="event-card argentina-dinamarca">
+                <div class="image-frame">
+                    <div class="match-banner">
+                        <div class="flag-side flag-home"></div>
+                        <span class="vs-text">VS</span>
+                        <div class="flag-side flag-away"></div>
+                    </div>
+                </div>
+                <div class="event-details">
+                    <h3><span class="team-home">Argentina</span> x <span class="team-away">Dinamarca</span></h3>
+                    <p class="event-date">📅 16/06/2026</p>
+                    <p class="event-location">Mercedes-Benz Stadium — Atlanta</p>
+                    <form class="event-actions">
+                        <input type="number" value="1" min="1" class="qty-input">
+                        <div class="button-group">
+                            <button type="button" class="secondary-button">Carrinho</button>
+                            <button type="submit" class="primary-button">Comprar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- JOGO 05 — França vs Chile -->
+            <div class="event-card franca-chile">
+                <div class="image-frame">
+                    <div class="match-banner">
+                        <div class="flag-side flag-home"></div>
+                        <span class="vs-text">VS</span>
+                        <div class="flag-side flag-away"></div>
+                    </div>
+                </div>
+                <div class="event-details">
+                    <h3><span class="team-home">França</span> x <span class="team-away">Chile</span></h3>
+                    <p class="event-date">📅 17/06/2026</p>
+                    <p class="event-location">BC Place — Vancouver</p>
+                    <form class="event-actions">
+                        <input type="number" value="1" min="1" class="qty-input">
+                        <div class="button-group">
+                            <button type="button" class="secondary-button">Carrinho</button>
+                            <button type="submit" class="primary-button">Comprar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- JOGO 06 — Alemanha vs Japão -->
+            <div class="event-card alemanha-japao">
+                <div class="image-frame">
+                    <div class="match-banner">
+                        <div class="flag-side flag-home"></div>
+                        <span class="vs-text">VS</span>
+                        <div class="flag-side flag-away"></div>
+                    </div>
+                </div>
+                <div class="event-details">
+                    <h3><span class="team-home">Alemanha</span> x <span class="team-away">Japão</span></h3>
+                    <p class="event-date">📅 18/06/2026</p>
+                    <p class="event-location">MetLife Stadium — Nova Jersey</p>
+                    <form class="event-actions">
+                        <input type="number" value="1" min="1" class="qty-input">
+                        <div class="button-group">
+                            <button type="button" class="secondary-button">Carrinho</button>
+                            <button type="submit" class="primary-button">Comprar</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Botão de finalizar compra centralizado no fundo da página.
+             A funcionalidade de pagamento será implementada futuramente. -->
+        <div class="checkout-container">
+            <button class="checkout-button">FINALIZAR COMPRA</button>
+        </div>
+
+    </main>
+
+</body>
+</html>

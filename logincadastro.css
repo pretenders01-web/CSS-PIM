@@ -1,0 +1,325 @@
+/* RESET E DEFINIÇÕES GERAIS */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background:
+        linear-gradient(to right, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.2) 100%),
+        url("img/futebol.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: #fff;
+}
+
+/* HEADER */
+header {
+    background: #000;
+    backdrop-filter: blur(12px);
+    padding: 20px 30px;
+    color: white;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.6);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: 100px;
+}
+
+header .logo {
+    height: 200px;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    position: absolute;
+    left: 30px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+header .logo:hover {
+    transform: translateY(-50%) scale(1.05);
+}
+
+/* NAVEGAÇÃO DO HEADER */
+nav {
+    display: flex;
+    gap: 15px;
+}
+
+nav a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    font-weight: bold;
+    padding: 12px 20px;
+    border-radius: 25px;
+    background: rgba(255, 255, 255, 0.06);
+    transition: all 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 15px;
+    letter-spacing: 0.5px;
+    margin: 0;
+}
+
+nav a.nav-cart {
+    border-color: rgba(255, 204, 41, 0.4);
+    color: rgba(255, 204, 41, 0.9);
+}
+
+nav a.nav-cart:hover {
+    background: rgba(255, 204, 41, 0.15);
+    border-color: #FFCC29;
+    color: #FFCC29;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(255, 204, 41, 0.2);
+}
+
+nav a:hover {
+    background: #277234;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(39, 114, 52, 0.35);
+    border-color: #277234;
+}
+
+/* CONTEÚDO PRINCIPAL (container + side-image) */
+.main-content {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+/* CONTAINER DO FORMULÁRIO (LADO ESQUERDO) */
+.container {
+    width: 45%; 
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 60px;
+    /* Efeito opaco*/
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(5px);
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 10;
+    animation: fadeIn 1s ease-out;
+}
+
+/* TÍTULO  */
+.container h2 {
+    font-size: 2.5rem;
+    color: #277234; /* Verde Campo */
+    text-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5);
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 800;
+}
+
+/* FORMULÁRIO */
+form {
+    width: 100%;
+    max-width: 380px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ESTILIZAÇÃO DOS INPUTS */
+form input {
+    width: 100%;
+    padding: 16px;
+    margin-bottom: 20px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: #fff;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+form input:focus {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: #277234;
+    box-shadow: 0 0 15px rgba(39, 114, 52, 0.4);
+    transform: translateX(5px);
+}
+
+/* BOTÃO DE CADASTRAR (CTA) */
+form button[type="submit"] {
+    padding: 18px;
+    background: #277234;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: 0.4s;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    margin-top: 10px;
+}
+
+form button[type="submit"]:hover {
+    background: #329643;
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px rgba(39, 114, 52, 0.3);
+}
+
+.btn-entrar[type="button"] {
+    width: 100%;
+    padding: 18px;
+    background: #277234;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+
+    font-size: 1.1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+
+    cursor: pointer;
+    transition: 0.4s;
+    margin-top: 10px;
+
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Hover (passar o mouse) */
+.btn-entrar[type="button"]:hover {
+    background: #329643;
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px rgba(39, 114, 52, 0.3);
+}
+
+/* Clique */
+.btn-entrar[type="button"]:active {
+    transform: scale(0.97);
+}
+
+
+/* BOX DE LOGIN SOCIAL */
+.login-box {
+    margin-top: 40px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 25px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.login-box h4 {
+    font-size: 0.75rem;
+    color: #aaa;
+    letter-spacing: 4px;
+    margin-bottom: 20px;
+}
+
+/* BOTÕES SOCIAIS */
+.btn {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.1);
+    margin: 0 10px;
+    cursor: pointer;
+    transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn img {
+    width: 24px;
+    filter: brightness(1) invert(0); /* Deixa os ícones brancos para elegância */
+}
+
+.btn:hover {
+    background: #fff;
+    transform: scale(1.2) rotate(10deg);
+}
+
+.btn:hover img {
+    filter: none; /* Volta a cor original no hover */
+}
+
+/* LINKS (apenas dentro do formulário, não afeta a nav) */
+.container a {
+    margin-top: 25px;
+    color: #277234;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: 0.3s;
+}
+
+.container a:hover {
+    color: #fff;
+    text-decoration: underline;
+}
+
+/* LADO DIREITO (DINÂMICO) */
+.side-image {
+    width: 55%;
+    height: 100%;
+}
+
+/* ANIMAÇÃO DE ENTRADA */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateX(-30px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* RESPONSIVIDADE PARA CELULAR */
+@media (max-width: 850px) {
+    body {
+        background: 
+            linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
+            url("img/futebol.jpg");
+    }
+    .container {
+        width: 100%;
+        background: transparent;
+        backdrop-filter: none;
+    }
+    .side-image {
+        display: none;
+    }
+}
+
+.side-text {
+    text-align: center;
+    color: white;
+    
+}
+
+.side-text h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    text-shadow: 2px 4px 10px rgba(0,0,0,0.8);
+}
+
+.side-text p {
+    font-size: 1.2rem;
+    color: #ffffff;
+    font-weight: 600;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+

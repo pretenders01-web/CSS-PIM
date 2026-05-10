@@ -8,7 +8,7 @@
     <!-- Importo a fonte Poppins igual às outras páginas do projeto. -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
 
-    <title>Copa Tickets - Cadastro</title>
+    <title>Copa Tickets - Login</title>
 
     <!-- Ficheiro CSS partilhado entre a página de login e de cadastro. -->
     <link rel="stylesheet" href="logincadastro.css">
@@ -16,7 +16,7 @@
 
 <body>
 
-<!-- Header fixo com logo à esquerda e navegação à direita,
+<!-- Header fixo com o logotipo à esquerda e navegação à direita,
      igual ao padrão das outras páginas do site. -->
 <header>
     <a href="index.html"><img src="flags/logo 3 - Editado.png" alt="Brazil Tickets" class="logo"></a>
@@ -29,32 +29,32 @@
 </header>
 
 <!-- Layout principal dividido em duas colunas:
-     lado esquerdo com o formulário e lado direito com imagem motivacional. -->
+     lado esquerdo com o formulário e lado direito com o texto. -->
 <div class="main-content">
 
-    <!-- COLUNA ESQUERDA — formulário de cadastro com 4 campos. -->
+    <!-- COLUNA ESQUERDA — formulário de login -->
     <div class="container">
-        <h2>Cadastre-se</h2>
+        <h2>Faça Login</h2>
 
         <form method="post">
 
-            <!-- Campos do formulário — nome, email, senha e confirmação de senha. -->
-            <input type="text" name="Nome" placeholder="Nome" required />
+            <!-- Campos de email e senha com validação básica do HTML. -->
             <input type="email" name="Email" placeholder="Email" required />
             <input type="password" name="Senha" placeholder="Senha" required />
-            <input type="password" name="Senha" placeholder="Confirme sua Senha" required />
 
-            <!-- Botão de cadastrar — o processamento do formulário
-                 será implementado futuramente com backend. -->
-            <button type="submit">CADASTRAR</button>
+            <!-- Botão de entrar — redireciona para a homepage quando clicado.
+                 A autenticação real será implementada futuramente. -->
+            <button class="btn-entrar" type="button" onclick="window.location.href='homepage.html'">
+             ENTRAR
+            </button>
             <br>
             <p>
-                Já possui conta?
-                <a href="LOGIN.html">Clique aqui</a>
+                Não possui conta?
+                <a href="CADASTRO.html">Clique aqui</a>
             </p>
 
             <!-- Secção de login social com ícones de Email, Facebook e Outlook.
-                 Por agora mostram uma mensagem ao ser clicados. -->
+                 Por agora mostram uma mensagem de "erro" ao ser clicados. -->
             <div class="login-box">
                 <h4>ENTRE COM</h4>
                 <div class="social-icons">
@@ -73,7 +73,7 @@
 
     </div>
 
-    <!-- COLUNA DIREITA — imagem de fundo com texto motivacional sobreposto. -->
+    <!-- COLUNA DIREITA — imagem de fundo com texto sobreposto. -->
     <div class="side-image">
         <br><br><br><br><br><br><br><br><br><br><br>
         <div class="side-text">
@@ -90,9 +90,9 @@
 <script>
     /* Função chamada pelos botões de login social (Email, Facebook, Outlook).
        Por enquanto apenas informa o utilizador que a funcionalidade
-       ainda não está disponível. */
+       ainda não está disponível, mas será implementada futuramente. */
     function mostrarMensagem() {
-        alert('Funcionalidade de login social ainda não disponível.');
+        alert('Funcionalidade de login por rede social ainda não disponível.');
     }
 </script>
 </body>

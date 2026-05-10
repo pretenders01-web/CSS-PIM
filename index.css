@@ -6,15 +6,15 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
 }
 
 /* Criei variáveis de cor no :root para não ter de repetir
    os mesmos códigos de cor em todo o ficheiro.
    Assim se quiser mudar uma cor, mudo apenas aqui. */
 :root {
-    --verde: #2ecc71;           /* cor principal dos botões */
-    --verde-hover: #27ae60;     /* versão mais escura para o efeito hover */
+    --verde: #277234;           /* cor principal dos botões — verde campo */
+    --verde-hover: #329643;     /* versão mais clara para o efeito hover */
     --amarelo: #FFCC29;         /* usado no título do header */
     --azul: #0033A0;            /* reservado para uso futuro */
     --fundo: #0d0d0d;           /* fundo geral da página, quase preto */
@@ -23,17 +23,17 @@
 }
 
 /* O body recebe o fundo escuro e o texto branco como base,
-   para que todo o conteúdo já herde essas cores por defeito. */
+   para que todo o conteúdo já herde essas cores. */
 body {
     background: var(--fundo);
     color: white;
 }
 
-/* O header fica fixo no topo (sticky) para acompanhar o scroll.
+/* O header fica fixo no topo para acompanhar o scroll.
    Usei backdrop-filter para criar um efeito de vidro fosco,
    como se o conteúdo atrás ficasse desfocado. */
 header {
-    background: rgba(0, 0, 0, 0.75);
+    background: #000;
     backdrop-filter: blur(12px);
     padding: 20px 30px;
     color: white;
@@ -65,8 +65,8 @@ header h1 {
     position: relative;
 }
 
-/* O logótipo fica posicionado do lado esquerdo do header.
-   Usei position absolute + translateY para o centrar verticalmente. */
+/* O logotipo fica posicionado do lado esquerdo do header.
+   Usei position absolute + translateY para centrar verticalmente. */
 header .logo {
     height: 200px;
     cursor: pointer;
@@ -77,7 +77,7 @@ header .logo {
     transform: translateY(-50%);
 }
 
-/* Pequeno zoom no logótipo ao passar o rato por cima. */
+/* Pequeno zoom no logotipo ao passar o mouse por cima. */
 header .logo:hover {
     transform: translateY(-50%) scale(1.05);
 }
@@ -131,15 +131,33 @@ nav a {
     border: 1px solid var(--borda);
     font-size: 15px;
     letter-spacing: 0.5px;
+    margin: 0;
 }
 
-/* Ao passar o rato, o link fica verde e sobe um pouco,
-   dando a sensação de que está a "flutuar". */
+/* O botão do carrinho usa a cor amarela do logo para se destacar
+   dos outros links de navegação, mas ainda sem funcionalidade. */
+nav a.nav-cart {
+    border-color: rgba(255, 204, 41, 0.4);
+    color: rgba(255, 204, 41, 0.9);
+}
+
+/* Ao passar o mouse sobre o carrinho, o amarelo fica mais intenso
+   e o botão sobe, igual ao comportamento dos outros links. */
+nav a.nav-cart:hover {
+    background: rgba(255, 204, 41, 0.15);
+    border-color: #FFCC29;
+    color: #FFCC29;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(255, 204, 41, 0.2);
+}
+
+/* Ao passar o mouse, o link fica verde e sobe um pouco,
+   dando a sensação que está "flutuando". */
 nav a:hover {
     background: var(--verde);
     color: white;
     transform: translateY(-3px);
-    box-shadow: 0 8px 15px rgba(46, 204, 113, 0.35);
+    box-shadow: 0 8px 15px rgba(39, 114, 52, 0.35);
     border-color: var(--verde);
 }
 
@@ -159,7 +177,7 @@ nav a:hover {
     padding: 40px 20px;
 }
 
-/* Título grande do banner com muito espaçamento entre letras. */
+/* Título grande do banner. */
 .banner h2 {
     font-size: 48px;
     margin-bottom: 20px;
@@ -168,7 +186,7 @@ nav a:hover {
 }
 
 /* Parágrafo do banner com largura limitada para não ficar
-   demasiado espalhado em ecrãs grandes. */
+   muito espalhado em ecrãs grandes. */
 .banner p {
     font-size: 24px;
     max-width: 700px;
@@ -185,6 +203,17 @@ nav a:hover {
     align-items: center;
 }
 
+/* Este wrapper envolve o carousel e as setas de navegação.
+   O padding lateral de 80px cria espaço para as setas ficarem
+   visíveis fora do #carouselJogos, que tem overflow: hidden
+   para evitar que os slides estiquem a página durante a animação. */
+.carousel-area {
+    position: relative;
+    width: 100%;
+    max-width: 1700px;
+    padding: 0 80px;
+}
+
 /* Título "Jogos Disponíveis" centrado e em branco. */
 .jogos-container h2 {
     margin-bottom: 50px;
@@ -198,7 +227,7 @@ nav a:hover {
 
 /* O grid organiza os cards em 3 colunas iguais.
    Usei 1fr para que as colunas se ajustem automaticamente
-   ao espaço disponível, sem cortar nenhum card. */
+   ao espaço disponível, para não cortar nenhum card. */
 .jogos-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -208,7 +237,7 @@ nav a:hover {
 }
 
 /* Cada card representa um jogo disponível.
-   Apliquei glassmorphism: fundo transparente com blur,
+   Apliquei glassmorphism: fundo transparente com blur
    para encaixar no tema escuro da página. */
 .card {
     background: var(--painel);
@@ -244,14 +273,14 @@ nav a:hover {
     overflow: hidden;
 }
 
-/* Os parágrafos de data e local ficam ligeiramente transparentes
+/* Os parágrafos de data e local ligeiramente transparentes
    para criar hierarquia visual em relação ao título. */
 .card p {
     margin: 0;
     color: rgba(255, 255, 255, 0.7);
 }
 
-/* Os nomes das equipas ficam em linha com a bandeira. */
+/* Os nomes das equipes ficam em linha com a bandeira. */
 .card h3 .team-home,
 .card h3 .team-away {
     display: inline-flex;
@@ -261,7 +290,7 @@ nav a:hover {
 }
 
 /* Usei o pseudo-elemento ::before para mostrar a bandeira
-   de cada país antes do nome da equipa. A imagem em si
+   de cada país antes do nome da equipe. A imagem em si
    é definida abaixo por classe de jogo. */
 .card h3 .team-home::before,
 .card h3 .team-away::before {
@@ -274,7 +303,7 @@ nav a:hover {
     background-repeat: no-repeat;
 }
 
-/* Aqui defino a bandeira de cada equipa em cada jogo.
+/* Aqui defini a bandeira de cada equipe em cada jogo.
    Cada jogo tem uma classe própria no HTML (ex: .mexico-canada)
    que serve para saber que bandeiras mostrar. */
 
@@ -321,7 +350,7 @@ nav a:hover {
 }
 
 /* O carousel do Bootstrap foi personalizado com um fundo
-   escuro e bordas subtis para combinar com o resto da página. */
+   escuro e bordas subtis para combinar com o resto do projeto. */
 #carouselJogos {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--borda);
@@ -330,6 +359,7 @@ nav a:hover {
     box-shadow: 0 10px 40px rgba(0,0,0,0.5);
     max-width: 1560px;
     margin: 0 auto;
+    overflow: hidden;
 }
 
 /* Área interna do carousel com altura mínima para não colapsar. */
@@ -351,38 +381,41 @@ nav a:hover {
     height: 60px;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(46, 204, 113, 0.25);
+    background: rgba(39, 114, 52, 0.25);
     border-radius: 50%;
     opacity: 0.8;
     transition: all 0.3s ease;
 }
 
-/* A seta esquerda fica ligeiramente fora do carousel. */
+/* As setas ficam nas bordas do .carousel-area (fora do #carouselJogos)
+   para não serem cortadas pelo overflow: hidden do carousel. */
 .carousel-control-prev {
-    left: -65px;
+    left: 0;
 }
 
-/* A seta direita fica ligeiramente fora do carousel. */
 .carousel-control-next {
-    right: -65px;
+    right: 0;
 }
 
-/* Ao passar o rato nas setas, ficam mais visiveis com brilho verde. */
+/* Ao passar o mouse nas setas, ficam mais visiveis e com um brilho verde. */
 .carousel-control-prev:hover,
 .carousel-control-next:hover {
-    background: rgba(46, 204, 113, 0.75);
+    background: rgba(39, 114, 52, 0.75);
     opacity: 1;
-    box-shadow: 0 5px 20px rgba(46, 204, 113, 0.4);
+    box-shadow: 0 5px 20px rgba(39, 114, 52, 0.4);
 }
 
-/* Os indicadores (pontos de navegação) ficam abaixo do carousel. */
+/* Os indicadores (pontos de navegação) ficam na parte inferior do carousel.
+   Não pode ser negativo porque o overflow: hidden do #carouselJogos cortaria os pontos. */
 .carousel-indicators {
-    bottom: -50px;
+    bottom: 10px;
 }
 
-/* Cada ponto indicador é um círculo verde pequeno. */
+/* Cada ponto indicador é um círculo verde pequeno.
+   O !important é necessário para sobrescrever a classe carousel-dark do Bootstrap, para ficar verde, 
+   que por padrão força a cor preta nos indicadores. */
 .carousel-indicators button {
-    background-color: var(--verde);
+    background-color: var(--verde) !important;
     border-radius: 50%;
     width: 12px;
     height: 12px;
@@ -394,28 +427,35 @@ nav a:hover {
 .btn {
     padding: 12px 20px;
     border: none;
-    border-radius: 6px;
+    border-radius: 12px;
     cursor: pointer;
     font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
     margin-top: 10px;
+    transition: 0.4s;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* O botão primário fica verde, igual ao estilo da página de pagamento. */
+/* O botão primário fica verde — idêntico ao padrão das páginas de login/cadastro. */
 .btn-primary {
     background: var(--verde);
     color: white;
     border: none;
 }
 
-/* Ao passar o rato, o botão fica verde mais escuro. */
+/* Ao passar o mouse, o botão sobe e ganha brilho verde. */
 .btn-primary:hover {
     background: var(--verde-hover);
     color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 15px 25px rgba(39, 114, 52, 0.3);
 }
 
 /* ============================================================
    A partir daqui aplico adaptações de layout para que o site
-   funcione bem em diferentes tamanhos de ecrã.
+   funcione bem em diferentes tamanhos de ecrã (responsividade).
    ============================================================ */
 
 /* Em tablets (até 1024px), o grid passa para 2 colunas
@@ -467,7 +507,7 @@ nav a:hover {
     }
 }
 
-/* Em telemóveis (até 768px), o grid passa para 1 coluna
+/* Em telefones celulares (até 768px), o grid passa para 1 coluna
    e os elementos ficam mais compactos. */
 @media (max-width: 768px) {
     .jogos-grid {
@@ -538,7 +578,7 @@ nav a:hover {
         margin: 0;
     }
 
-    /* Bandeiras reduzidas para caber melhor em ecrãs pequenos. */
+    /* Reduzir badeiras para caber melhor em ecrãs pequenos. */
     .card h3 .team-home::before,
     .card h3 .team-away::before {
         width: 20px;
@@ -551,7 +591,7 @@ nav a:hover {
         line-height: 1.3;
     }
 
-    /* Em telemóvel, o botão ocupa toda a largura do card. */
+    /* Em telefones celulares, o botão ocupa toda a largura do card. */
     .btn {
         width: 100%;
         padding: 10px 15px;
@@ -573,7 +613,7 @@ nav a:hover {
         min-height: auto;
     }
 
-    /* As setas do carousel ficam dentro dos limites em telemóvel. */
+    /* As setas do carousel ficam dentro dos limites em telefones celulares. */
     .carousel-control-prev,
     .carousel-control-next {
         width: 40px;
