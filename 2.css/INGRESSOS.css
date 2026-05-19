@@ -47,7 +47,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url(img/JOGO.JPG);
+    background-image: url(../4.flags/jogo.jpeg);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -89,7 +89,7 @@ header .logo {
     transform: translateY(-50%);
 }
 
-/* Pequeno zoom no logo ao passar o mouse por cima,
+/* Pequeno zoom no logo ao passar o rato por cima,
    mantendo o translateY para não deslocar verticalmente. */
 header .logo:hover {
     transform: translateY(-50%) scale(1.05);
@@ -132,7 +132,7 @@ nav a.nav-cart:hover {
     box-shadow: 0 8px 15px rgba(255, 204, 41, 0.2);
 }
 
-/* Ao passar o mouse, o link fica verde e sobe ligeiramente,
+/* Ao passar o rato, o link fica verde e sobe ligeiramente,
    dando a sensação de que está a "flutuar". */
 nav a:hover,
 nav a.active {
@@ -393,23 +393,23 @@ button {
 /* Aqui defino a bandeira de cada seleção para cada jogo.
    A classe do jogo está no .event-card e propaga-se
    para os elementos .flag-home e .flag-away dentro dele. */
-.mexico-canada .flag-home    { background-image: url('flags/mexico.svg'); }
-.mexico-canada .flag-away    { background-image: url('flags/canada.svg'); }
+.mexico-canada .flag-home    { background-image: url('../4.flags/mexico.svg'); }
+.mexico-canada .flag-away    { background-image: url('../4.flags/canada.svg'); }
 
-.eua-uruguai .flag-home      { background-image: url('flags/usa.svg'); }
-.eua-uruguai .flag-away      { background-image: url('flags/uruguay.svg'); }
+.eua-uruguai .flag-home      { background-image: url('../4.flags/usa.svg'); }
+.eua-uruguai .flag-away      { background-image: url('../4.flags/uruguay.svg'); }
 
-.brasil-servia .flag-home    { background-image: url('flags/brazil.svg'); }
-.brasil-servia .flag-away    { background-image: url('flags/serbia.svg'); }
+.brasil-servia .flag-home    { background-image: url('../4.flags/brazil.svg'); }
+.brasil-servia .flag-away    { background-image: url('../4.flags/serbia.svg'); }
 
-.argentina-dinamarca .flag-home { background-image: url('flags/argentina.svg'); }
-.argentina-dinamarca .flag-away { background-image: url('flags/denmark.svg'); }
+.argentina-dinamarca .flag-home { background-image: url('../4.flags/argentina.svg'); }
+.argentina-dinamarca .flag-away { background-image: url('../4.flags/denmark.svg'); }
 
-.franca-chile .flag-home     { background-image: url('flags/france.svg'); }
-.franca-chile .flag-away     { background-image: url('flags/chile.svg'); }
+.franca-chile .flag-home     { background-image: url('../4.flags/france.svg'); }
+.franca-chile .flag-away     { background-image: url('../4.flags/chile.svg'); }
 
-.alemanha-japao .flag-home   { background-image: url('flags/germany.svg'); }
-.alemanha-japao .flag-away   { background-image: url('flags/japan.svg'); }
+.alemanha-japao .flag-home   { background-image: url('../4.flags/germany.svg'); }
+.alemanha-japao .flag-away   { background-image: url('../4.flags/japan.svg'); }
 
 
 /* ============================================================

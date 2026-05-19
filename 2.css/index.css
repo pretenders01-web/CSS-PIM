@@ -165,7 +165,7 @@ nav a:hover {
    Apliquei uma camada escura sobre a imagem de fundo
    para o texto ficar legível. */
 .banner {
-    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('flags/imagem_trofeu_copa.webp') center/cover no-repeat;
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('../4.flags/imagem_trofeu_copa.webp') center/cover no-repeat;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
@@ -308,45 +308,45 @@ nav a:hover {
    que serve para saber que bandeiras mostrar. */
 
 .mexico-canada .team-home::before {
-    background-image: url('flags/mexico.svg');
+    background-image: url('../4.flags/mexico.svg');
 }
 .mexico-canada .team-away::before {
-    background-image: url('flags/canada.svg');
+    background-image: url('../4.flags/canada.svg');
 }
 
 .eua-uruguai .team-home::before {
-    background-image: url('flags/usa.svg');
+    background-image: url('../4.flags/usa.svg');
 }
 .eua-uruguai .team-away::before {
-    background-image: url('flags/uruguay.svg');
+    background-image: url('../4.flags/uruguay.svg');
 }
 
 .brasil-servia .team-home::before {
-    background-image: url('flags/brazil.svg');
+    background-image: url('../4.flags/brazil.svg');
 }
 .brasil-servia .team-away::before {
-    background-image: url('flags/serbia.svg');
+    background-image: url('../4.flags/serbia.svg');
 }
 
 .argentina-dinamarca .team-home::before {
-    background-image: url('flags/argentina.svg');
+    background-image: url('../4.flags/argentina.svg');
 }
 .argentina-dinamarca .team-away::before {
-    background-image: url('flags/denmark.svg');
+    background-image: url('../4.flags/denmark.svg');
 }
 
 .franca-chile .team-home::before {
-    background-image: url('flags/france.svg');
+    background-image: url('../4.flags/france.svg');
 }
 .franca-chile .team-away::before {
-    background-image: url('flags/chile.svg');
+    background-image: url('../4.flags/chile.svg');
 }
 
 .alemanha-japao .team-home::before {
-    background-image: url('flags/germany.svg');
+    background-image: url('../4.flags/germany.svg');
 }
 .alemanha-japao .team-away::before {
-    background-image: url('flags/japan.svg');
+    background-image: url('../4.flags/japan.svg');
 }
 
 /* O carousel do Bootstrap foi personalizado com um fundo
