@@ -47,7 +47,7 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url(flags/jogo.jpeg);
+    background-image: url(img/JOGO.JPG);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -89,7 +89,7 @@ header .logo {
     transform: translateY(-50%);
 }
 
-/* Pequeno zoom no logo ao passar o rato por cima,
+/* Pequeno zoom no logo ao passar o mouse por cima,
    mantendo o translateY para não deslocar verticalmente. */
 header .logo:hover {
     transform: translateY(-50%) scale(1.05);
@@ -132,7 +132,7 @@ nav a.nav-cart:hover {
     box-shadow: 0 8px 15px rgba(255, 204, 41, 0.2);
 }
 
-/* Ao passar o rato, o link fica verde e sobe ligeiramente,
+/* Ao passar o mouse, o link fica verde e sobe ligeiramente,
    dando a sensação de que está a "flutuar". */
 nav a:hover,
 nav a.active {

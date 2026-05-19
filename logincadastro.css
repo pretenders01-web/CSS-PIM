@@ -13,7 +13,7 @@ body {
     overflow: hidden;
     background:
         linear-gradient(to right, rgba(0, 0, 0, 0.9) 30%, rgba(0, 0, 0, 0.2) 100%),
-        url("img/futebol.jpg");
+        url("flags/futebol.jpeg");
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -276,6 +276,10 @@ form button[type="submit"]:hover {
 .side-image {
     width: 55%;
     height: 100%;
+    background-image: url("flags/futebol.jpeg");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 /* ANIMAÇÃO DE ENTRADA */
@@ -287,9 +291,9 @@ form button[type="submit"]:hover {
 /* RESPONSIVIDADE PARA CELULAR */
 @media (max-width: 850px) {
     body {
-        background: 
+        background:
             linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
-            url("img/futebol.jpg");
+            url("flags/futebol.jpeg");
     }
     .container {
         width: 100%;
