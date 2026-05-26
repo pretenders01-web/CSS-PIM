@@ -303,6 +303,64 @@ form button[type="submit"]:hover {
     .side-image {
         display: none;
     }
+    header {
+        height: auto;
+        min-height: 80px;
+        padding: 15px 20px;
+    }
+    header .logo {
+        height: 140px;
+        left: 20px;
+    }
+    nav {
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    nav a {
+        font-size: 13px;
+        padding: 8px 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    header {
+        height: auto;
+        min-height: 70px;
+        padding: 10px 15px;
+    }
+    header .logo {
+        height: 80px;
+        left: 15px;
+    }
+    nav {
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+    nav a {
+        font-size: 11px;
+        padding: 6px 10px;
+        letter-spacing: 0;
+    }
+}
+
+@media (max-width: 480px) {
+    header {
+        min-height: 60px;
+        padding: 8px 10px;
+    }
+    header .logo {
+        height: 70px;
+        left: 10px;
+    }
+    nav {
+        gap: 4px;
+    }
+    nav a {
+        padding: 6px 8px;
+        font-size: 10px;
+    }
 }
 
 .side-text {
