@@ -1,0 +1,517 @@
+USE [master]
+GO
+/****** Objeto:  Database [CopaDoMundoVendas]    Data do Script: 01/06/2026 21:40:55 ******/
+CREATE DATABASE [CopaDoMundoVendas]
+ CONTAINMENT = NONE
+ ON  PRIMARY 
+( NAME = N'CopaDoMundoVendas', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL17.MSSQLSERVER\MSSQL\DATA\CopaDoMundoVendas.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 65536KB )
+ LOG ON 
+( NAME = N'CopaDoMundoVendas_log', FILENAME = N'C:\Program Files\Microsoft SQL Server\MSSQL17.MSSQLSERVER\MSSQL\DATA\CopaDoMundoVendas_log.ldf' , SIZE = 73728KB , MAXSIZE = 2048GB , FILEGROWTH = 65536KB )
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT, LEDGER = OFF
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET COMPATIBILITY_LEVEL = 170
+GO
+IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
+begin
+EXEC [CopaDoMundoVendas].[dbo].[sp_fulltext_database] @action = 'enable'
+end
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET ANSI_NULL_DEFAULT OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET ANSI_NULLS OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET ANSI_PADDING OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET ANSI_WARNINGS OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET ARITHABORT OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET AUTO_CLOSE OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET AUTO_SHRINK OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET AUTO_UPDATE_STATISTICS ON 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET CURSOR_CLOSE_ON_COMMIT OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET CURSOR_DEFAULT  GLOBAL 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET CONCAT_NULL_YIELDS_NULL OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET NUMERIC_ROUNDABORT OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET QUOTED_IDENTIFIER OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET RECURSIVE_TRIGGERS OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET  ENABLE_BROKER 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET DATE_CORRELATION_OPTIMIZATION OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET TRUSTWORTHY OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET PARAMETERIZATION SIMPLE 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET READ_COMMITTED_SNAPSHOT OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET HONOR_BROKER_PRIORITY OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET RECOVERY FULL 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET  MULTI_USER 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET PAGE_VERIFY CHECKSUM  
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET DB_CHAINING OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET TARGET_RECOVERY_TIME = 60 SECONDS 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET DELAYED_DURABILITY = DISABLED 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET OPTIMIZED_LOCKING = OFF 
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET ACCELERATED_DATABASE_RECOVERY = OFF  
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET QUERY_STORE = ON
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET QUERY_STORE (OPERATION_MODE = READ_WRITE, CLEANUP_POLICY = (STALE_QUERY_THRESHOLD_DAYS = 30), DATA_FLUSH_INTERVAL_SECONDS = 900, INTERVAL_LENGTH_MINUTES = 60, MAX_STORAGE_SIZE_MB = 1000, QUERY_CAPTURE_MODE = AUTO, SIZE_BASED_CLEANUP_MODE = AUTO, MAX_PLANS_PER_QUERY = 200, WAIT_STATS_CAPTURE_MODE = ON)
+GO
+USE [CopaDoMundoVendas]
+GO
+/****** Objeto:  Table [dbo].[Assento]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Assento](
+	[AssentoID] [int] IDENTITY(1,1) NOT NULL,
+	[SetorID] [int] NOT NULL,
+	[Numero] [varchar](10) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[AssentoID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Assento_Setor_Numero] UNIQUE NONCLUSTERED 
+(
+	[SetorID] ASC,
+	[Numero] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Objeto:  Table [dbo].[Estadio]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Estadio](
+	[EstadioID] [int] IDENTITY(1,1) NOT NULL,
+	[Nome] [varchar](100) NOT NULL,
+	[Cidade] [varchar](100) NOT NULL,
+	[CapacidadeTotal] [int] NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[EstadioID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Objeto:  Table [dbo].[Ingresso]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Ingresso](
+	[IngressoID] [int] IDENTITY(1,1) NOT NULL,
+	[JogoID] [int] NOT NULL,
+	[SetorID] [int] NOT NULL,
+	[AssentoID] [int] NULL,
+	[NumeroAssento] [varchar](10) NULL,
+	[PrecoFinal] [decimal](10, 2) NOT NULL,
+	[Status] [varchar](20) NULL,
+	[DataCriacao] [datetime] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[IngressoID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Objeto:  Table [dbo].[ItemVenda]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[ItemVenda](
+	[ItemVendaID] [int] IDENTITY(1,1) NOT NULL,
+	[VendaID] [int] NOT NULL,
+	[IngressoID] [int] NOT NULL,
+	[PrecoUnitario] [decimal](10, 2) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[ItemVendaID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[IngressoID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Objeto:  Table [dbo].[Jogo]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Jogo](
+	[JogoID] [int] IDENTITY(1,1) NOT NULL,
+	[EstadioID] [int] NOT NULL,
+	[DataHora] [datetime] NOT NULL,
+	[TimeA] [varchar](50) NOT NULL,
+	[TimeB] [varchar](50) NOT NULL,
+	[Fase] [varchar](30) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[JogoID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Jogo_Estadio_DataHora] UNIQUE NONCLUSTERED 
+(
+	[EstadioID] ASC,
+	[DataHora] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Objeto:  Table [dbo].[QRCode]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[QRCode](
+	[QRCodeID] [int] IDENTITY(1,1) NOT NULL,
+	[VendaID] [int] NOT NULL,
+	[IngressoID] [int] NOT NULL,
+	[CodigoQR] [varchar](255) NOT NULL,
+	[DataExpiracao] [datetime] NOT NULL,
+	[Utilizado] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[QRCodeID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[IngressoID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[CodigoQR] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Objeto:  Table [dbo].[Setor]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Setor](
+	[SetorID] [int] IDENTITY(1,1) NOT NULL,
+	[EstadioID] [int] NOT NULL,
+	[NomeSetor] [varchar](50) NOT NULL,
+	[Capacidade] [int] NOT NULL,
+	[PrecoBase] [decimal](10, 2) NOT NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[SetorID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+ CONSTRAINT [UQ_Setor_Estadio] UNIQUE NONCLUSTERED 
+(
+	[EstadioID] ASC,
+	[NomeSetor] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Objeto:  Table [dbo].[Usuario]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Usuario](
+	[UsuarioID] [int] IDENTITY(1,1) NOT NULL,
+	[Nome] [varchar](100) NOT NULL,
+	[Email] [varchar](150) NOT NULL,
+	[SenhaHash] [varchar](255) NOT NULL,
+	[CPF] [varchar](14) NULL,
+	[DataCadastro] [datetime] NULL,
+	[Ativo] [bit] NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[UsuarioID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY],
+UNIQUE NONCLUSTERED 
+(
+	[Email] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Objeto:  Table [dbo].[Venda]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Venda](
+	[VendaID] [int] IDENTITY(1,1) NOT NULL,
+	[UsuarioID] [int] NOT NULL,
+	[DataVenda] [datetime] NULL,
+	[ValorTotal] [decimal](10, 2) NOT NULL,
+	[StatusPagamento] [varchar](20) NULL,
+	[MetodoPagamento] [varchar](30) NULL,
+PRIMARY KEY CLUSTERED 
+(
+	[VendaID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Objeto:  Index [IX_Ingresso_Status]    Data do Script: 01/06/2026 21:40:55 ******/
+CREATE NONCLUSTERED INDEX [IX_Ingresso_Status] ON [dbo].[Ingresso]
+(
+	[Status] ASC
+)
+INCLUDE([JogoID],[SetorID]) WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Objeto:  Index [UQ_Ingresso_Jogo_Setor_Assento]    Data do Script: 01/06/2026 21:40:55 ******/
+CREATE UNIQUE NONCLUSTERED INDEX [UQ_Ingresso_Jogo_Setor_Assento] ON [dbo].[Ingresso]
+(
+	[JogoID] ASC,
+	[SetorID] ASC,
+	[AssentoID] ASC
+)
+WHERE ([AssentoID] IS NOT NULL)
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Objeto:  Index [IX_ItemVenda_VendaID]    Data do Script: 01/06/2026 21:40:55 ******/
+CREATE NONCLUSTERED INDEX [IX_ItemVenda_VendaID] ON [dbo].[ItemVenda]
+(
+	[VendaID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Objeto:  Index [IX_Jogo_DataHora]    Data do Script: 01/06/2026 21:40:55 ******/
+CREATE NONCLUSTERED INDEX [IX_Jogo_DataHora] ON [dbo].[Jogo]
+(
+	[DataHora] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+SET ANSI_PADDING ON
+GO
+/****** Objeto:  Index [IX_Usuario_Email]    Data do Script: 01/06/2026 21:40:55 ******/
+CREATE NONCLUSTERED INDEX [IX_Usuario_Email] ON [dbo].[Usuario]
+(
+	[Email] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+/****** Objeto:  Index [IX_Venda_UsuarioID]    Data do Script: 01/06/2026 21:40:55 ******/
+CREATE NONCLUSTERED INDEX [IX_Venda_UsuarioID] ON [dbo].[Venda]
+(
+	[UsuarioID] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+GO
+ALTER TABLE [dbo].[Ingresso] ADD  DEFAULT ('DISPONIVEL') FOR [Status]
+GO
+ALTER TABLE [dbo].[Ingresso] ADD  DEFAULT (getdate()) FOR [DataCriacao]
+GO
+ALTER TABLE [dbo].[QRCode] ADD  DEFAULT ((0)) FOR [Utilizado]
+GO
+ALTER TABLE [dbo].[Usuario] ADD  DEFAULT (getdate()) FOR [DataCadastro]
+GO
+ALTER TABLE [dbo].[Usuario] ADD  DEFAULT ((1)) FOR [Ativo]
+GO
+ALTER TABLE [dbo].[Venda] ADD  DEFAULT (getdate()) FOR [DataVenda]
+GO
+ALTER TABLE [dbo].[Venda] ADD  DEFAULT ('PENDENTE') FOR [StatusPagamento]
+GO
+ALTER TABLE [dbo].[Assento]  WITH CHECK ADD  CONSTRAINT [FK_Assento_Setor] FOREIGN KEY([SetorID])
+REFERENCES [dbo].[Setor] ([SetorID])
+GO
+ALTER TABLE [dbo].[Assento] CHECK CONSTRAINT [FK_Assento_Setor]
+GO
+ALTER TABLE [dbo].[Ingresso]  WITH CHECK ADD  CONSTRAINT [FK_Ingresso_Assento] FOREIGN KEY([AssentoID])
+REFERENCES [dbo].[Assento] ([AssentoID])
+GO
+ALTER TABLE [dbo].[Ingresso] CHECK CONSTRAINT [FK_Ingresso_Assento]
+GO
+ALTER TABLE [dbo].[Ingresso]  WITH CHECK ADD  CONSTRAINT [FK_Ingresso_Jogo] FOREIGN KEY([JogoID])
+REFERENCES [dbo].[Jogo] ([JogoID])
+GO
+ALTER TABLE [dbo].[Ingresso] CHECK CONSTRAINT [FK_Ingresso_Jogo]
+GO
+ALTER TABLE [dbo].[Ingresso]  WITH CHECK ADD  CONSTRAINT [FK_Ingresso_Setor] FOREIGN KEY([SetorID])
+REFERENCES [dbo].[Setor] ([SetorID])
+GO
+ALTER TABLE [dbo].[Ingresso] CHECK CONSTRAINT [FK_Ingresso_Setor]
+GO
+ALTER TABLE [dbo].[ItemVenda]  WITH CHECK ADD  CONSTRAINT [FK_ItemVenda_Ingresso] FOREIGN KEY([IngressoID])
+REFERENCES [dbo].[Ingresso] ([IngressoID])
+GO
+ALTER TABLE [dbo].[ItemVenda] CHECK CONSTRAINT [FK_ItemVenda_Ingresso]
+GO
+ALTER TABLE [dbo].[ItemVenda]  WITH CHECK ADD  CONSTRAINT [FK_ItemVenda_Venda] FOREIGN KEY([VendaID])
+REFERENCES [dbo].[Venda] ([VendaID])
+GO
+ALTER TABLE [dbo].[ItemVenda] CHECK CONSTRAINT [FK_ItemVenda_Venda]
+GO
+ALTER TABLE [dbo].[Jogo]  WITH CHECK ADD  CONSTRAINT [FK_Jogo_Estadio] FOREIGN KEY([EstadioID])
+REFERENCES [dbo].[Estadio] ([EstadioID])
+GO
+ALTER TABLE [dbo].[Jogo] CHECK CONSTRAINT [FK_Jogo_Estadio]
+GO
+ALTER TABLE [dbo].[QRCode]  WITH CHECK ADD  CONSTRAINT [FK_QRCode_Ingresso] FOREIGN KEY([IngressoID])
+REFERENCES [dbo].[Ingresso] ([IngressoID])
+GO
+ALTER TABLE [dbo].[QRCode] CHECK CONSTRAINT [FK_QRCode_Ingresso]
+GO
+ALTER TABLE [dbo].[QRCode]  WITH CHECK ADD  CONSTRAINT [FK_QRCode_Venda] FOREIGN KEY([VendaID])
+REFERENCES [dbo].[Venda] ([VendaID])
+GO
+ALTER TABLE [dbo].[QRCode] CHECK CONSTRAINT [FK_QRCode_Venda]
+GO
+ALTER TABLE [dbo].[Setor]  WITH CHECK ADD  CONSTRAINT [FK_Setor_Estadio] FOREIGN KEY([EstadioID])
+REFERENCES [dbo].[Estadio] ([EstadioID])
+GO
+ALTER TABLE [dbo].[Setor] CHECK CONSTRAINT [FK_Setor_Estadio]
+GO
+ALTER TABLE [dbo].[Venda]  WITH CHECK ADD  CONSTRAINT [FK_Venda_Usuario] FOREIGN KEY([UsuarioID])
+REFERENCES [dbo].[Usuario] ([UsuarioID])
+GO
+ALTER TABLE [dbo].[Venda] CHECK CONSTRAINT [FK_Venda_Usuario]
+GO
+ALTER TABLE [dbo].[Estadio]  WITH CHECK ADD CHECK  (([CapacidadeTotal]>(0)))
+GO
+ALTER TABLE [dbo].[Ingresso]  WITH CHECK ADD CHECK  (([Status]='CANCELADO' OR [Status]='VENDIDO' OR [Status]='RESERVADO' OR [Status]='DISPONIVEL'))
+GO
+ALTER TABLE [dbo].[Setor]  WITH CHECK ADD CHECK  (([Capacidade]>(0)))
+GO
+ALTER TABLE [dbo].[Venda]  WITH CHECK ADD CHECK  (([StatusPagamento]='ESTORNADO' OR [StatusPagamento]='CANCELADO' OR [StatusPagamento]='APROVADO' OR [StatusPagamento]='PENDENTE'))
+GO
+/****** Objeto:  StoredProcedure [dbo].[sp_RealizarCompra]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   PROCEDURE [dbo].[sp_RealizarCompra]
+    @UsuarioID INT,
+    @Ingressos VARCHAR(MAX),
+    @MetodoPagamento VARCHAR(30)
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @VendaID INT;
+    BEGIN TRY
+        BEGIN TRANSACTION;
+        INSERT INTO Venda (UsuarioID, ValorTotal, StatusPagamento, MetodoPagamento)
+        VALUES (@UsuarioID, 0, 'PENDENTE', @MetodoPagamento);
+        SET @VendaID = SCOPE_IDENTITY();
+
+        INSERT INTO ItemVenda (VendaID, IngressoID, PrecoUnitario)
+        SELECT @VendaID, value, (SELECT PrecoFinal FROM Ingresso WHERE IngressoID = value)
+        FROM STRING_SPLIT(@Ingressos, ',');
+
+        UPDATE Venda SET StatusPagamento = 'APROVADO' WHERE VendaID = @VendaID;
+        COMMIT TRANSACTION;
+
+        SELECT qr.CodigoQR, j.DataHora AS DataJogo, j.TimeA + ' x ' + j.TimeB AS Partida
+        FROM QRCode qr
+        INNER JOIN Ingresso i ON qr.IngressoID = i.IngressoID
+        INNER JOIN Jogo j ON i.JogoID = j.JogoID
+        WHERE qr.VendaID = @VendaID;
+
+        PRINT 'Compra realizada com sucesso!';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE();
+        RAISERROR(@ErrorMessage, 16, 1);
+    END CATCH;
+END;
+GO
+/****** Objeto:  Trigger [dbo].[trg_ItemVenda_GerarQRCode]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   TRIGGER [dbo].[trg_ItemVenda_GerarQRCode] ON [dbo].[ItemVenda]
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO QRCode (VendaID, IngressoID, CodigoQR, DataExpiracao, Utilizado)
+    SELECT 
+        i.VendaID,
+        i.IngressoID,
+        CONVERT(VARCHAR(36), NEWID()) + '-' + CAST(i.IngressoID AS VARCHAR),
+        (SELECT j.DataHora FROM Ingresso ing INNER JOIN Jogo j ON ing.JogoID = j.JogoID WHERE ing.IngressoID = i.IngressoID),
+        0
+    FROM inserted i;
+END;
+GO
+ALTER TABLE [dbo].[ItemVenda] ENABLE TRIGGER [trg_ItemVenda_GerarQRCode]
+GO
+/****** Objeto:  Trigger [dbo].[trg_ItemVenda_Insert]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- 2. RECRIAR AS 3 TRIGGERS CORRETAS
+CREATE   TRIGGER [dbo].[trg_ItemVenda_Insert] ON [dbo].[ItemVenda]
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF EXISTS (
+        SELECT 1 FROM inserted i
+        INNER JOIN Ingresso ing ON i.IngressoID = ing.IngressoID
+        WHERE ing.Status <> 'DISPONIVEL'
+    )
+    BEGIN
+        RAISERROR('Um ou mais ingressos não estão disponíveis para venda.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END;
+    UPDATE Ingresso SET Status = 'VENDIDO'
+    WHERE IngressoID IN (SELECT IngressoID FROM inserted);
+END;
+GO
+ALTER TABLE [dbo].[ItemVenda] ENABLE TRIGGER [trg_ItemVenda_Insert]
+GO
+/****** Objeto:  Trigger [dbo].[trg_ItemVenda_UpdateValorTotal]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   TRIGGER [dbo].[trg_ItemVenda_UpdateValorTotal] ON [dbo].[ItemVenda]
+AFTER INSERT, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @VendaID INT;
+    IF EXISTS (SELECT 1 FROM inserted)
+        SET @VendaID = (SELECT TOP 1 VendaID FROM inserted);
+    ELSE
+        SET @VendaID = (SELECT TOP 1 VendaID FROM deleted);
+    
+    UPDATE Venda
+    SET ValorTotal = (SELECT ISNULL(SUM(PrecoUnitario), 0) FROM ItemVenda WHERE VendaID = @VendaID)
+    WHERE VendaID = @VendaID;
+END;
+GO
+ALTER TABLE [dbo].[ItemVenda] ENABLE TRIGGER [trg_ItemVenda_UpdateValorTotal]
+GO
+USE [master]
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET  READ_WRITE 
+GO
