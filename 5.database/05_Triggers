@@ -1,0 +1,79 @@
+/****** Objeto:  Trigger [dbo].[trg_ItemVenda_GerarQRCode]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   TRIGGER [dbo].[trg_ItemVenda_GerarQRCode] ON [dbo].[ItemVenda]
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    INSERT INTO QRCode (VendaID, IngressoID, CodigoQR, DataExpiracao, Utilizado)
+    SELECT 
+        i.VendaID,
+        i.IngressoID,
+        CONVERT(VARCHAR(36), NEWID()) + '-' + CAST(i.IngressoID AS VARCHAR),
+        (SELECT j.DataHora FROM Ingresso ing INNER JOIN Jogo j ON ing.JogoID = j.JogoID WHERE ing.IngressoID = i.IngressoID),
+        0
+    FROM inserted i;
+END;
+GO
+ALTER TABLE [dbo].[ItemVenda] ENABLE TRIGGER [trg_ItemVenda_GerarQRCode]
+GO
+/****** Objeto:  Trigger [dbo].[trg_ItemVenda_Insert]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+-- 2. RECRIAR AS 3 TRIGGERS CORRETAS
+CREATE   TRIGGER [dbo].[trg_ItemVenda_Insert] ON [dbo].[ItemVenda]
+AFTER INSERT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF EXISTS (
+        SELECT 1 FROM inserted i
+        INNER JOIN Ingresso ing ON i.IngressoID = ing.IngressoID
+        WHERE ing.Status <> 'DISPONIVEL'
+    )
+    BEGIN
+        RAISERROR('Um ou mais ingressos não estão disponíveis para venda.', 16, 1);
+        ROLLBACK TRANSACTION;
+        RETURN;
+    END;
+    UPDATE Ingresso SET Status = 'VENDIDO'
+    WHERE IngressoID IN (SELECT IngressoID FROM inserted);
+END;
+GO
+ALTER TABLE [dbo].[ItemVenda] ENABLE TRIGGER [trg_ItemVenda_Insert]
+GO
+/****** Objeto:  Trigger [dbo].[trg_ItemVenda_UpdateValorTotal]    Data do Script: 01/06/2026 21:40:55 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE   TRIGGER [dbo].[trg_ItemVenda_UpdateValorTotal] ON [dbo].[ItemVenda]
+AFTER INSERT, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @VendaID INT;
+    IF EXISTS (SELECT 1 FROM inserted)
+        SET @VendaID = (SELECT TOP 1 VendaID FROM inserted);
+    ELSE
+        SET @VendaID = (SELECT TOP 1 VendaID FROM deleted);
+    
+    UPDATE Venda
+    SET ValorTotal = (SELECT ISNULL(SUM(PrecoUnitario), 0) FROM ItemVenda WHERE VendaID = @VendaID)
+    WHERE VendaID = @VendaID;
+END;
+GO
+ALTER TABLE [dbo].[ItemVenda] ENABLE TRIGGER [trg_ItemVenda_UpdateValorTotal]
+GO
+USE [master]
+GO
+ALTER DATABASE [CopaDoMundoVendas] SET  READ_WRITE 
+GO
