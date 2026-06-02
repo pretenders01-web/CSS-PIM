@@ -1,0 +1,6 @@
+Ordem de execução:
+Banco.sql
+01_Tabelas.sql
+02_Indices_Constraints_FKs.sql
+03_StoredProcedure.sql
+04_Triggers.sql
