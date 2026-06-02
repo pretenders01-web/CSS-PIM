@@ -36,7 +36,7 @@
     <div class="container">
         <h2>Cadastre-se</h2>
 
-        <form method="post">
+        <form onsubmit="window.location.href='LOGIN.html'; return false;">
 
             <!-- Campos do formulário — nome, email, senha e confirmação de senha. -->
             <input type="text" name="Nome" placeholder="Nome" required />
@@ -46,7 +46,10 @@
 
             <!-- Botão de cadastrar — o processamento do formulário
                  será implementado futuramente com backend. -->
-            <button type="submit">CADASTRAR</button>
+            <button class="btn-entrar" type="submit">
+                CADASTRAR
+            </button>
+        </form>
             <br>
             <p>
                 Já possui conta?
@@ -69,7 +72,7 @@
                     </button>
                 </div>
             </div>
-        </form>
+        
 
     </div>
 
