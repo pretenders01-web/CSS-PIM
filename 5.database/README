@@ -1,6 +1,17 @@
-Ordem de execução:
-Banco.sql
+Ordem de execução (no SSMS, conectado ao servidor):
+00_Banco.sql
 01_Tabelas.sql
-02_Indices_Constraints_FKs.sql
-03_StoredProcedure.sql
-04_Triggers.sql
+02_Indices_Constraints_Fks.sql
+03_Procedure.sql
+04_Triggers
+05_Dados_Teste.sql   (opcional: insere jogos, setores, assentos e ingressos de exemplo)
+
+Observações:
+- O 00_Banco.sql cria o banco CopaDoMundoVendas e termina com USE nele. Os arquivos 01 a 04
+  não selecionam o banco: ao abri-los em outra janela de consulta, escolha CopaDoMundoVendas
+  na lista de bancos antes de executar. O 05 já traz o USE.
+- O 00_Banco.sql tem o caminho dos arquivos do banco fixo (MSSQL17.MSSQLSERVER) e define o
+  nível de compatibilidade 170 (SQL Server 2025). Em outra instalação, ajuste esses dois pontos.
+- O arquivo 04_Triggers não tem extensão: abra pelo menu Arquivo > Abrir > Arquivo.
+- O 05_Dados_Teste.sql pode ser executado mais de uma vez sem duplicar linhas. Os valores
+  de capacidade, preço, horário e fase são fictícios (está explicado dentro do arquivo).
