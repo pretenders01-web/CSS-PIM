@@ -8,6 +8,21 @@ Fora do escopo deste plano: app Flutter (Etapa 9), UX/UI, Machine Learning, Comu
 
 ---
 
+## Resumo das fases
+
+Marque cada fase aqui quando todos os passos dela (seção 5) estiverem concluídos.
+
+- [x] **Fase 0:** preparação e dados de teste
+- [ ] **Fase 1:** Modelos
+- [ ] **Fase 2:** Repositório
+- [ ] **Fase 3:** Negócio
+- [ ] **Fase 4:** injeção de dependência
+- [ ] **Fase 5:** Api
+- [ ] **Fase 6:** Web
+- [ ] **Fase 7:** fechamento e evidências do manual
+
+---
+
 ## 1. Situação atual (verificada)
 
 | Item | Estado |
@@ -128,7 +143,7 @@ Convenção: **[BANCO]** = regra que o banco já impõe; **[PROPOSTA]** = escolh
   - O `UPDATE Usuario SET Perfil = 'ADMIN' WHERE Email = '...'` **comentado**, para promover o primeiro administrador (premissa 4.4).
   *Pronto quando:* o script roda duas vezes seguidas sem erro e sem duplicar; `SELECT COUNT(*)` por tabela confere com o esperado; o índice único (jogo, setor, assento) não reclama.
 - [x] **0.3** Corrigir o `5.database/README`, que cita `03_StoredProcedure.sql` e `04_Triggers.sql`; os arquivos reais são `03_Procedure.sql` e `04_Triggers` (sem extensão), e acrescentar o `05_Dados_Teste.sql`. *Pronto quando:* os nomes batem.
-- [ ] **0.4** Conferir que o `git status` está limpo no `backend/` antes de começar cada fase, para que cada commit contenha uma fase só.
+- [x] **0.4** Conferir que o `git status` está limpo no `backend/` antes de começar cada fase, para que cada commit contenha uma fase só.
 
 ### Fase 1: Modelos (`MundialTickets.Modelos`)
 
