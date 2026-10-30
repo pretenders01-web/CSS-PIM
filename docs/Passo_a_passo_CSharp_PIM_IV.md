@@ -13,7 +13,7 @@ Fora do escopo deste plano: app Flutter (Etapa 9), UX/UI, Machine Learning, Comu
 Marque cada fase aqui quando todos os passos dela (seção 5) estiverem concluídos.
 
 - [x] **Fase 0:** preparação e dados de teste
-- [ ] **Fase 1:** Modelos
+- [x] **Fase 1:** Modelos
 - [ ] **Fase 2:** Repositório
 - [ ] **Fase 3:** Negócio
 - [ ] **Fase 4:** injeção de dependência
@@ -147,20 +147,20 @@ Convenção: **[BANCO]** = regra que o banco já impõe; **[PROPOSTA]** = escolh
 
 ### Fase 1: Modelos (`MundialTickets.Modelos`)
 
-- [ ] **1.1** Criar uma entidade por tabela que falta: `Setor`, `Assento`, `Jogo`, `Usuario`, `Ingresso`, `Venda`, `ItemVenda`, `QRCode`. Usar **as colunas e tamanhos da seção 3** e o molde do `Estadio` (propriedades com `set`, `[Required]`/`[StringLength]` onde a coluna for `NOT NULL`). Colunas nulas viram tipo anulável (`int?`, `string?`). `Usuario` inclui o **`Perfil`**. Reaproveitar os nomes de `3.Classes` onde baterem com o banco, e **corrigir** `3.Classes/Setor.cs`, cujas propriedades (`id`, `nome`, `cidade`, `preco`) não existem na tabela.
-- [ ] **1.2** Adicionar as propriedades de navegação (`Jogo.Estadio`, `Setor.Estadio`, `Assento.Setor`, `Ingresso.Jogo/Setor/Assento`, `Venda.Usuario`, `Venda.Itens`, `ItemVenda.Ingresso`, `QRCode.Venda/Ingresso`).
-- [ ] **1.3** Migrar `IValidavel` e `IMetodoPagamento`, alinhando os textos aos valores do banco. Hoje `Venda.Pagar` grava `"Pago"`/`"Pendente"`, mas o banco só aceita `APROVADO`/`PENDENTE`/`CANCELADO`/`ESTORNADO` **[BANCO]**. Criar uma classe base abstrata para as formas de pagamento, da qual Pix, Cartão e Boleto derivam. Todas são **simulações**: nenhuma chama serviço externo.
-- [ ] **1.4** Criar constantes para os status (`DISPONIVEL`, `RESERVADO`, `VENDIDO`, `CANCELADO`; `PENDENTE`, `APROVADO`, `CANCELADO`, `ESTORNADO`) e para os perfis (`CLIENTE`, `ADMIN`) para não espalhar texto solto no código **[PROPOSTA]**.
-- [ ] **1.5** Criar os DTOs, no molde de `EstadioDto` e `EstadioSalvarDto`:
+- [x] **1.1** Criar uma entidade por tabela que falta: `Setor`, `Assento`, `Jogo`, `Usuario`, `Ingresso`, `Venda`, `ItemVenda`, `QRCode`. Usar **as colunas e tamanhos da seção 3** e o molde do `Estadio` (propriedades com `set`, `[Required]`/`[StringLength]` onde a coluna for `NOT NULL`). Colunas nulas viram tipo anulável (`int?`, `string?`). `Usuario` inclui o **`Perfil`**. Reaproveitar os nomes de `3.Classes` onde baterem com o banco, e **corrigir** `3.Classes/Setor.cs`, cujas propriedades (`id`, `nome`, `cidade`, `preco`) não existem na tabela.
+- [x] **1.2** Adicionar as propriedades de navegação (`Jogo.Estadio`, `Setor.Estadio`, `Assento.Setor`, `Ingresso.Jogo/Setor/Assento`, `Venda.Usuario`, `Venda.Itens`, `ItemVenda.Ingresso`, `QRCode.Venda/Ingresso`).
+- [x] **1.3** Migrar `IValidavel` e `IMetodoPagamento`, alinhando os textos aos valores do banco. Hoje `Venda.Pagar` grava `"Pago"`/`"Pendente"`, mas o banco só aceita `APROVADO`/`PENDENTE`/`CANCELADO`/`ESTORNADO` **[BANCO]**. Criar uma classe base abstrata para as formas de pagamento, da qual Pix, Cartão e Boleto derivam. Todas são **simulações**: nenhuma chama serviço externo.
+- [x] **1.4** Criar constantes para os status (`DISPONIVEL`, `RESERVADO`, `VENDIDO`, `CANCELADO`; `PENDENTE`, `APROVADO`, `CANCELADO`, `ESTORNADO`) e para os perfis (`CLIENTE`, `ADMIN`) para não espalhar texto solto no código **[PROPOSTA]**.
+- [x] **1.5** Criar os DTOs, no molde de `EstadioDto` e `EstadioSalvarDto`:
   - **CRUD:** um DTO de saída e um de entrada (`...SalvarDto`) para `Setor`, `Assento`, `Jogo` e `Ingresso`, com as mensagens de validação em português. O `Estadio` já tem os seus;
   - **Usuário:** cadastro, login, dados do usuário e alteração dos dados;
   - **Comprador:** setor de um jogo (nome, preço e quantidade de assentos disponíveis), assento disponível (ingresso, número e preço), pedido de compra (ids dos ingressos e método de pagamento), resultado da compra (`CodigoQR`, `DataJogo`, `Partida`) e ingresso comprado com o QR.
   **`SenhaHash` nunca entra em DTO de saída**, e o `Perfil` nunca é aceito em DTO de entrada de cadastro.
-- [ ] **1.6** *Pronto quando:* a camada compila e **não referencia nenhum outro projeto** (requisito do manual).
+- [x] **1.6** *Pronto quando:* a camada compila e **não referencia nenhum outro projeto** (requisito do manual).
 
 ### Fase 2: Repositório (`MundialTickets.Repositorio`)
 
-- [ ] **2.1** No `AppDbContext`, criar um `DbSet` e o mapeamento de cada entidade (nome da tabela, chave, tamanhos, relacionamentos, valores padrão e índices únicos da seção 3), como o `Estadio` já faz.
+- [ ] **2.1** *(atenção: não usar `HasDefaultValue` em `Usuario.Ativo` nem em `QRCode.Utilizado`. O EF Core ignora o valor `false` quando a coluna tem padrão no banco, e um usuário criado inativo viraria ativo. Usar `HasDefaultValueSql("GETDATE()")` só nas datas.)* No `AppDbContext`, criar um `DbSet` e o mapeamento de cada entidade (nome da tabela, chave, tamanhos, relacionamentos, valores padrão e índices únicos da seção 3), como o `Estadio` já faz.
 - [ ] **2.2** Mapear `ItemVenda` com `HasTrigger("trg_ItemVenda_Insert")`, `HasTrigger("trg_ItemVenda_UpdateValorTotal")` e `HasTrigger("trg_ItemVenda_GerarQRCode")`. O manual exige `HasTrigger` em tabela com trigger no EF Core 7+; sem ele, qualquer gravação de `ItemVenda` pelo EF falha.
 - [ ] **2.3** Criar uma interface e uma classe de repositório, no molde de `EstadioRepositorio`, para `Setor`, `Assento`, `Jogo`, `Ingresso`, `Usuario` e `Venda`. As quatro operações (incluir, consultar, alterar, excluir) onde houver CRUD. Consultas só parametrizadas.
 - [ ] **2.4** Em cada repositório de CRUD, um método que diz se a entidade **tem vínculos** (como o `PossuiVinculos` do `Estadio`), para o Negócio recusar a exclusão com mensagem clara. Onde já houver entidades mapeadas, preferir consultas do EF à SQL direta (inclusive no `PossuiVinculos` do `Estadio`).
@@ -253,6 +253,16 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
 - [ ] **6.11** Páginas de **Setor** e de **Jogo**, no mesmo desenho, com **lista para escolher o estádio** no formulário.
 - [ ] **6.12** Página de **Assento**, com lista para escolher o setor e uma segunda seção, **criar vários** (setor e quantidade, premissa 4.2).
 - [ ] **6.13** Página de **Ingresso** (premissas 4.1 e 4.3): tabela com filtro por jogo e status, o formulário (criar e editar o preço), o botão **gerar para um jogo**, o botão **cancelar** em cada linha e a exclusão.
+
+**Notas da Fase 1 (decisões tomadas durante a execução):**
+
+- Colunas que o banco declara como `NULL` **mas preenche por padrão** (`DataCadastro`, `Ativo`, `DataCriacao`, `DataVenda`, `StatusPagamento`, `Status`, `Utilizado`) viraram propriedades **não anuláveis**, com o mesmo padrão do banco quando há um (`Ativo = true`, `Status = DISPONIVEL`, `StatusPagamento = PENDENTE`). Só viraram anuláveis as que são opcionais de verdade: `Ingresso.AssentoID`, `Ingresso.NumeroAssento`, `Usuario.CPF` e `Venda.MetodoPagamento`.
+- `Usuario.Validar()` **não exige CPF**, ao contrário da classe antiga de `3.Classes`, porque o CPF é opcional no banco e no formulário de cadastro.
+- `Venda.Pagar(IMetodoPagamento)` da classe antiga **não foi migrado**: quem decide o pagamento é o `VendaNegocio` (passo 3.7). O polimorfismo continua nas três formas de pagamento.
+- Nomes dos métodos de pagamento mantidos como nas classes antigas: `PIX`, `Cartao` e `Boleto`.
+- As **entidades** seguem os nomes das colunas (`SetorID`, `NomeSetor`...) e os **DTOs** usam `Id`, como o `Estadio`. As classes de `3.Classes` não foram alteradas nem apagadas.
+- **Não foram criados** os DTOs da criação em lote de assentos nem da geração de ingressos para um jogo: eles dependem do desenho dos passos 3.4 e 3.5 e serão criados nessas fases.
+- Entidades e DTOs foram testados fora do repositório (38 verificações: pagamentos, constantes, padrões, validações e conversões).
 - [ ] **6.14** Responsividade: manter o `viewport` e as *media queries* dos CSS (há pontos entre 480 px e 1400 px), testar em largura de celular.
 - [ ] **6.15** *Pronto quando:* o administrador cadastra um jogo e gera os ingressos, e um comprador navega da Home até uma compra completa pelo navegador, escolhendo jogo, setor e assento, com a mesma regra de negócio da Api.
 
