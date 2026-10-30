@@ -14,7 +14,7 @@ Marque cada fase aqui quando todos os passos dela (seção 5) estiverem concluí
 
 - [x] **Fase 0:** preparação e dados de teste
 - [x] **Fase 1:** Modelos
-- [ ] **Fase 2:** Repositório
+- [x] **Fase 2:** Repositório
 - [ ] **Fase 3:** Negócio
 - [ ] **Fase 4:** injeção de dependência
 - [ ] **Fase 5:** Api
@@ -160,17 +160,28 @@ Convenção: **[BANCO]** = regra que o banco já impõe; **[PROPOSTA]** = escolh
 
 ### Fase 2: Repositório (`MundialTickets.Repositorio`)
 
-- [ ] **2.1** *(atenção: não usar `HasDefaultValue` em `Usuario.Ativo` nem em `QRCode.Utilizado`. O EF Core ignora o valor `false` quando a coluna tem padrão no banco, e um usuário criado inativo viraria ativo. Usar `HasDefaultValueSql("GETDATE()")` só nas datas.)* No `AppDbContext`, criar um `DbSet` e o mapeamento de cada entidade (nome da tabela, chave, tamanhos, relacionamentos, valores padrão e índices únicos da seção 3), como o `Estadio` já faz.
-- [ ] **2.2** Mapear `ItemVenda` com `HasTrigger("trg_ItemVenda_Insert")`, `HasTrigger("trg_ItemVenda_UpdateValorTotal")` e `HasTrigger("trg_ItemVenda_GerarQRCode")`. O manual exige `HasTrigger` em tabela com trigger no EF Core 7+; sem ele, qualquer gravação de `ItemVenda` pelo EF falha.
-- [ ] **2.3** Criar uma interface e uma classe de repositório, no molde de `EstadioRepositorio`, para `Setor`, `Assento`, `Jogo`, `Ingresso`, `Usuario` e `Venda`. As quatro operações (incluir, consultar, alterar, excluir) onde houver CRUD. Consultas só parametrizadas.
-- [ ] **2.4** Em cada repositório de CRUD, um método que diz se a entidade **tem vínculos** (como o `PossuiVinculos` do `Estadio`), para o Negócio recusar a exclusão com mensagem clara. Onde já houver entidades mapeadas, preferir consultas do EF à SQL direta (inclusive no `PossuiVinculos` do `Estadio`).
-- [ ] **2.5** `JogoRepositorio`: listar com o `Estadio`, ordenados por data, e obter um jogo. `SetorRepositorio`: listar os setores de um estádio. `AssentoRepositorio`: listar por setor e inserir vários de uma vez.
-- [ ] **2.6** `IngressoRepositorio`: listar com filtros (jogo, status), contar e listar os `DISPONIVEL` de um jogo por setor (com o `Assento`), obter vários por id (com `Jogo`, `Setor` e `Assento`) e inserir vários de uma vez.
-- [ ] **2.7** `UsuarioRepositorio`: incluir, obter por id, obter por e-mail, alterar e desativar.
-- [ ] **2.8** `VendaRepositorio.RealizarCompra(usuarioId, ids, metodo)`, com **Dapper**, no molde de `BuscarPorNome` do template: pegar a conexão por `_contexto.Database.GetDbConnection()` e chamar `sp_RealizarCompra` com `commandType: CommandType.StoredProcedure`. Os parâmetros se chamam `UsuarioID`, `Ingressos` (`string.Join(",", ids)`) e `MetodoPagamento`, e o resultado mapeia as colunas `CodigoQR`, `DataJogo` e `Partida`. Esta é a evidência da "chamada da stored procedure" que o manual pede.
-- [ ] **2.9** No `RealizarCompra`, capturar `Microsoft.Data.SqlClient.SqlException` e relançar como erro de negócio com mensagem em português, como segunda barreira (a primeira é a validação do passo 3.7).
-- [ ] **2.10** Consulta de "meus ingressos": ingressos de um usuário com o QR code (`Venda`, `ItemVenda`, `QRCode`, `Jogo`, `Setor`, `Assento`).
-- [ ] **2.11** *Pronto quando:* o build passa e cada repositório responde contra o banco com os dados do passo 0.2. A única classe que acessa o banco é o Repositório.
+- [x] **2.1** *(atenção: não usar `HasDefaultValue` em `Usuario.Ativo` nem em `QRCode.Utilizado`. O EF Core ignora o valor `false` quando a coluna tem padrão no banco, e um usuário criado inativo viraria ativo. Usar `HasDefaultValueSql("GETDATE()")` só nas datas.)* No `AppDbContext`, criar um `DbSet` e o mapeamento de cada entidade (nome da tabela, chave, tamanhos, relacionamentos, valores padrão e índices únicos da seção 3), como o `Estadio` já faz.
+- [x] **2.2** Mapear `ItemVenda` com `HasTrigger("trg_ItemVenda_Insert")`, `HasTrigger("trg_ItemVenda_UpdateValorTotal")` e `HasTrigger("trg_ItemVenda_GerarQRCode")`. O manual exige `HasTrigger` em tabela com trigger no EF Core 7+; sem ele, qualquer gravação de `ItemVenda` pelo EF falha.
+- [x] **2.3** Criar uma interface e uma classe de repositório, no molde de `EstadioRepositorio`, para `Setor`, `Assento`, `Jogo`, `Ingresso`, `Usuario` e `Venda`. As quatro operações (incluir, consultar, alterar, excluir) onde houver CRUD. Consultas só parametrizadas.
+- [x] **2.4** Em cada repositório de CRUD, um método que diz se a entidade **tem vínculos** (como o `PossuiVinculos` do `Estadio`), para o Negócio recusar a exclusão com mensagem clara. Onde já houver entidades mapeadas, preferir consultas do EF à SQL direta (inclusive no `PossuiVinculos` do `Estadio`).
+- [x] **2.5** `JogoRepositorio`: listar com o `Estadio`, ordenados por data, e obter um jogo. `SetorRepositorio`: listar os setores de um estádio. `AssentoRepositorio`: listar por setor e inserir vários de uma vez.
+- [x] **2.6** `IngressoRepositorio`: listar com filtros (jogo, status), contar e listar os `DISPONIVEL` de um jogo por setor (com o `Assento`), obter vários por id (com `Jogo`, `Setor` e `Assento`) e inserir vários de uma vez.
+- [x] **2.7** `UsuarioRepositorio`: incluir, obter por id, obter por e-mail, alterar e desativar.
+- [x] **2.8** `VendaRepositorio.RealizarCompra(usuarioId, ids, metodo)`, com **Dapper**, no molde de `BuscarPorNome` do template: pegar a conexão por `_contexto.Database.GetDbConnection()` e chamar `sp_RealizarCompra` com `commandType: CommandType.StoredProcedure`. Os parâmetros se chamam `UsuarioID`, `Ingressos` (`string.Join(",", ids)`) e `MetodoPagamento`, e o resultado mapeia as colunas `CodigoQR`, `DataJogo` e `Partida`. Esta é a evidência da "chamada da stored procedure" que o manual pede.
+- [x] **2.9** No `RealizarCompra`, capturar `Microsoft.Data.SqlClient.SqlException` e relançar como `OperacaoNoBancoException` (exceção do próprio Repositório, com mensagem em português e o erro técnico em `InnerException`), como segunda barreira (a primeira é a validação do passo 3.7). O **Negócio** captura essa exceção e a converte em `RegraDeNegocioException`.
+- [x] **2.10** Consulta de "meus ingressos": ingressos de um usuário com o QR code (`Venda`, `ItemVenda`, `QRCode`, `Jogo`, `Setor`, `Assento`).
+- [x] **2.11** *Pronto quando:* o build passa e cada repositório responde contra o banco com os dados do passo 0.2. A única classe que acessa o banco é o Repositório.
+
+**Notas da Fase 2 (decisões tomadas durante a execução):**
+
+- **A exceção do Repositório é nova e não estava no plano.** O passo 2.9 original mandava relançar como erro de negócio, mas a `RegraDeNegocioException` mora no projeto Negócio, que referencia o Repositório, e uma camada de baixo não pode conhecer a de cima. Por isso o Repositório lança a `OperacaoNoBancoException` e o Negócio faz a conversão (passo 3.7).
+- **A procedure perde o número do erro original.** O `CATCH` dela relança com `RAISERROR`, então toda falha chega ao C# com o mesmo número (50000). A distinção é feita pelo **texto**: se contém "não estão disponíveis" (mensagem da trigger, escrita em português no script do banco), vira essa mensagem; qualquer outra falha vira "Não foi possível concluir a compra. Algum dos ingressos pode ter acabado de ser vendido. Tente novamente."
+- **O Dapper participa da transação aberta no contexto** (`transaction: _contexto.Database.CurrentTransaction`). Sem isso, a chamada da procedure falharia dentro de uma transação do EF.
+- **Não há `AssentoRepositorio` com consultas de disponibilidade**: quem sabe o que está disponível é o `IngressoRepositorio` (`ListarDisponiveis` e `ContarDisponiveisPorSetor`), que só considera ingressos com assento (premissa 4.3).
+- **`ObterPorId` devolve a entidade rastreada** (para o Negócio alterar e chamar `Atualizar`); as listagens usam `AsNoTracking`. O `Usuario.Desativar` usa `ExecuteUpdate` (um UPDATE direto); como não passa pelo rastreador, uma entidade já carregada no mesmo contexto continua com o valor antigo. Em uma requisição web isso não ocorre, porque cada requisição tem o seu contexto.
+- **As chaves estrangeiras do mapeamento usam `OnDelete(Restrict)`**, espelhando o banco (as FKs dele recusam a exclusão, não apagam em cascata).
+- **Os repositórios ainda não estão registrados na injeção de dependência**: isso é a Fase 4.
+- Testado contra o banco real, com os dados de teste carregados, por um programa fora do repositório (71 verificações, todas dentro de transações desfeitas). Isso incluiu o `HasTrigger`: o EF gravou um `ItemVenda` e as três triggers rodaram. O banco ficou com os dados de teste (7 estádios, 21 setores, 175 assentos, 6 jogos e 150 ingressos) e sem usuários, vendas, itens nem QR codes.
 
 ### Fase 3: Negócio (`MundialTickets.Negocio`)
 

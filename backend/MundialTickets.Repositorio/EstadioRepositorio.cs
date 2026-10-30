@@ -29,12 +29,10 @@ public class EstadioRepositorio : IEstadioRepositorio
     public bool NomeEmUsoNaCidade(string nome, string cidade, int? ignorarId = null) =>
         _contexto.Estadios.Any(e => e.Nome == nome && e.Cidade == cidade && e.EstadioID != ignorarId);
 
-    // Consulta parametrizada: o id vai como parâmetro, nunca concatenado no SQL.
+    // Agora que Setor e Jogo estão mapeados, a verificação usa consultas do EF (parametrizadas).
     public bool PossuiVinculos(int id) =>
-        _contexto.Database
-            .SqlQuery<int>($"SELECT (SELECT COUNT(*) FROM Setor WHERE EstadioID = {id}) + (SELECT COUNT(*) FROM Jogo WHERE EstadioID = {id}) AS Value")
-            .AsEnumerable()
-            .First() > 0;
+        _contexto.Setores.Any(s => s.EstadioID == id)
+        || _contexto.Jogos.Any(j => j.EstadioID == id);
 
     public void Adicionar(Estadio estadio)
     {
