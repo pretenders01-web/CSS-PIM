@@ -12,12 +12,12 @@ var connectionString = builder.Configuration.GetConnectionString("Padrao")
 
 // ---------- Injeção de dependência ----------
 // Esta é a LISTA DE MONTAGEM do sistema. Cada linha ensina o ASP.NET Core a
-// criar uma peça. Depois, quando um controller pede um ClienteNegocio no
+// criar uma peça. Depois, quando um controller pede um EstadioNegocio no
 // construtor, o ASP.NET monta a cadeia inteira sozinho:
 //
-//   ClientesController  pede  ClienteNegocio
-//   ClienteNegocio      pede  IClienteRepositorio  -> recebe um ClienteRepositorio
-//   ClienteRepositorio  pede  AppDbContext         -> recebe com a connection string
+//   EstadiosController  pede  EstadioNegocio
+//   EstadioNegocio      pede  IEstadioRepositorio  -> recebe um EstadioRepositorio
+//   EstadioRepositorio  pede  AppDbContext         -> recebe com a connection string
 //
 // Ninguém escreve "new" para essas classes. Explicação passo a passo, com os
 // erros mais comuns: INJECAO-DE-DEPENDENCIA.md, na pasta da solution.
@@ -28,12 +28,12 @@ var connectionString = builder.Configuration.GetConnectionString("Padrao")
 //    e esta connection string".
 builder.Services.AddDbContext<AppDbContext>(opcoes => opcoes.UseSqlServer(connectionString));
 
-// 2) O repositório: "quando alguém pedir um IClienteRepositorio (a interface),
-//    entregue um ClienteRepositorio (a classe)".
-builder.Services.AddScoped<IClienteRepositorio, ClienteRepositorio>();
+// 2) O repositório: "quando alguém pedir um IEstadioRepositorio (a interface),
+//    entregue um EstadioRepositorio (a classe)".
+builder.Services.AddScoped<IEstadioRepositorio, EstadioRepositorio>();
 
-// 3) O negócio: "quando alguém pedir um ClienteNegocio, crie um".
-builder.Services.AddScoped<ClienteNegocio>();
+// 3) O negócio: "quando alguém pedir um EstadioNegocio, crie um".
+builder.Services.AddScoped<EstadioNegocio>();
 
 // AddScoped = um objeto novo para cada requisição (cada clique na Web, cada chamada
 // da API), jogado fora quando a resposta sai. O AddDbContext funciona do mesmo jeito:
