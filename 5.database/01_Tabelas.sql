@@ -158,6 +158,7 @@ CREATE TABLE [dbo].[Usuario](
 	[CPF] [varchar](14) NULL,
 	[DataCadastro] [datetime] NULL,
 	[Ativo] [bit] NULL,
+	[Perfil] [varchar](20) NOT NULL,
 PRIMARY KEY CLUSTERED 
 (
 	[UsuarioID] ASC

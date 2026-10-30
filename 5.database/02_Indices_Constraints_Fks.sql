@@ -51,6 +51,8 @@ ALTER TABLE [dbo].[Usuario] ADD  DEFAULT (getdate()) FOR [DataCadastro]
 GO
 ALTER TABLE [dbo].[Usuario] ADD  DEFAULT ((1)) FOR [Ativo]
 GO
+ALTER TABLE [dbo].[Usuario] ADD CONSTRAINT [DF_Usuario_Perfil] DEFAULT ('CLIENTE') FOR [Perfil]
+GO
 ALTER TABLE [dbo].[Venda] ADD  DEFAULT (getdate()) FOR [DataVenda]
 GO
 ALTER TABLE [dbo].[Venda] ADD  DEFAULT ('PENDENTE') FOR [StatusPagamento]
@@ -117,4 +119,6 @@ GO
 ALTER TABLE [dbo].[Setor]  WITH CHECK ADD CHECK  (([Capacidade]>(0)))
 GO
 ALTER TABLE [dbo].[Venda]  WITH CHECK ADD CHECK  (([StatusPagamento]='ESTORNADO' OR [StatusPagamento]='CANCELADO' OR [StatusPagamento]='APROVADO' OR [StatusPagamento]='PENDENTE'))
+GO
+ALTER TABLE [dbo].[Usuario]  WITH CHECK ADD CONSTRAINT [CK_Usuario_Perfil] CHECK  (([Perfil]='ADMIN' OR [Perfil]='CLIENTE'))
 GO
