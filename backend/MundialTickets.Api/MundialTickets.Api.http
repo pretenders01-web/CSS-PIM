@@ -1,0 +1,71 @@
+# Arquivo de teste da API (alternativa à tela do Scalar, em /scalar).
+# Com a Api rodando, clique em "Enviar solicitação" (Visual Studio) ou
+# "Send Request" (VS Code com a extensão REST Client) em cima de cada chamada.
+# A resposta abre ao lado, com o código HTTP e o JSON devolvido.
+# Rode na ordem: cadastrar, listar, alterar, buscar, excluir.
+
+@MundialTickets.Api_HostAddress = http://localhost:5218
+
+### Cadastrar um cliente (espera 201 Created)
+POST {{MundialTickets.Api_HostAddress}}/api/clientes
+Content-Type: application/json
+
+{
+  "nome": "Ana Souza",
+  "email": "ana@exemplo.com",
+  "cpf": "123.456.789-09"
+}
+
+### Cadastrar com o mesmo e-mail (espera 400, regra de negócio)
+POST {{MundialTickets.Api_HostAddress}}/api/clientes
+Content-Type: application/json
+
+{
+  "nome": "Outra Pessoa",
+  "email": "ana@exemplo.com",
+  "cpf": "111.222.333-44"
+}
+
+### Cadastrar com campos vazios (espera 400, validação do DTO)
+POST {{MundialTickets.Api_HostAddress}}/api/clientes
+Content-Type: application/json
+
+{
+  "nome": "",
+  "email": "isto-nao-e-email",
+  "cpf": ""
+}
+
+### Listar todos (espera 200)
+GET {{MundialTickets.Api_HostAddress}}/api/clientes
+Accept: application/json
+
+### Obter um cliente pelo id (espera 200; troque o 1 por um id que exista)
+GET {{MundialTickets.Api_HostAddress}}/api/clientes/1
+Accept: application/json
+
+### Obter um id que não existe (espera 404)
+GET {{MundialTickets.Api_HostAddress}}/api/clientes/9999
+Accept: application/json
+
+### Alterar o cliente 1 (espera 204 No Content)
+PUT {{MundialTickets.Api_HostAddress}}/api/clientes/1
+Content-Type: application/json
+
+{
+  "nome": "Ana Souza Silva",
+  "email": "ana@exemplo.com",
+  "cpf": "123.456.789-09",
+  "ativo": true
+}
+
+### Buscar por nome pela stored procedure (espera 200)
+GET {{MundialTickets.Api_HostAddress}}/api/clientes/buscar?nome=silva
+Accept: application/json
+
+### Excluir o cliente 1 (espera 204; chamando de novo, 404)
+DELETE {{MundialTickets.Api_HostAddress}}/api/clientes/1
+
+### Documento OpenAPI gerado (espera 200, um JSON com todos os endpoints)
+GET {{MundialTickets.Api_HostAddress}}/openapi/v1.json
+Accept: application/json
