@@ -56,21 +56,35 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE   TRIGGER [dbo].[trg_ItemVenda_UpdateValorTotal] ON [dbo].[ItemVenda]
+CREATE TRIGGER [dbo].[trg_ItemVenda_UpdateValorTotal]
+ON [dbo].[ItemVenda]
 AFTER INSERT, DELETE
 AS
 BEGIN
     SET NOCOUNT ON;
-    DECLARE @VendaID INT;
-    IF EXISTS (SELECT 1 FROM inserted)
-        SET @VendaID = (SELECT TOP 1 VendaID FROM inserted);
-    ELSE
-        SET @VendaID = (SELECT TOP 1 VendaID FROM deleted);
-    
-    UPDATE Venda
-    SET ValorTotal = (SELECT ISNULL(SUM(PrecoUnitario), 0) FROM ItemVenda WHERE VendaID = @VendaID)
-    WHERE VendaID = @VendaID;
+
+    -- Identificar todas as vendas afetadas
+    ;WITH VendasAfetadas AS
+    (
+        SELECT VendaID FROM inserted
+        UNION
+        SELECT VendaID FROM deleted
+    )
+
+    -- Recalcular o valor total de cada venda
+    UPDATE v
+    SET ValorTotal = ISNULL(
+        (
+            SELECT SUM(iv.PrecoUnitario)
+            FROM dbo.ItemVenda AS iv
+            WHERE iv.VendaID = v.VendaID
+        ), 0
+    )
+    FROM dbo.Venda AS v
+    INNER JOIN VendasAfetadas AS va
+        ON va.VendaID = v.VendaID;
 END;
+
 GO
 ALTER TABLE [dbo].[ItemVenda] ENABLE TRIGGER [trg_ItemVenda_UpdateValorTotal]
 GO
