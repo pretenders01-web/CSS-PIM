@@ -36,7 +36,8 @@ BEGIN
     IF EXISTS (
         SELECT 1 FROM inserted i
         INNER JOIN Ingresso ing ON i.IngressoID = ing.IngressoID
-        WHERE ing.Status <> 'DISPONIVEL'
+        WHERE ing.Status IS NULL
+   	 OR ing.Status <> 'DISPONIVEL'
     )
     BEGIN
         RAISERROR('Um ou mais ingressos não estão disponíveis para venda.', 16, 1);
