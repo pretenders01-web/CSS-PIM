@@ -1,13 +1,16 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MundialTickets.Modelos.Constantes;
 using MundialTickets.Modelos.Dtos;
 using MundialTickets.Negocio;
 
 namespace MundialTickets.Api.Controllers;
 
-// Endpoints REST consumidos pelo aplicativo Flutter.
-// O controller só recebe a requisição, chama o Negocio e escolhe o código HTTP.
+// Administração dos estádios: só o perfil ADMIN entra. O controller só recebe a requisição,
+// chama o Negocio e escolhe o código HTTP; as regras que falham viram "400" no filtro geral.
 [ApiController]
 [Route("api/[controller]")]
+[Authorize(Roles = PerfilUsuario.Admin)]
 public class EstadiosController : ControllerBase
 {
     private readonly EstadioNegocio _negocio;
@@ -38,15 +41,8 @@ public class EstadiosController : ControllerBase
     [HttpPost]
     public ActionResult<EstadioDto> Cadastrar(EstadioSalvarDto dto)
     {
-        try
-        {
-            var estadio = _negocio.Cadastrar(dto.ParaEstadio());
-            return CreatedAtAction(nameof(Obter), new { id = estadio.EstadioID }, EstadioDto.De(estadio));
-        }
-        catch (RegraDeNegocioException ex)
-        {
-            return BadRequest(new { erro = ex.Message });
-        }
+        var estadio = _negocio.Cadastrar(dto.ParaEstadio());
+        return CreatedAtAction(nameof(Obter), new { id = estadio.EstadioID }, EstadioDto.De(estadio));
     }
 
     // PUT api/estadios/5   → 204 No Content
@@ -55,28 +51,12 @@ public class EstadiosController : ControllerBase
     {
         if (_negocio.ObterPorId(id) is null) return NotFound();
 
-        try
-        {
-            _negocio.Atualizar(dto.ParaEstadio(id));
-            return NoContent();
-        }
-        catch (RegraDeNegocioException ex)
-        {
-            return BadRequest(new { erro = ex.Message });
-        }
+        _negocio.Atualizar(dto.ParaEstadio(id));
+        return NoContent();
     }
 
     // DELETE api/estadios/5   → 204 No Content (400 se tiver setores ou jogos)
     [HttpDelete("{id:int}")]
-    public IActionResult Remover(int id)
-    {
-        try
-        {
-            return _negocio.Remover(id) ? NoContent() : NotFound();
-        }
-        catch (RegraDeNegocioException ex)
-        {
-            return BadRequest(new { erro = ex.Message });
-        }
-    }
+    public IActionResult Remover(int id) =>
+        _negocio.Remover(id) ? NoContent() : NotFound();
 }

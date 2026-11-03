@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using MundialTickets.Modelos.Pagamentos;
 using MundialTickets.Negocio;
 using MundialTickets.Repositorio;
 using MundialTickets.Repositorio.Contexto;
@@ -28,20 +29,41 @@ var connectionString = builder.Configuration.GetConnectionString("Padrao")
 //    e esta connection string".
 builder.Services.AddDbContext<AppDbContext>(opcoes => opcoes.UseSqlServer(connectionString));
 
-// 2) O repositório: "quando alguém pedir um IEstadioRepositorio (a interface),
-//    entregue um EstadioRepositorio (a classe)".
+// 2) Os repositórios: "quando alguém pedir uma interface (por exemplo, IEstadioRepositorio),
+//    entregue a classe dela (EstadioRepositorio)". Um par de linhas por assunto.
 builder.Services.AddScoped<IEstadioRepositorio, EstadioRepositorio>();
+builder.Services.AddScoped<ISetorRepositorio, SetorRepositorio>();
+builder.Services.AddScoped<IAssentoRepositorio, AssentoRepositorio>();
+builder.Services.AddScoped<IJogoRepositorio, JogoRepositorio>();
+builder.Services.AddScoped<IIngressoRepositorio, IngressoRepositorio>();
+builder.Services.AddScoped<IUsuarioRepositorio, UsuarioRepositorio>();
+builder.Services.AddScoped<IVendaRepositorio, VendaRepositorio>();
 
-// 3) O negócio: "quando alguém pedir um EstadioNegocio, crie um".
+// 3) Serviços de apoio SEM ESTADO (não guardam nada entre uma chamada e outra), por isso
+//    AddSingleton: uma única instância serve o sistema inteiro.
+//    - IHashDeSenha: gera e confere o hash das senhas.
+//    - IMetodoPagamento: as três formas de pagamento. Registrar várias classes para o mesmo
+//      contrato faz o VendaNegocio, que pede um IEnumerable<IMetodoPagamento>, receber as três.
+builder.Services.AddSingleton<IHashDeSenha, HashDeSenha>();
+builder.Services.AddSingleton<IMetodoPagamento, PagamentoPix>();
+builder.Services.AddSingleton<IMetodoPagamento, PagamentoCartao>();
+builder.Services.AddSingleton<IMetodoPagamento, PagamentoBoleto>();
+
+// 4) Os negócios: "quando alguém pedir um VendaNegocio, crie um".
 builder.Services.AddScoped<EstadioNegocio>();
+builder.Services.AddScoped<SetorNegocio>();
+builder.Services.AddScoped<AssentoNegocio>();
+builder.Services.AddScoped<JogoNegocio>();
+builder.Services.AddScoped<IngressoNegocio>();
+builder.Services.AddScoped<UsuarioNegocio>();
+builder.Services.AddScoped<VendaNegocio>();
 
 // AddScoped = um objeto novo para cada requisição (cada clique na Web, cada chamada
 // da API), jogado fora quando a resposta sai. O AddDbContext funciona do mesmo jeito:
 // cada requisição ganha o seu contexto, e a conexão é fechada quando ele é descartado.
 
-// Cada entidade nova ganha duas linhas aqui, uma de repositório e uma de negócio:
-// builder.Services.AddScoped<IIngressoRepositorio, IngressoRepositorio>();
-// builder.Services.AddScoped<IngressoNegocio>();
+// Peça nova = uma linha nova aqui, nos DOIS Program.cs. Se esquecer uma, o sistema não
+// sobe e mostra "Unable to resolve service for type ...".
 // --------------------------------------------
 
 builder.Services.AddControllersWithViews();

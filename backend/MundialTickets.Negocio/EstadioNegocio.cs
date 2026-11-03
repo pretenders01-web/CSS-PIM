@@ -9,12 +9,14 @@ namespace MundialTickets.Negocio;
 public class EstadioNegocio
 {
     private readonly IEstadioRepositorio _repositorio;
+    private readonly ISetorRepositorio _setores;
 
-    // INJEÇÃO DE DEPENDÊNCIA: esta classe precisa de um repositório para trabalhar,
-    // mas não cria um com "new". Ela PEDE no construtor, e o ASP.NET Core entrega.
-    public EstadioNegocio(IEstadioRepositorio repositorio)
+    // INJEÇÃO DE DEPENDÊNCIA: esta classe precisa de repositórios para trabalhar,
+    // mas não cria nenhum com "new". Ela PEDE no construtor, e o ASP.NET Core entrega.
+    public EstadioNegocio(IEstadioRepositorio repositorio, ISetorRepositorio setores)
     {
         _repositorio = repositorio;
+        _setores = setores;
     }
 
     public List<Estadio> Listar() => _repositorio.Listar();
@@ -37,6 +39,13 @@ public class EstadioNegocio
 
         Normalizar(estadio);
         Validar(estadio, ignorarId: estadio.EstadioID);
+
+        // A capacidade total não pode ficar menor que a soma das capacidades dos setores do estádio
+        // (a mesma conta que o SetorNegocio faz ao cadastrar um setor).
+        var somaDosSetores = _setores.SomaCapacidadeDoEstadio(estadio.EstadioID);
+        if (estadio.CapacidadeTotal < somaDosSetores)
+            throw new RegraDeNegocioException(
+                $"A capacidade total ({estadio.CapacidadeTotal}) não pode ser menor que a soma das capacidades dos setores ({somaDosSetores}).");
 
         existente.Nome = estadio.Nome;
         existente.Cidade = estadio.Cidade;

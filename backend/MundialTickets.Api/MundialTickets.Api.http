@@ -1,55 +1,227 @@
 # Arquivo de teste da API (alternativa à tela do Scalar, em /scalar).
-# Com a Api rodando, clique em "Enviar solicitação" (Visual Studio) ou
-# "Send Request" (VS Code com a extensão REST Client) em cima de cada chamada.
-# Rode na ordem: cadastrar, listar, alterar, excluir.
+# Com a Api rodando, clique em "Enviar solicitação" (Visual Studio) ou "Send Request"
+# (VS Code com a extensão REST Client) em cima de cada chamada, de cima para baixo.
+# A resposta abre ao lado, com o código HTTP e o JSON devolvido.
+#
+# O login guarda o token em @token (ver "# @name login"); as chamadas que exigem login já o usam.
+# As chamadas de ADMINISTRAÇÃO só funcionam com um usuário de perfil ADMIN: cadastre-se
+# normalmente e promova a conta no banco, depois entre de novo (o perfil vai dentro do token):
+#   UPDATE Usuario SET Perfil = 'ADMIN' WHERE Email = 'ana@exemplo.com';
 
 @MundialTickets.Api_HostAddress = http://localhost:5218
 
-### Cadastrar um estádio (espera 201 Created)
-POST {{MundialTickets.Api_HostAddress}}/api/estadios
+###############################################################################
+# 1. Sem login
+###############################################################################
+
+### Listar os jogos (espera 200)
+GET {{MundialTickets.Api_HostAddress}}/api/jogos
+
+### Um jogo (espera 200 ou 404)
+GET {{MundialTickets.Api_HostAddress}}/api/jogos/1
+
+### Os setores do jogo, com preço e quantos assentos restam (espera 200)
+GET {{MundialTickets.Api_HostAddress}}/api/jogos/1/setores
+
+### Os assentos disponíveis de um setor do jogo, já com o id do ingresso (espera 200)
+GET {{MundialTickets.Api_HostAddress}}/api/jogos/1/setores/1/assentos
+
+### Cadastrar um usuário (espera 201; a conta nasce sempre como CLIENTE)
+POST {{MundialTickets.Api_HostAddress}}/api/usuarios
 Content-Type: application/json
 
 {
-  "nome": "MetLife Stadium",
-  "cidade": "East Rutherford",
-  "capacidadeTotal": 82500
+  "nome": "Ana Souza",
+  "email": "ana@exemplo.com",
+  "cpf": "123.456.789-09",
+  "senha": "senha123",
+  "confirmarSenha": "senha123"
 }
 
-### Cadastrar o mesmo estádio de novo (espera 400, regra de negócio)
-POST {{MundialTickets.Api_HostAddress}}/api/estadios
+### Cadastrar com o mesmo e-mail (espera 400, regra de negócio)
+POST {{MundialTickets.Api_HostAddress}}/api/usuarios
 Content-Type: application/json
 
 {
-  "nome": "MetLife Stadium",
-  "cidade": "East Rutherford",
-  "capacidadeTotal": 82500
+  "nome": "Outra Pessoa",
+  "email": "ana@exemplo.com",
+  "senha": "abc",
+  "confirmarSenha": "abc"
 }
 
-### Cadastrar com campos inválidos (espera 400, validação do DTO)
-POST {{MundialTickets.Api_HostAddress}}/api/estadios
+### Cadastrar com senhas diferentes (espera 400, validação do DTO)
+POST {{MundialTickets.Api_HostAddress}}/api/usuarios
 Content-Type: application/json
 
 {
-  "nome": "",
-  "cidade": "",
-  "capacidadeTotal": 0
+  "nome": "Outra Pessoa",
+  "email": "outra@exemplo.com",
+  "senha": "abc",
+  "confirmarSenha": "xyz"
 }
 
-### Listar todos (espera 200)
+###############################################################################
+# 2. Login
+###############################################################################
+
+### Entrar com a senha errada (espera 401)
+POST {{MundialTickets.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana@exemplo.com",
+  "senha": "errada"
+}
+
+### Entrar (espera 200 com o token). Rode esta antes das chamadas abaixo.
+# @name login
+POST {{MundialTickets.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ana@exemplo.com",
+  "senha": "senha123"
+}
+
+@token = {{login.response.body.$.token}}
+
+###############################################################################
+# 3. Usuário logado (comprador)
+###############################################################################
+
+### Sem o token (espera 401)
+GET {{MundialTickets.Api_HostAddress}}/api/usuarios/me
+
+### Meus dados (espera 200)
+GET {{MundialTickets.Api_HostAddress}}/api/usuarios/me
+Authorization: Bearer {{token}}
+
+### Alterar meus dados (espera 200). Nova senha é opcional.
+PUT {{MundialTickets.Api_HostAddress}}/api/usuarios/me
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "nome": "Ana Souza Lima",
+  "email": "ana@exemplo.com",
+  "cpf": "123.456.789-09"
+}
+
+### Comprar dois ingressos com Pix (espera 201, com um código de QR por ingresso).
+# Troque os ids pelos "ingressoId" devolvidos em /api/jogos/1/setores/1/assentos.
+# Formas de pagamento: PIX, Cartao ou Boleto (o Boleto não é aprovado na hora e devolve 400).
+POST {{MundialTickets.Api_HostAddress}}/api/vendas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "ingressoIds": [1, 2],
+  "metodoPagamento": "PIX"
+}
+
+### Comprar de novo o mesmo assento (espera 400: o assento não está mais disponível)
+POST {{MundialTickets.Api_HostAddress}}/api/vendas
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "ingressoIds": [1],
+  "metodoPagamento": "PIX"
+}
+
+### Meus ingressos, com o código do QR (espera 200)
+GET {{MundialTickets.Api_HostAddress}}/api/vendas/meus-ingressos
+Authorization: Bearer {{token}}
+
+### Desativar a minha conta (espera 204). Depois disso o login é recusado.
+# DELETE {{MundialTickets.Api_HostAddress}}/api/usuarios/me
+# Authorization: Bearer {{token}}
+
+###############################################################################
+# 4. Administração (só perfil ADMIN; com um comprador as chamadas devolvem 403)
+###############################################################################
+
+### Listar os estádios (espera 200)
 GET {{MundialTickets.Api_HostAddress}}/api/estadios
+Authorization: Bearer {{token}}
 
-### Obter um estádio (espera 200 ou 404; troque o 1 pelo id devolvido no cadastro)
-GET {{MundialTickets.Api_HostAddress}}/api/estadios/1
-
-### Alterar (espera 204 No Content)
-PUT {{MundialTickets.Api_HostAddress}}/api/estadios/1
+### Cadastrar um estádio (espera 201)
+POST {{MundialTickets.Api_HostAddress}}/api/estadios
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "nome": "MetLife Stadium",
-  "cidade": "East Rutherford",
-  "capacidadeTotal": 82000
+  "nome": "Estádio de Teste",
+  "cidade": "Cidade de Teste",
+  "capacidadeTotal": 50
 }
 
-### Excluir (espera 204 ou 404)
-DELETE {{MundialTickets.Api_HostAddress}}/api/estadios/1
+### Cadastrar um setor do estádio (troque o estadioID pelo id devolvido acima; espera 201)
+POST {{MundialTickets.Api_HostAddress}}/api/setores
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "estadioID": 8,
+  "nomeSetor": "Setor de Teste",
+  "capacidade": 4,
+  "precoBase": 80.00
+}
+
+### Criar assentos em lote (espera 201; cria T01, T02 e T03)
+POST {{MundialTickets.Api_HostAddress}}/api/assentos/lote
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "setorID": 22,
+  "quantidade": 3,
+  "prefixo": "T"
+}
+
+### Listar os assentos de um setor (espera 200)
+GET {{MundialTickets.Api_HostAddress}}/api/assentos?setorId=22
+Authorization: Bearer {{token}}
+
+### Cadastrar um jogo (espera 201)
+POST {{MundialTickets.Api_HostAddress}}/api/jogos
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "estadioID": 8,
+  "dataHora": "2032-01-01T15:00:00",
+  "timeA": "Time A",
+  "timeB": "Time B",
+  "fase": "Teste"
+}
+
+### Gerar os ingressos do jogo, um por assento (espera 200 com a quantidade criada; repetir devolve zero)
+POST {{MundialTickets.Api_HostAddress}}/api/ingressos/gerar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "jogoID": 7
+}
+
+### Listar os ingressos de um jogo, filtrando pela situação (espera 200)
+GET {{MundialTickets.Api_HostAddress}}/api/ingressos?jogoId=7&status=DISPONIVEL
+Authorization: Bearer {{token}}
+
+### Alterar o preço de um ingresso disponível (espera 204)
+PUT {{MundialTickets.Api_HostAddress}}/api/ingressos/151/preco
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "precoFinal": 95.50
+}
+
+### Cancelar um ingresso (espera 200; um ingresso vendido não pode ser cancelado)
+POST {{MundialTickets.Api_HostAddress}}/api/ingressos/151/cancelar
+Authorization: Bearer {{token}}
+
+### Excluir um ingresso (espera 204; 400 se já foi vendido)
+DELETE {{MundialTickets.Api_HostAddress}}/api/ingressos/151
+Authorization: Bearer {{token}}

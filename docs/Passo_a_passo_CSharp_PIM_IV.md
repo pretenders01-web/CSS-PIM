@@ -16,8 +16,8 @@ Marque cada fase aqui quando todos os passos dela (seção 5) estiverem concluí
 - [x] **Fase 1:** Modelos
 - [x] **Fase 2:** Repositório
 - [x] **Fase 3:** Negócio
-- [ ] **Fase 4:** injeção de dependência
-- [ ] **Fase 5:** Api
+- [x] **Fase 4:** injeção de dependência
+- [x] **Fase 5:** Api
 - [ ] **Fase 6:** Web
 - [ ] **Fase 7:** fechamento e evidências do manual
 
@@ -220,21 +220,29 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
 - **Criação de assentos em lote:** cria `prefixo` + número com dois dígitos (A01, A02...), ou mais se a quantidade pedir. O prefixo é opcional (padrão "A", só letras e números), os números que o setor já tem são pulados, e ou entram todos ou nenhum.
 - **Geração de ingressos:** pode ser repetida sem duplicar (devolve quantos criou, inclusive zero). Recusa estádio sem setores, estádio sem assentos e setor com preço base zero.
 - **Compra:** a forma de pagamento é reconhecida sem diferenciar maiúsculas e é gravada com o nome padrão (`PIX`, `Cartao`, `Boleto`). Se o banco recusar a compra depois de todas as conferências (por exemplo, outro comprador levou o assento), a `OperacaoNoBancoException` vira uma `RegraDeNegocioException` com a mesma mensagem e o erro técnico em `InnerException`.
-- **Limitação conhecida:** o `EstadioNegocio` (que já existia) não confere a capacidade total do estádio contra a soma dos setores quando o estádio é alterado, então dá para baixar a capacidade abaixo da soma. Não foi corrigido para não quebrar a Api atual, que só registra o repositório de estádio; resolver na Fase 4, quando todos os repositórios forem registrados.
+- **Limitação do `EstadioNegocio` (resolvida na Fase 4):** ele não conferia a capacidade total do estádio contra a soma dos setores quando o estádio era alterado. Agora o `EstadioNegocio` recebe também o `ISetorRepositorio` e recusa a alteração que deixaria a capacidade total abaixo da soma.
 - Testado contra o banco real, com os dados de teste, por um programa fora do repositório (140 verificações, todas dentro de uma transação desfeita). O banco ficou com os dados de teste e sem usuários, vendas, itens nem QR codes.
 
 ### Fase 4: injeção de dependência
 
-- [ ] **4.1** Para cada repositório e cada classe de negócio novos, acrescentar o `AddScoped` **nos dois** `Program.cs` (Web e Api), mantendo os blocos iguais. A ausência de um deles faz o sistema não subir (erros descritos no `INJECAO-DE-DEPENDENCIA.md`).
-- [ ] **4.2** *Pronto quando:* a Api e a Web sobem sem a mensagem `Unable to resolve service`.
+- [x] **4.1** Para cada repositório e cada classe de negócio novos, acrescentar o `AddScoped` **nos dois** `Program.cs` (Web e Api), mantendo os blocos iguais. A ausência de um deles faz o sistema não subir (erros descritos no `INJECAO-DE-DEPENDENCIA.md`).
+- [x] **4.2** *Pronto quando:* a Api e a Web sobem sem a mensagem `Unable to resolve service`.
+**Notas da Fase 4 (decisões tomadas durante a execução):**
+
+- **Os registros ficam escritos, linha por linha, no `Program.cs` da Web e da Api** (como no template e como o manual descreve), em um bloco **idêntico** nos dois: 1 `AddDbContext`, 7 repositórios, o hash e as 3 formas de pagamento, e 7 negócios (19 registros). Os dois arquivos de projeto continuam respeitando a direção do manual: a Api referencia só Modelos e Negócio, e a Web só o Negócio.
+- **Tempo de vida:** repositórios, negócios e o contexto do banco são `AddScoped` (um por requisição). O hash de senha e as formas de pagamento não guardam estado, por isso são `AddSingleton`. As três formas de pagamento são registradas para o mesmo contrato `IMetodoPagamento`, e é isso que faz o `VendaNegocio` receber as três.
+- **`EstadioNegocio` passou a depender também do `ISetorRepositorio`**, para conferir a capacidade total contra a soma dos setores.
+- **Máquinas sem o .NET 9:** esta máquina só tem o .NET 10. Os projetos Web e Api do template já têm a opção `RollForward`, que usa o .NET 10 quando o 9 não está instalado. Um projeto novo precisaria dela também.
+- **Verificação (4.2):** (1) a Api e a Web foram iniciadas em Desenvolvimento, onde o ASP.NET valida todo o contêiner ao subir, sem nenhum "Unable to resolve service"; (2) o bloco **real** do `Program.cs` foi montado em um programa de teste (22 verificações): todas as classes de Negócio e de Repositório resolveram, o `VendaNegocio` recebeu as 3 formas de pagamento e uma compra completa funcionou só com objetos criados pelo contêiner; (3) na Api rodando, o `PUT` do estádio com capacidade abaixo da soma dos setores devolveu 400 com a mensagem da regra, e com a capacidade original devolveu 204.
+- O `INJECAO-DE-DEPENDENCIA.md` da pasta `backend` ainda descreve o exemplo do `Cliente`; ele é reescrito no passo 7.1.
 
 ### Fase 5: Api (`MundialTickets.Api`)
 
-- [ ] **5.1** Um controller por área, no molde do `EstadiosController`: só DTOs, códigos HTTP corretos (200, 201 com `Location`, 204, 400, 401, 403, 404) e `catch` de `RegraDeNegocioException` devolvendo 400.
-- [ ] **5.2** Adicionar o pacote `Microsoft.AspNetCore.Authentication.JwtBearer` na Api *(versão a confirmar, premissa 4.9)*.
-- [ ] **5.3** `POST /api/auth/login`: valida pelo `UsuarioNegocio.Autenticar` e devolve um JWT que leva o `Perfil` do usuário como *claim* de papel (role). A chave de assinatura, o emissor e a validade ficam no `appsettings.json`, **nunca no código**.
-- [ ] **5.4** Configurar autenticação e autorização no `Program.cs` (`AddAuthentication().AddJwtBearer(...)` e `UseAuthentication()` antes de `UseAuthorization()`).
-- [ ] **5.5** Endpoints. O `UsuarioID` vem **sempre do token**, nunca do corpo da requisição:
+- [x] **5.1** Um controller por área, no molde do `EstadiosController`: só DTOs, códigos HTTP corretos (200, 201 com `Location`, 204, 400, 401, 403, 404) e `catch` de `RegraDeNegocioException` devolvendo 400.
+- [x] **5.2** Adicionar o pacote `Microsoft.AspNetCore.Authentication.JwtBearer` na Api *(versão a confirmar, premissa 4.9)*.
+- [x] **5.3** `POST /api/auth/login`: valida pelo `UsuarioNegocio.Autenticar` e devolve um JWT que leva o `Perfil` do usuário como *claim* de papel (role). A chave de assinatura, o emissor e a validade ficam no `appsettings.json`, **nunca no código**.
+- [x] **5.4** Configurar autenticação e autorização no `Program.cs` (`AddAuthentication().AddJwtBearer(...)` e `UseAuthentication()` antes de `UseAuthorization()`).
+- [x] **5.5** Endpoints. O `UsuarioID` vem **sempre do token**, nunca do corpo da requisição:
 
   | Verbo e rota | Acesso | Função |
   |---|---|---|
@@ -248,9 +256,22 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
   | `GET /api/vendas/meus-ingressos` | logado | ingressos comprados, com o QR |
   | `GET`, `POST`, `PUT`, `DELETE /api/estadios`, `/setores`, `/assentos`, `/jogos`, `/ingressos` | **`ADMIN`** | CRUD de administração (e, em `/assentos` e `/ingressos`, a criação em lote e o cancelamento) |
 
-- [ ] **5.6** Configurar **CORS** para o app Flutter.
-- [ ] **5.7** Ajustar o OpenAPI/Scalar para aceitar o token e atualizar o arquivo `MundialTickets.Api.http` com as novas chamadas.
-- [ ] **5.8** *Pronto quando:* no Scalar ou no `.http` é possível cadastrar usuário, entrar, listar jogos, ver setores e assentos, comprar e ver "meus ingressos" com o QR. Testar também as falhas: assento já vendido, lista vazia, sem token = 401 e token de `CLIENTE` nas rotas de `ADMIN` = 403.
+- [x] **5.6** Configurar **CORS** para o app Flutter.
+- [x] **5.7** Ajustar o OpenAPI/Scalar para aceitar o token e atualizar o arquivo `MundialTickets.Api.http` com as novas chamadas.
+- [x] **5.8** *Pronto quando:* no Scalar ou no `.http` é possível cadastrar usuário, entrar, listar jogos, ver setores e assentos, comprar e ver "meus ingressos" com o QR. Testar também as falhas: assento já vendido, lista vazia, sem token = 401 e token de `CLIENTE` nas rotas de `ADMIN` = 403.
+**Notas da Fase 5 (decisões tomadas durante a execução):**
+
+- **Pacote:** `Microsoft.AspNetCore.Authentication.JwtBearer` na versão flutuante `9.*` (resolveu em 9.0.22), como o template faz com o EF Core.
+- **O token** leva o id, o nome, o e-mail e o **perfil** do usuário, assinado com HMAC-SHA256, e vale 120 minutos. O `GeradorDeToken` e a configuração do JWT, do CORS e do OpenAPI ficam **só na Api**, em linhas separadas depois do bloco de injeção, que continua idêntico ao da Web.
+- **A chave do JWT está no `appsettings.json`** (64 caracteres aleatórios, gerados para este projeto), como o plano mandou. Isso serve para o trabalho acadêmico; em um sistema real, a chave sairia do repositório (variável de ambiente ou *user secrets*).
+- **Erros de regra viram 400 por um filtro único** (`RegraDeNegocioFiltro`), em vez de um `try/catch` em cada ação. O `EstadiosController` foi reescrito nesse modelo. O login é a exceção: devolve 401, tratado no próprio `AuthController`.
+- **Todas as rotas de administração exigem o perfil `ADMIN`**, inclusive as de estádio, que antes estavam abertas. Só as quatro consultas de jogo (lista, um jogo, setores e assentos disponíveis), o cadastro e o login são públicos. Cadastrar, alterar e excluir jogo são de `ADMIN`.
+- **O perfil mora dentro do token.** Quem é promovido a `ADMIN` precisa entrar de novo: o token antigo continua `CLIENTE` (testado). Uma conta desativada depois do login deixa de servir: `GET /api/usuarios/me` devolve 401 e a compra é recusada pelo Negócio. O token em si não pode ser revogado antes de vencer.
+- **Rotas acrescentadas ao desenho do plano:** `POST /api/assentos/lote`, `POST /api/ingressos/gerar`, `PUT /api/ingressos/{id}/preco`, `POST /api/ingressos/{id}/cancelar`, `GET /api/assentos?setorId=` (o setor é obrigatório) e `GET /api/setores?estadioId=` (filtro opcional). Quatro DTOs novos: `LoginRespostaDto`, `AssentoLoteDto`, `IngressoGerarDto` e `IngressoPrecoDto`.
+- **OpenAPI:** o documento declara o esquema `Bearer` e coloca o cadeado só nas operações protegidas (31 de 37; as 6 públicas ficam sem). O Scalar passa a ter o campo para colar o token.
+- **CORS:** a política `AppMovel` libera qualquer origem. Aplicativo instalado no celular não passa por CORS; ela serve ao Flutter rodando no navegador. Em produção, trocar pela lista de origens permitidas.
+- **Verificação (5.8):** a Api foi iniciada de verdade e exercitada com `curl` contra o banco real, em duas etapas (comprador e administrador): 132 verificações, das quais 131 passaram; a restante foi um erro do próprio roteiro (procurou o cabeçalho `Location` no corpo da resposta, e a verificação seguinte confirmou o cabeçalho). Cobriu o cadastro (inclusive tentar se cadastrar como `ADMIN`), o login, o 401 e o 403, a compra completa com QR, o CRUD de estádio, setor, assento, jogo e ingresso, as exclusões na ordem das chaves estrangeiras e a desativação da conta. Tudo o que o roteiro criou foi desfeito; o banco ficou com os dados de teste.
+- O arquivo `MundialTickets.Api.http` foi reescrito com as chamadas novas, usando o token do login automaticamente.
 
 ### Fase 6: Web (`MundialTickets.Web`)
 
@@ -311,6 +332,7 @@ Um commit por fase concluída (Fases 0 a 7), com mensagens no padrão do histór
 - A trigger `trg_ItemVenda_UpdateValorTotal` tinha o limite de `TOP 1 VendaID` (só recalculava a primeira venda de um INSERT com itens de vendas diferentes). Foi corrigida no banco (commits do Caique de 30 e 31/10) e testada: o INSERT com duas vendas recalcula as duas. O risco deixou de existir.
 - A procedure grava `APROVADO` sem consultar o método de pagamento. O plano contorna isso decidindo no Negócio, sem alterar o banco.
 - Dois compradores escolhendo o mesmo assento ao mesmo tempo: o banco protege (UNIQUE e trigger), mas sem reserva (premissa 4.6) o segundo só descobre ao pagar. A tradução da `SqlException` (passo 2.9) garante uma mensagem clara.
-- Um estádio pode ter a capacidade total reduzida abaixo da soma dos seus setores, porque o `EstadioNegocio` não faz essa conferência (ver as notas da Fase 3).
+- O login da Api não limita tentativas: alguém pode tentar muitas senhas seguidas contra um e-mail. Aceitável no trabalho acadêmico; em produção entrariam bloqueio temporário ou limite de requisições.
+- A chave do JWT está no `appsettings.json` do repositório (ver as notas da Fase 5).
 - O `Perfil` é gravado na tabela e promovido por `UPDATE` manual (premissa 4.4): quem tem acesso ao banco pode se tornar `ADMIN`. É aceitável para o contexto acadêmico.
 - Com uma página por entidade a administração fica com 5 telas, mas o desenho (tabela, formulário e exclusão na mesma página) é código novo, e não cópia do Cliente do template. Se o tempo apertar, a ordem de corte sugerida é: Assento, Ingresso, Setor, Jogo e, por último, Estádio.
