@@ -15,7 +15,7 @@ Marque cada fase aqui quando todos os passos dela (seção 5) estiverem concluí
 - [x] **Fase 0:** preparação e dados de teste
 - [x] **Fase 1:** Modelos
 - [x] **Fase 2:** Repositório
-- [ ] **Fase 3:** Negócio
+- [x] **Fase 3:** Negócio
 - [ ] **Fase 4:** injeção de dependência
 - [ ] **Fase 5:** Api
 - [ ] **Fase 6:** Web
@@ -183,7 +183,7 @@ Convenção: **[BANCO]** = regra que o banco já impõe; **[PROPOSTA]** = escolh
 - **O banco local foi sincronizado com os scripts de 31/10** (procedure com validações e as triggers corrigidas, commits do Caique Moraes). Os scripts `03_Procedure.sql` e `04_Triggers` usam `CREATE`, então a sincronização apagou e recriou a procedure e as 3 triggers (sem vendas no banco). O `04_Triggers` termina com `USE [master]` e `ALTER DATABASE ... SET READ_WRITE`, um rodapé do SSMS que o SQL Server não aceita dentro de uma transação: ao aplicar o script em uma transação, esse rodapé precisa ser pulado. Em uma execução normal no SSMS ele não causa problema.
 - **O Dapper participa da transação aberta no contexto** (`transaction: _contexto.Database.CurrentTransaction`). Sem isso, a chamada da procedure falharia dentro de uma transação do EF.
 - **Não há `AssentoRepositorio` com consultas de disponibilidade**: quem sabe o que está disponível é o `IngressoRepositorio` (`ListarDisponiveis` e `ContarDisponiveisPorSetor`), que só considera ingressos com assento (premissa 4.3).
-- **`ObterPorId` devolve a entidade rastreada** (para o Negócio alterar e chamar `Atualizar`); as listagens usam `AsNoTracking`. O `Usuario.Desativar` usa `ExecuteUpdate` (um UPDATE direto); como não passa pelo rastreador, uma entidade já carregada no mesmo contexto continua com o valor antigo. Em uma requisição web isso não ocorre, porque cada requisição tem o seu contexto.
+- **`ObterPorId` devolve a entidade rastreada** (para o Negócio alterar e chamar `Atualizar`); as listagens usam `AsNoTracking`. O `Usuario.Desativar` carrega o usuário e grava `Ativo = false` pelo rastreador. A primeira versão usava `ExecuteUpdate` (um UPDATE direto), que deixava a entidade já carregada no mesmo contexto ainda "ativa": o teste da Fase 3 mostrou uma conta desativada ainda conseguindo comprar, e foi corrigido.
 - **As chaves estrangeiras do mapeamento usam `OnDelete(Restrict)`**, espelhando o banco (as FKs dele recusam a exclusão, não apagam em cascata).
 - **Os repositórios ainda não estão registrados na injeção de dependência**: isso é a Fase 4.
 - Testado contra o banco real, com os dados de teste carregados, por um programa fora do repositório (75 verificações, todas dentro de transações desfeitas, repetidas depois da sincronização com os scripts do banco de 31/10). Isso incluiu o `HasTrigger`: o EF gravou um `ItemVenda` e as três triggers rodaram. O banco ficou com os dados de teste (7 estádios, 21 setores, 175 assentos, 6 jogos e 150 ingressos) e sem usuários, vendas, itens nem QR codes.
@@ -192,13 +192,13 @@ Convenção: **[BANCO]** = regra que o banco já impõe; **[PROPOSTA]** = escolh
 
 Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioException` com mensagem clara.
 
-- [ ] **3.1** `SetorNegocio` (CRUD): capacidade > 0 **[BANCO]**; nome único por estádio **[BANCO]**; o estádio precisa existir; a soma das capacidades dos setores não deve passar a `CapacidadeTotal` do estádio **[PROPOSTA]**; não excluir setor com assentos ou ingressos **[BANCO]**.
-- [ ] **3.2** `JogoNegocio` (CRUD): estádio existente; (estádio, data e hora) único **[BANCO]**; `TimeA` diferente de `TimeB` **[PROPOSTA]**; não excluir jogo que já tem ingressos **[BANCO]**. Para o comprador: listar os jogos, ordenados por data.
-- [ ] **3.3** `EstadioNegocio`: já existe (capacidade > 0, nome único por cidade, bloqueio de exclusão com vínculos).
-- [ ] **3.4** `AssentoNegocio` (CRUD, premissa 4.2): setor existente; número único por setor **[BANCO]**; o total de assentos do setor não deve passar a `Capacidade` **[PROPOSTA]**; criação em lote de um setor; não excluir assento com ingresso **[BANCO]**.
-- [ ] **3.5** `IngressoNegocio` (CRUD, premissas 4.1 e 4.3): jogo, setor e assento existentes; o assento pertence ao setor e o setor ao estádio do jogo; (jogo, setor, assento) único **[BANCO]**; `PrecoFinal` vem do `PrecoBase` do setor; gerar em lote para um jogo (um ingresso por assento do estádio, sem repetir os que já existem); cancelar; não alterar nem excluir ingresso `VENDIDO` **[BANCO: está em `ItemVenda`]**. Para o comprador: listar os **setores de um jogo com preço e vagas**, e os **assentos disponíveis de um setor**.
-- [ ] **3.6** Hash de senha **[PROPOSTA]**: PBKDF2 com `Rfc2898DeriveBytes.Pbkdf2` (já faz parte do .NET, sem pacote), com sal aleatório, guardando iterações, sal e hash em um único texto que caiba em `varchar(255)`. A senha em texto puro nunca é gravada nem registrada em log.
-- [ ] **3.7** `VendaNegocio.Comprar(usuarioId, ids, metodoPagamento)`. Validar nesta ordem, **antes** de chamar a procedure:
+- [x] **3.1** `SetorNegocio` (CRUD): capacidade > 0 **[BANCO]**; nome único por estádio **[BANCO]**; o estádio precisa existir; a soma das capacidades dos setores não deve passar a `CapacidadeTotal` do estádio **[PROPOSTA]**; não excluir setor com assentos ou ingressos **[BANCO]**.
+- [x] **3.2** `JogoNegocio` (CRUD): estádio existente; (estádio, data e hora) único **[BANCO]**; `TimeA` diferente de `TimeB` **[PROPOSTA]**; não excluir jogo que já tem ingressos **[BANCO]**. Para o comprador: listar os jogos, ordenados por data.
+- [x] **3.3** `EstadioNegocio`: já existe (capacidade > 0, nome único por cidade, bloqueio de exclusão com vínculos).
+- [x] **3.4** `AssentoNegocio` (CRUD, premissa 4.2): setor existente; número único por setor **[BANCO]**; o total de assentos do setor não deve passar a `Capacidade` **[PROPOSTA]**; criação em lote de um setor; não excluir assento com ingresso **[BANCO]**.
+- [x] **3.5** `IngressoNegocio` (CRUD, premissas 4.1 e 4.3): jogo, setor e assento existentes; o assento pertence ao setor e o setor ao estádio do jogo; (jogo, setor, assento) único **[BANCO]**; `PrecoFinal` vem do `PrecoBase` do setor; gerar em lote para um jogo (um ingresso por assento do estádio, sem repetir os que já existem); cancelar; não alterar nem excluir ingresso `VENDIDO` **[BANCO: está em `ItemVenda`]**. Para o comprador: listar os **setores de um jogo com preço e vagas**, e os **assentos disponíveis de um setor**.
+- [x] **3.6** Hash de senha **[PROPOSTA]**: PBKDF2 com `Rfc2898DeriveBytes.Pbkdf2` (já faz parte do .NET, sem pacote), com sal aleatório, guardando iterações, sal e hash em um único texto que caiba em `varchar(255)`. A senha em texto puro nunca é gravada nem registrada em log.
+- [x] **3.7** `VendaNegocio.Comprar(usuarioId, ids, metodoPagamento)`. Validar nesta ordem, **antes** de chamar a procedure:
   1. lista não vazia **[BANCO: a procedure falha com mensagem técnica]**;
   2. sem ids repetidos **[BANCO: UNIQUE em `ItemVenda.IngressoID`]**;
   3. usuário existe e está ativo;
@@ -208,9 +208,20 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
   7. calcular o total pela soma de `PrecoFinal` e chamar `ProcessarPagamento` (simulado);
   8. se aprovado, chamar `RealizarCompra` do repositório e devolver os dados da compra. Se não aprovado (por exemplo, Boleto), **nada é gravado** e o usuário recebe um aviso. Essa escolha mantém a procedure intacta, porque ela sempre grava `APROVADO`.
   Também: "meus ingressos" de um usuário, com o código do QR.
-- [ ] **3.8** `UsuarioNegocio` (CRUD do próprio usuário): **cadastrar** com e-mail único **[BANCO]**, nome e senha obrigatórios e confirmação de senha conferida, **sempre com o perfil `CLIENTE`** (nunca aceita `ADMIN` vindo da tela ou do corpo da requisição); CPF é opcional, como no banco, e quando informado só com dígitos e com 11 **[PROPOSTA, no molde do `Cliente` do template]**; **autenticar** (confere o hash e recusa usuário inativo); **obter** e **alterar** os próprios dados; **excluir conta** como desativação, `Ativo = 0` (premissa 4.5). Promover alguém a `ADMIN` não é função do sistema (premissa 4.4).
-- [ ] **3.9** Entregar a POO que o manual cobra: encapsulamento (propriedades e regras nas classes), polimorfismo (`IMetodoPagamento` com as 3 formas) e herança (classe base abstrata do passo 1.3).
-- [ ] **3.10** *Pronto quando:* o build passa e nenhuma regra está em controller ou view. Cada falha da tabela da seção 3 vira uma mensagem clara, **sem chegar à procedure**.
+- [x] **3.8** `UsuarioNegocio` (CRUD do próprio usuário): **cadastrar** com e-mail único **[BANCO]**, nome e senha obrigatórios e confirmação de senha conferida, **sempre com o perfil `CLIENTE`** (nunca aceita `ADMIN` vindo da tela ou do corpo da requisição); CPF é opcional, como no banco, e quando informado só com dígitos e com 11 **[PROPOSTA, no molde do `Cliente` do template]**; **autenticar** (confere o hash e recusa usuário inativo); **obter** e **alterar** os próprios dados; **excluir conta** como desativação, `Ativo = 0` (premissa 4.5). Promover alguém a `ADMIN` não é função do sistema (premissa 4.4).
+- [x] **3.9** Entregar a POO que o manual cobra: encapsulamento (propriedades e regras nas classes), polimorfismo (`IMetodoPagamento` com as 3 formas) e herança (classe base abstrata do passo 1.3).
+- [x] **3.10** *Pronto quando:* o build passa e nenhuma regra está em controller ou view. Cada falha da tabela da seção 3 vira uma mensagem clara, **sem chegar à procedure**.
+**Notas da Fase 3 (decisões tomadas durante a execução):**
+
+- **Hash de senha:** PBKDF2 com SHA-256, 100.000 iterações, sal de 16 bytes e hash de 32 bytes, guardados como `iterações.sal.hash` (cerca de 80 caracteres). A conferência usa comparação em tempo constante. Texto guardado fora do formato devolve "não confere", sem lançar erro.
+- **As classes de Negócio são concretas** (como o `EstadioNegocio`), todas síncronas; só o `IHashDeSenha` tem interface. O `VendaNegocio` recebe um `IEnumerable<IMetodoPagamento>`: **a Fase 4 precisa registrar as três formas de pagamento** (Pix, Cartão e Boleto), além dos repositórios e dos negócios.
+- **Regras acrescentadas ao implementar** (não estavam no plano): a capacidade de um setor não pode ficar menor que o número de assentos que ele já tem; não se troca o estádio de um setor com assentos ou ingressos, nem o setor de um assento com ingresso; conta desativada não altera os dados nem compra; o ingresso exige preço maior que zero (o banco aceitaria zero).
+- **Login:** a mensagem é a mesma para e-mail desconhecido e senha errada ("E-mail ou senha incorretos."), e o aviso de conta desativada só aparece depois que a senha está certa. O cadastro ignora o `Perfil` que vier de fora e grava sempre `CLIENTE`. O CPF, quando informado, fica só com os dígitos e precisa ter 11; os dígitos verificadores **não** são conferidos.
+- **Criação de assentos em lote:** cria `prefixo` + número com dois dígitos (A01, A02...), ou mais se a quantidade pedir. O prefixo é opcional (padrão "A", só letras e números), os números que o setor já tem são pulados, e ou entram todos ou nenhum.
+- **Geração de ingressos:** pode ser repetida sem duplicar (devolve quantos criou, inclusive zero). Recusa estádio sem setores, estádio sem assentos e setor com preço base zero.
+- **Compra:** a forma de pagamento é reconhecida sem diferenciar maiúsculas e é gravada com o nome padrão (`PIX`, `Cartao`, `Boleto`). Se o banco recusar a compra depois de todas as conferências (por exemplo, outro comprador levou o assento), a `OperacaoNoBancoException` vira uma `RegraDeNegocioException` com a mesma mensagem e o erro técnico em `InnerException`.
+- **Limitação conhecida:** o `EstadioNegocio` (que já existia) não confere a capacidade total do estádio contra a soma dos setores quando o estádio é alterado, então dá para baixar a capacidade abaixo da soma. Não foi corrigido para não quebrar a Api atual, que só registra o repositório de estádio; resolver na Fase 4, quando todos os repositórios forem registrados.
+- Testado contra o banco real, com os dados de teste, por um programa fora do repositório (140 verificações, todas dentro de uma transação desfeita). O banco ficou com os dados de teste e sem usuários, vendas, itens nem QR codes.
 
 ### Fase 4: injeção de dependência
 
@@ -300,5 +311,6 @@ Um commit por fase concluída (Fases 0 a 7), com mensagens no padrão do histór
 - A trigger `trg_ItemVenda_UpdateValorTotal` tinha o limite de `TOP 1 VendaID` (só recalculava a primeira venda de um INSERT com itens de vendas diferentes). Foi corrigida no banco (commits do Caique de 30 e 31/10) e testada: o INSERT com duas vendas recalcula as duas. O risco deixou de existir.
 - A procedure grava `APROVADO` sem consultar o método de pagamento. O plano contorna isso decidindo no Negócio, sem alterar o banco.
 - Dois compradores escolhendo o mesmo assento ao mesmo tempo: o banco protege (UNIQUE e trigger), mas sem reserva (premissa 4.6) o segundo só descobre ao pagar. A tradução da `SqlException` (passo 2.9) garante uma mensagem clara.
+- Um estádio pode ter a capacidade total reduzida abaixo da soma dos seus setores, porque o `EstadioNegocio` não faz essa conferência (ver as notas da Fase 3).
 - O `Perfil` é gravado na tabela e promovido por `UPDATE` manual (premissa 4.4): quem tem acesso ao banco pode se tornar `ADMIN`. É aceitável para o contexto acadêmico.
 - Com uma página por entidade a administração fica com 5 telas, mas o desenho (tabela, formulário e exclusão na mesma página) é código novo, e não cópia do Cliente do template. Se o tempo apertar, a ordem de corte sugerida é: Assento, Ingresso, Setor, Jogo e, por último, Estádio.

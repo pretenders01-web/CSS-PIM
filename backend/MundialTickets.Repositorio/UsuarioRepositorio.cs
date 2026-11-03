@@ -37,9 +37,15 @@ public class UsuarioRepositorio : IUsuarioRepositorio
         _contexto.SaveChanges();
     }
 
-    // Um UPDATE direto no banco, sem carregar o usuário: só troca a coluna Ativo.
-    public bool Desativar(int id) =>
-        _contexto.Usuarios
-            .Where(u => u.UsuarioID == id)
-            .ExecuteUpdate(s => s.SetProperty(u => u.Ativo, false)) > 0;
+    // Carrega o usuário e grava Ativo = false pelo rastreador do EF. Um UPDATE direto
+    // (ExecuteUpdate) deixaria a entidade já carregada neste contexto ainda "ativa".
+    public bool Desativar(int id)
+    {
+        var usuario = _contexto.Usuarios.FirstOrDefault(u => u.UsuarioID == id);
+        if (usuario is null) return false;
+
+        usuario.Ativo = false;
+        _contexto.SaveChanges();
+        return true;
+    }
 }
