@@ -1,8 +1,73 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@model JogosViewModel
+@{
+    ViewData["Title"] = "Início";
+    ViewData["ClasseBody"] = "";       // a Home tem o fundo escuro liso, sem a imagem desfocada
+    ViewData["SemContainer"] = true;   // o banner ocupa a largura toda
+    var grupos = Model.Jogos.Chunk(3).ToList();   // o carrossel mostra 3 jogos por slide
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<section class="banner">
+    <h1>Compre ingressos oficiais para os jogos da Copa 2026</h1>
+    <p>Escolha seu jogo, garanta seu lugar e viva a emoção do estádio</p>
+    <a asp-controller="Jogos" asp-action="Index" class="btn-mt btn-mt-grande mt-4">Ver todos os jogos</a>
+</section>
+
+<section class="jogos-secao">
+    <h2>Jogos Disponíveis</h2>
+
+    @if (grupos.Count == 0)
+    {
+        <p class="vazio">Ainda não há jogos cadastrados.</p>
+    }
+    else
+    {
+        <div class="carrossel-area">
+            <div id="carouselJogos" class="carousel slide" data-bs-ride="carousel">
+                @if (grupos.Count > 1)
+                {
+                    <div class="carousel-indicators">
+                        @for (var i = 0; i < grupos.Count; i++)
+                        {
+                            <button type="button" data-bs-target="#carouselJogos" data-bs-slide-to="@i"
+                                    class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")" aria-label="Slide @(i + 1)"></button>
+                        }
+                    </div>
+                }
+                <div class="carousel-inner">
+                    @for (var i = 0; i < grupos.Count; i++)
+                    {
+                        <div class="carousel-item @(i == 0 ? "active" : "")">
+                            <div class="jogos-grid">
+                                @foreach (var card in grupos[i])
+                                {
+                                    <div class="jogo-card">
+                                        <h3>
+                                            <partial name="_Time" model="(card.Jogo.TimeA, card.BandeiraA)" />
+                                            <span class="x">x</span>
+                                            <partial name="_Time" model="(card.Jogo.TimeB, card.BandeiraB)" />
+                                        </h3>
+                                        <p><strong>Data:</strong> @Formatacao.DataHora(card.Jogo.DataHora)</p>
+                                        <p><strong>Local:</strong> @card.Jogo.EstadioNome — @card.Jogo.EstadioCidade</p>
+                                        <p><strong>Fase:</strong> @card.Jogo.Fase</p>
+                                        <a asp-controller="Jogos" asp-action="Detalhes" asp-route-id="@card.Jogo.Id" class="btn-mt">Comprar ingresso</a>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            @if (grupos.Count > 1)
+            {
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselJogos" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Anterior</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselJogos" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Próximo</span>
+                </button>
+            }
+        </div>
+    }
+</section>

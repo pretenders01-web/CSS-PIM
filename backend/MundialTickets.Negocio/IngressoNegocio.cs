@@ -41,6 +41,10 @@ public class IngressoNegocio
 
     public Ingresso? ObterPorId(int id) => _ingressos.ObterPorId(id);
 
+    // Vários ingressos de uma vez, com Jogo, Setor e Assento (usado para mostrar o carrinho).
+    // Ids que não existem mais simplesmente não voltam na lista.
+    public List<Ingresso> ListarPorIds(IEnumerable<int> ids) => _ingressos.ObterPorIds(ids);
+
     // Cria um ingresso individual. O número do assento é copiado do próprio assento e o
     // status começa DISPONIVEL: nenhum dos dois vem da tela.
     public Ingresso Cadastrar(Ingresso ingresso)

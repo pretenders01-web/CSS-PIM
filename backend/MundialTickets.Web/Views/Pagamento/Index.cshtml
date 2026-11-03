@@ -1,0 +1,55 @@
+@model PagamentoViewModel
+@{
+    ViewData["Title"] = "Pagamento";
+}
+
+<h1 class="titulo-pagina">Pagamento</h1>
+<p class="subtitulo-pagina">Escolha como pagar. O pagamento é uma simulação: nenhum valor real é cobrado.</p>
+
+<form asp-action="Confirmar" method="post">
+    <div asp-validation-summary="All" class="alerta alerta-erro" role="alert"></div>
+
+    <div class="carrinho-layout">
+        <div>
+            <div class="opcoes-pagamento">
+                <label class="opcao-pagamento">
+                    <input type="radio" asp-for="MetodoPagamento" value="PIX" />
+                    <span><span class="nome">Pix</span><span class="nota">Aprovado na hora.</span></span>
+                </label>
+                <label class="opcao-pagamento">
+                    <input type="radio" asp-for="MetodoPagamento" value="Cartao" />
+                    <span><span class="nome">Cartão</span><span class="nota">Aprovado na hora (simulado, sem dados de cartão).</span></span>
+                </label>
+                <label class="opcao-pagamento">
+                    <input type="radio" asp-for="MetodoPagamento" value="Boleto" />
+                    <span><span class="nome">Boleto</span><span class="nota">Não é aprovado na hora: a compra só é feita com Pix ou Cartão.</span></span>
+                </label>
+            </div>
+            <span asp-validation-for="MetodoPagamento" class="text-danger"></span>
+
+            <div class="cartao-vidro mt-3">
+                <h2 class="h5 mb-3">Seus ingressos</h2>
+                @foreach (var item in Model.Carrinho.Itens)
+                {
+                    <div class="item-carrinho">
+                        <div class="info">
+                            <div class="partida">
+                                <partial name="_Time" model="(item.TimeA, item.BandeiraA)" /> <span class="text-secondary">x</span> <partial name="_Time" model="(item.TimeB, item.BandeiraB)" />
+                            </div>
+                            <div class="detalhe">@Formatacao.DataHora(item.DataJogo) · Setor @item.NomeSetor · Assento <strong>@item.NumeroAssento</strong></div>
+                        </div>
+                        <div class="preco">@Formatacao.Moeda(item.Preco)</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <aside class="cartao-vidro resumo-compra">
+            <h2 class="h5 mb-3">Resumo</h2>
+            <div class="linha"><span>Ingressos</span><span>@Model.Carrinho.QuantidadeDisponivel</span></div>
+            <div class="total"><span>Total</span><span>@Formatacao.Moeda(Model.Carrinho.Total)</span></div>
+            <button type="submit" class="btn-mt btn-mt-bloco">Confirmar pagamento</button>
+            <a asp-controller="Carrinho" asp-action="Index" class="btn-mt btn-mt-secundario btn-mt-bloco mt-2">Voltar ao carrinho</a>
+        </aside>
+    </div>
+</form>

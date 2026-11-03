@@ -1,0 +1,57 @@
+@model UsuarioCadastroDto
+@{
+    ViewData["Title"] = "Cadastre-se";
+    ViewData["ClasseBody"] = "pagina-dividida";
+    ViewData["SemContainer"] = true;
+}
+
+<div class="divisao">
+    <section class="painel-form">
+        <h1>Cadastre-se</h1>
+
+        <form asp-action="Cadastro" method="post" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alerta alerta-erro" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Nome" class="form-label"></label>
+                <input asp-for="Nome" class="form-control" placeholder="Seu nome" autocomplete="name" autofocus />
+                <span asp-validation-for="Nome"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" placeholder="seuemail@exemplo.com" autocomplete="email" />
+                <span asp-validation-for="Email"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Cpf" class="form-label"></label>
+                <input asp-for="Cpf" class="form-control" placeholder="000.000.000-00 (opcional)" inputmode="numeric" />
+                <span asp-validation-for="Cpf"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Senha" class="form-label"></label>
+                <input asp-for="Senha" type="password" class="form-control" placeholder="Crie uma senha" autocomplete="new-password" />
+                <span asp-validation-for="Senha"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="ConfirmarSenha" class="form-label"></label>
+                <input asp-for="ConfirmarSenha" type="password" class="form-control" placeholder="Repita a senha" autocomplete="new-password" />
+                <span asp-validation-for="ConfirmarSenha"></span>
+            </div>
+
+            <button type="submit" class="btn-mt btn-mt-bloco mt-2">Cadastrar</button>
+        </form>
+
+        <p class="troca">Já possui conta? <a asp-action="Entrar">Entrar</a></p>
+    </section>
+
+    <section class="painel-imagem" aria-hidden="true">
+        <div>
+            <h2>Sua vaga na festa da Copa</h2>
+            <p>Garanta seu lugar na história. A Copa começa aqui.</p>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

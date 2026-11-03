@@ -1,0 +1,98 @@
+@model SetoresPaginaViewModel
+@{
+    ViewData["Title"] = "Setores";
+    ViewData["Aba"] = "Setores";
+}
+
+<h1 class="titulo-pagina">Setores</h1>
+<partial name="_Abas" />
+
+<div class="admin-layout">
+    <section class="cartao-vidro admin-form">
+        <h2>@(Model.EmEdicao ? "Alterar setor" : "Novo setor")</h2>
+
+        @if (Model.Estadios.Count == 0)
+        {
+            <p class="alerta alerta-aviso">Cadastre um estádio antes de criar setores.</p>
+        }
+
+        <form asp-area="Admin" asp-action="Salvar" method="post" novalidate>
+            @if (Model.EmEdicao)
+            {
+                <input type="hidden" name="id" value="@Model.IdEmEdicao" />
+            }
+            <div asp-validation-summary="ModelOnly" class="alerta alerta-erro" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Formulario.EstadioID" class="form-label"></label>
+                <select asp-for="Formulario.EstadioID" class="form-select"
+                        asp-items="@(new SelectList(Model.Estadios, nameof(EstadioDto.Id), nameof(EstadioDto.Nome)))">
+                    <option value="0">— Escolha o estádio —</option>
+                </select>
+                <span asp-validation-for="Formulario.EstadioID"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Formulario.NomeSetor" class="form-label"></label>
+                <input asp-for="Formulario.NomeSetor" class="form-control" placeholder="Ex.: Arquibancada Inferior" />
+                <span asp-validation-for="Formulario.NomeSetor"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Formulario.Capacidade" class="form-label"></label>
+                <input asp-for="Formulario.Capacidade" type="number" min="1" class="form-control" />
+                <span asp-validation-for="Formulario.Capacidade"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Formulario.PrecoBase" class="form-label"></label>
+                <input asp-for="Formulario.PrecoBase" type="number" min="0" step="0.01" class="form-control"
+                       value="@Formatacao.ParaCampoNumero(Model.Formulario.PrecoBase)" />
+                <span asp-validation-for="Formulario.PrecoBase"></span>
+            </div>
+
+            <button type="submit" class="btn-mt">@(Model.EmEdicao ? "Salvar alterações" : "Cadastrar")</button>
+            @if (Model.EmEdicao)
+            {
+                <a asp-action="Index" class="btn-mt btn-mt-secundario">Cancelar</a>
+            }
+        </form>
+    </section>
+
+    <section class="cartao-vidro admin-tabela">
+        <h2>@Model.Itens.Count setor(es) cadastrado(s)</h2>
+        @if (Model.Itens.Count == 0)
+        {
+            <p class="vazio">Nenhum setor cadastrado ainda.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="tabela-mt">
+                    <thead>
+                        <tr><th>Estádio</th><th>Setor</th><th class="num">Capacidade</th><th class="num">Preço base</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var setor in Model.Itens)
+                        {
+                            <tr class="@(setor.Id == Model.IdEmEdicao ? "em-edicao" : "")">
+                                <td>@Model.NomeDoEstadio(setor.EstadioId)</td>
+                                <td>@setor.NomeSetor</td>
+                                <td class="num">@setor.Capacidade</td>
+                                <td class="num">@Formatacao.Moeda(setor.PrecoBase)</td>
+                                <td class="acoes">
+                                    <a asp-action="Index" asp-route-editar="@setor.Id" class="btn-mt btn-mt-secundario btn-mt-pequeno">Editar</a>
+                                    <form asp-area="Admin" asp-action="Excluir" method="post" data-confirmar="Excluir o setor @setor.NomeSetor?">
+                                        <input type="hidden" name="id" value="@setor.Id" />
+                                        <button type="submit" class="btn-mt btn-mt-perigo btn-mt-pequeno">Excluir</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

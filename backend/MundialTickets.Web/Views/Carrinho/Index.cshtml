@@ -1,0 +1,73 @@
+@model CarrinhoViewModel
+@{
+    ViewData["Title"] = "Carrinho";
+}
+
+<h1 class="titulo-pagina">Seu carrinho</h1>
+<p class="subtitulo-pagina">Confira os assentos escolhidos antes de pagar.</p>
+
+@if (Model.Itens.Count == 0)
+{
+    <div class="cartao-vidro vazio">
+        <p>Seu carrinho está vazio.</p>
+        <a asp-controller="Jogos" asp-action="Index" class="btn-mt">Escolher um jogo</a>
+    </div>
+}
+else
+{
+    @if (Model.TemIndisponivel)
+    {
+        <div class="alerta alerta-aviso">Alguns assentos não estão mais disponíveis. Remova-os para continuar a compra.</div>
+    }
+
+    <div class="carrinho-layout">
+        <div class="cartao-vidro">
+            @foreach (var item in Model.Itens)
+            {
+                <div class="item-carrinho @(item.Disponivel ? "" : "indisponivel")">
+                    <div class="info">
+                        <div class="partida">
+                            <partial name="_Time" model="(item.TimeA, item.BandeiraA)" /> <span class="text-secondary">x</span> <partial name="_Time" model="(item.TimeB, item.BandeiraB)" />
+                        </div>
+                        <div class="detalhe">
+                            @Formatacao.DataHora(item.DataJogo) · Setor @item.NomeSetor · Assento <strong>@item.NumeroAssento</strong>
+                        </div>
+                        @if (!item.Disponivel)
+                        {
+                            <span class="selo selo-vermelho">Indisponível</span>
+                        }
+                    </div>
+                    <div class="preco">@Formatacao.Moeda(item.Preco)</div>
+                    <form asp-action="Remover" method="post">
+                        <input type="hidden" name="ingressoId" value="@item.IngressoId" />
+                        <button type="submit" class="btn-mt btn-mt-perigo btn-mt-pequeno">Remover</button>
+                    </form>
+                </div>
+            }
+            <div class="mt-3 d-flex gap-2 flex-wrap">
+                <a asp-controller="Jogos" asp-action="Index" class="btn-mt btn-mt-secundario btn-mt-pequeno">+ Escolher mais jogos</a>
+                <form asp-action="Limpar" method="post" data-confirmar="Esvaziar o carrinho?">
+                    <button type="submit" class="btn-mt btn-mt-secundario btn-mt-pequeno">Esvaziar carrinho</button>
+                </form>
+            </div>
+        </div>
+
+        <aside class="cartao-vidro resumo-compra">
+            <h2 class="h5 mb-3">Resumo</h2>
+            <div class="linha"><span>Ingressos</span><span>@Model.QuantidadeDisponivel</span></div>
+            <div class="total"><span>Total</span><span>@Formatacao.Moeda(Model.Total)</span></div>
+            @if (Model.TemIndisponivel || Model.QuantidadeDisponivel == 0)
+            {
+                <span class="btn-mt btn-mt-bloco desabilitado">Ir para o pagamento</span>
+            }
+            else
+            {
+                <a asp-controller="Pagamento" asp-action="Index" class="btn-mt btn-mt-bloco">Ir para o pagamento</a>
+            }
+            @if (User.Identity?.IsAuthenticated != true)
+            {
+                <p class="mt-3 mb-0 text-secondary small">Você precisará entrar na sua conta para pagar.</p>
+            }
+        </aside>
+    </div>
+}

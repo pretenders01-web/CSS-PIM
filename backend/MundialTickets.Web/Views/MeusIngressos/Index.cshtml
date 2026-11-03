@@ -1,0 +1,39 @@
+@model MeusIngressosViewModel
+@{
+    ViewData["Title"] = "Meus ingressos";
+}
+
+<h1 class="titulo-pagina">Meus ingressos</h1>
+<p class="subtitulo-pagina">Apresente o código do QR na entrada do estádio.</p>
+
+@if (Model.Ingressos.Count == 0)
+{
+    <div class="cartao-vidro vazio">
+        <p>Você ainda não comprou nenhum ingresso.</p>
+        <a asp-controller="Jogos" asp-action="Index" class="btn-mt">Escolher um jogo</a>
+    </div>
+}
+else
+{
+    <div class="ingressos-lista">
+        @foreach (var ingresso in Model.Ingressos)
+        {
+            <article class="ingresso-card">
+                <div class="topo-ingresso">
+                    <div class="partida">@ingresso.Partida</div>
+                    <div class="quando">@Formatacao.DataHora(ingresso.DataJogo)</div>
+                </div>
+                <div class="corpo">
+                    <div class="campo"><small>Setor</small><span>@ingresso.NomeSetor</span></div>
+                    <div class="campo"><small>Assento</small><span>@(ingresso.NumeroAssento ?? "—")</span></div>
+                    <div class="campo"><small>Preço pago</small><span>@Formatacao.Moeda(ingresso.PrecoPago)</span></div>
+                    <div class="campo">
+                        <small>Situação</small>
+                        <span>@if (ingresso.Utilizado) { <span class="selo selo-cinza">Utilizado</span> } else { <span class="selo selo-verde">Válido</span> }</span>
+                    </div>
+                    <div class="codigo"><small>Código do QR</small><br />@ingresso.CodigoQR</div>
+                </div>
+            </article>
+        }
+    </div>
+}

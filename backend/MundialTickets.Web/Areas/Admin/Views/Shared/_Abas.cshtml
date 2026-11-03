@@ -1,0 +1,12 @@
+@* As abas da administração. A página diz qual é a ativa por ViewData["Aba"]. *@
+@{
+    var ativa = ViewData["Aba"]?.ToString();
+    string Classe(string nome) => string.Equals(ativa, nome, StringComparison.OrdinalIgnoreCase) ? "ativa" : "";
+}
+<nav class="admin-abas" aria-label="Administração">
+    <a asp-area="Admin" asp-controller="Estadios" asp-action="Index" class="@Classe("Estadios")">Estádios</a>
+    <a asp-area="Admin" asp-controller="Setores" asp-action="Index" class="@Classe("Setores")">Setores</a>
+    <a asp-area="Admin" asp-controller="Assentos" asp-action="Index" class="@Classe("Assentos")">Assentos</a>
+    <a asp-area="Admin" asp-controller="Jogos" asp-action="Index" class="@Classe("Jogos")">Jogos</a>
+    <a asp-area="Admin" asp-controller="Ingressos" asp-action="Index" class="@Classe("Ingressos")">Ingressos</a>
+</nav>

@@ -1,0 +1,165 @@
+@model IngressosPaginaViewModel
+@{
+    ViewData["Title"] = "Ingressos (administração)";
+    ViewData["Aba"] = "Ingressos";
+
+    string Selo(string situacao) => situacao switch
+    {
+        StatusIngresso.Disponivel => "selo-verde",
+        StatusIngresso.Vendido => "selo-amarelo",
+        StatusIngresso.Cancelado => "selo-vermelho",
+        _ => "selo-cinza"
+    };
+    var jogoEscolhido = Model.Jogos.FirstOrDefault(j => j.Id == Model.JogoId);
+}
+
+<h1 class="titulo-pagina">Ingressos</h1>
+<partial name="_Abas" />
+
+<div class="row g-4 mb-4">
+    <div class="col-12 col-lg-6">
+        <form asp-area="Admin" asp-action="Gerar" method="post" class="cartao-vidro h-100">
+            <h2 class="h5 fw-bold mb-3">Gerar os ingressos de um jogo</h2>
+            <p class="text-secondary small">Cria um ingresso por assento do estádio do jogo, com o preço base do setor. Pode ser repetido sem duplicar.</p>
+            <div class="d-flex gap-2 flex-wrap align-items-end">
+                <div class="flex-grow-1">
+                    <label for="gerarJogo" class="form-label">Jogo</label>
+                    <select id="gerarJogo" name="JogoID" class="form-select" required>
+                        <option value="">— Escolha o jogo —</option>
+                        @foreach (var jogo in Model.Jogos)
+                        {
+                            <option value="@jogo.Id" selected="@(jogo.Id == Model.JogoId)">@jogo.Partida — @Formatacao.Data(jogo.DataHora)</option>
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn-mt">Gerar ingressos</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-12 col-lg-6">
+        <div class="cartao-vidro h-100">
+            <h2 class="h5 fw-bold mb-3">Criar um ingresso individual</h2>
+            @if (jogoEscolhido is null)
+            {
+                <p class="text-secondary mb-0">Escolha um jogo no filtro abaixo para criar um ingresso para ele.</p>
+            }
+            else if (Model.AssentosLivres.Count == 0)
+            {
+                <p class="text-secondary mb-0">Todos os assentos do estádio de <strong>@jogoEscolhido.Partida</strong> já têm ingresso.</p>
+            }
+            else
+            {
+                <form asp-area="Admin" asp-action="Novo" method="post">
+                    <input type="hidden" name="JogoID" value="@jogoEscolhido.Id" />
+                    <div class="mb-3">
+                        <label for="novoAssento" class="form-label">Assento livre em @jogoEscolhido.Partida</label>
+                        <select id="novoAssento" name="AssentoID" class="form-select" required>
+                            <option value="">— Escolha o assento —</option>
+                            @foreach (var assento in Model.AssentosLivres)
+                            {
+                                <option value="@assento.AssentoId">@assento.Rotulo (base @Formatacao.Moeda(assento.PrecoBase))</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="novoPreco" class="form-label">Preço do ingresso</label>
+                        <input id="novoPreco" name="PrecoFinal" type="number" min="0.01" step="0.01" class="form-control" required />
+                    </div>
+                    <button type="submit" class="btn-mt btn-mt-secundario">Criar ingresso</button>
+                </form>
+            }
+        </div>
+    </div>
+</div>
+
+<section class="cartao-vidro admin-tabela">
+    <form asp-area="Admin" asp-action="Index" method="get" class="filtros">
+        <div>
+            <label for="filtroJogo" class="form-label">Jogo</label>
+            <select id="filtroJogo" name="jogoId" class="form-select">
+                <option value="">Todos os jogos</option>
+                @foreach (var jogo in Model.Jogos)
+                {
+                    <option value="@jogo.Id" selected="@(jogo.Id == Model.JogoId)">@jogo.Partida — @Formatacao.Data(jogo.DataHora)</option>
+                }
+            </select>
+        </div>
+        <div>
+            <label for="filtroStatus" class="form-label">Situação</label>
+            <select id="filtroStatus" name="status" class="form-select">
+                <option value="">Todas</option>
+                @foreach (var situacao in new[] { StatusIngresso.Disponivel, StatusIngresso.Reservado, StatusIngresso.Vendido, StatusIngresso.Cancelado })
+                {
+                    <option value="@situacao" selected="@(situacao == Model.Status)">@situacao</option>
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn-mt btn-mt-secundario">Filtrar</button>
+    </form>
+
+    <h2>@Model.Itens.Count ingresso(s)</h2>
+    @if (Model.Itens.Count == 0)
+    {
+        <p class="vazio">Nenhum ingresso encontrado. Use "Gerar os ingressos de um jogo" acima.</p>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="tabela-mt">
+                <thead>
+                    <tr><th>Partida</th><th>Setor</th><th>Assento</th><th>Preço</th><th>Situação</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var ingresso in Model.Itens)
+                    {
+                        <tr>
+                            <td>@ingresso.Partida</td>
+                            <td>@ingresso.NomeSetor</td>
+                            <td>@ingresso.NumeroAssento</td>
+                            <td>
+                                @if (ingresso.Status == StatusIngresso.Disponivel)
+                                {
+                                    @* O preço só pode ser alterado enquanto o ingresso está disponível. *@
+                                    <form asp-area="Admin" asp-action="AtualizarPreco" method="post" class="edita-preco">
+                                        <input type="hidden" name="id" value="@ingresso.Id" />
+                                        <input type="hidden" name="jogoId" value="@Model.JogoId" />
+                                        <input type="hidden" name="status" value="@Model.Status" />
+                                        <input name="precoFinal" type="number" min="0.01" step="0.01" class="form-control"
+                                               value="@Formatacao.ParaCampoNumero(ingresso.PrecoFinal)" aria-label="Preço" />
+                                        <button type="submit" class="btn-mt btn-mt-secundario btn-mt-pequeno">Salvar</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    @Formatacao.Moeda(ingresso.PrecoFinal)
+                                }
+                            </td>
+                            <td><span class="selo @Selo(ingresso.Status)">@ingresso.Status</span></td>
+                            <td class="acoes">
+                                @if (ingresso.Status != StatusIngresso.Vendido && ingresso.Status != StatusIngresso.Cancelado)
+                                {
+                                    <form asp-area="Admin" asp-action="Cancelar" method="post" data-confirmar="Cancelar este ingresso?">
+                                        <input type="hidden" name="id" value="@ingresso.Id" />
+                                        <input type="hidden" name="jogoId" value="@Model.JogoId" />
+                                        <input type="hidden" name="status" value="@Model.Status" />
+                                        <button type="submit" class="btn-mt btn-mt-secundario btn-mt-pequeno">Cancelar</button>
+                                    </form>
+                                }
+                                @if (ingresso.Status != StatusIngresso.Vendido)
+                                {
+                                    <form asp-area="Admin" asp-action="Excluir" method="post" data-confirmar="Excluir este ingresso?">
+                                        <input type="hidden" name="id" value="@ingresso.Id" />
+                                        <input type="hidden" name="jogoId" value="@Model.JogoId" />
+                                        <input type="hidden" name="status" value="@Model.Status" />
+                                        <button type="submit" class="btn-mt btn-mt-perigo btn-mt-pequeno">Excluir</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</section>

@@ -1,0 +1,83 @@
+@model PaginaAdminViewModel<EstadioDto, EstadioSalvarDto>
+@{
+    ViewData["Title"] = "Estádios";
+    ViewData["Aba"] = "Estadios";
+}
+
+<h1 class="titulo-pagina">Estádios</h1>
+<partial name="_Abas" />
+
+<div class="admin-layout">
+    <section class="cartao-vidro admin-form">
+        <h2>@(Model.EmEdicao ? "Alterar estádio" : "Novo estádio")</h2>
+
+        <form asp-area="Admin" asp-action="Salvar" method="post" novalidate>
+            @if (Model.EmEdicao)
+            {
+                <input type="hidden" name="id" value="@Model.IdEmEdicao" />
+            }
+            <div asp-validation-summary="ModelOnly" class="alerta alerta-erro" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Formulario.Nome" class="form-label"></label>
+                <input asp-for="Formulario.Nome" class="form-control" />
+                <span asp-validation-for="Formulario.Nome"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Formulario.Cidade" class="form-label"></label>
+                <input asp-for="Formulario.Cidade" class="form-control" />
+                <span asp-validation-for="Formulario.Cidade"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Formulario.CapacidadeTotal" class="form-label"></label>
+                <input asp-for="Formulario.CapacidadeTotal" type="number" min="1" class="form-control" />
+                <span asp-validation-for="Formulario.CapacidadeTotal"></span>
+            </div>
+
+            <button type="submit" class="btn-mt">@(Model.EmEdicao ? "Salvar alterações" : "Cadastrar")</button>
+            @if (Model.EmEdicao)
+            {
+                <a asp-action="Index" class="btn-mt btn-mt-secundario">Cancelar</a>
+            }
+        </form>
+    </section>
+
+    <section class="cartao-vidro admin-tabela">
+        <h2>@Model.Itens.Count estádio(s) cadastrado(s)</h2>
+        @if (Model.Itens.Count == 0)
+        {
+            <p class="vazio">Nenhum estádio cadastrado ainda.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="tabela-mt">
+                    <thead>
+                        <tr><th>Nome</th><th>Cidade</th><th class="num">Capacidade total</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var estadio in Model.Itens)
+                        {
+                            <tr class="@(estadio.Id == Model.IdEmEdicao ? "em-edicao" : "")">
+                                <td>@estadio.Nome</td>
+                                <td>@estadio.Cidade</td>
+                                <td class="num">@estadio.CapacidadeTotal.ToString("N0", System.Globalization.CultureInfo.GetCultureInfo("pt-BR"))</td>
+                                <td class="acoes">
+                                    <a asp-action="Index" asp-route-editar="@estadio.Id" class="btn-mt btn-mt-secundario btn-mt-pequeno">Editar</a>
+                                    <form asp-area="Admin" asp-action="Excluir" method="post" data-confirmar="Excluir o estádio @estadio.Nome?">
+                                        <input type="hidden" name="id" value="@estadio.Id" />
+                                        <button type="submit" class="btn-mt btn-mt-perigo btn-mt-pequeno">Excluir</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

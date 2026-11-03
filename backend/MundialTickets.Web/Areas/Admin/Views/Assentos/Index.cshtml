@@ -1,0 +1,116 @@
+@model AssentosPaginaViewModel
+@{
+    ViewData["Title"] = "Assentos";
+    ViewData["Aba"] = "Assentos";
+}
+
+<h1 class="titulo-pagina">Assentos</h1>
+<partial name="_Abas" />
+
+@* Escolha do setor: um formulário de consulta (GET), sem alterar nada. *@
+<form asp-area="Admin" asp-action="Index" method="get" class="cartao-vidro filtros mb-4">
+    <div>
+        <label for="setorId" class="form-label">Setor</label>
+        <select id="setorId" name="setorId" class="form-select">
+            <option value="">— Escolha o setor —</option>
+            @foreach (var setor in Model.Setores)
+            {
+                <option value="@setor.Id" selected="@(setor.Id == Model.SetorId)">@Model.RotuloDoSetor(setor)</option>
+            }
+        </select>
+    </div>
+    <button type="submit" class="btn-mt">Ver assentos</button>
+</form>
+
+@if (Model.SetorEscolhido is null)
+{
+    <p class="vazio">Escolha um setor para ver e cadastrar os assentos dele.</p>
+}
+else
+{
+    var setorEscolhido = Model.SetorEscolhido;
+    <div class="admin-layout">
+        <div>
+            <section class="cartao-vidro admin-form">
+                <h2>@(Model.EmEdicao ? "Alterar assento" : "Novo assento")</h2>
+                <form asp-area="Admin" asp-action="Salvar" method="post" novalidate>
+                    @if (Model.EmEdicao)
+                    {
+                        <input type="hidden" name="id" value="@Model.IdEmEdicao" />
+                    }
+                    <input type="hidden" asp-for="Formulario.SetorID" />
+                    <div asp-validation-summary="ModelOnly" class="alerta alerta-erro" role="alert"></div>
+                    <div class="mb-3">
+                        <label asp-for="Formulario.Numero" class="form-label"></label>
+                        <input asp-for="Formulario.Numero" class="form-control" placeholder="Ex.: A01" maxlength="10" />
+                        <span asp-validation-for="Formulario.Numero"></span>
+                    </div>
+                    <button type="submit" class="btn-mt">@(Model.EmEdicao ? "Salvar alterações" : "Cadastrar")</button>
+                    @if (Model.EmEdicao)
+                    {
+                        <a asp-action="Index" asp-route-setorId="@Model.SetorId" class="btn-mt btn-mt-secundario">Cancelar</a>
+                    }
+                </form>
+
+                <div class="admin-secao-extra">
+                    <h2>Criar vários de uma vez</h2>
+                    <form asp-area="Admin" asp-action="CriarEmLote" method="post" novalidate>
+                        <input type="hidden" asp-for="FormularioLote.SetorID" />
+                        @if (ViewData.ModelState["Lote"]?.Errors.Count > 0)
+                        {
+                            <div class="alerta alerta-erro" role="alert">@ViewData.ModelState["Lote"]!.Errors[0].ErrorMessage</div>
+                        }
+                        <div class="mb-3">
+                            <label asp-for="FormularioLote.Quantidade" class="form-label"></label>
+                            <input asp-for="FormularioLote.Quantidade" type="number" min="1" max="1000" class="form-control" />
+                            <span asp-validation-for="FormularioLote.Quantidade"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="FormularioLote.Prefixo" class="form-label"></label>
+                            <input asp-for="FormularioLote.Prefixo" class="form-control" maxlength="10" placeholder="A" />
+                            <span asp-validation-for="FormularioLote.Prefixo"></span>
+                        </div>
+                        <p class="text-secondary small">Cria, por exemplo, A01, A02... até a quantidade pedida, pulando os que já existem.</p>
+                        <button type="submit" class="btn-mt btn-mt-secundario">Criar assentos</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <section class="cartao-vidro admin-tabela">
+            <h2>@setorEscolhido.NomeSetor <span class="text-secondary fs-6">— @Model.Itens.Count de @setorEscolhido.Capacidade assentos</span></h2>
+            @if (Model.Itens.Count == 0)
+            {
+                <p class="vazio">Este setor ainda não tem assentos.</p>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="tabela-mt">
+                        <thead><tr><th>Número</th><th></th></tr></thead>
+                        <tbody>
+                            @foreach (var assento in Model.Itens)
+                            {
+                                <tr class="@(assento.Id == Model.IdEmEdicao ? "em-edicao" : "")">
+                                    <td>@assento.Numero</td>
+                                    <td class="acoes">
+                                        <a asp-action="Index" asp-route-editar="@assento.Id" asp-route-setorId="@setorEscolhido.Id" class="btn-mt btn-mt-secundario btn-mt-pequeno">Editar</a>
+                                        <form asp-area="Admin" asp-action="Excluir" method="post" data-confirmar="Excluir o assento @assento.Numero?">
+                                            <input type="hidden" name="id" value="@assento.Id" />
+                                            <input type="hidden" name="setorId" value="@setorEscolhido.Id" />
+                                            <button type="submit" class="btn-mt btn-mt-perigo btn-mt-pequeno">Excluir</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </section>
+    </div>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

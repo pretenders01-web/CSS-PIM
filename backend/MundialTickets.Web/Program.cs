@@ -1,3 +1,8 @@
+using System.Globalization;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using MundialTickets.Modelos.Pagamentos;
 using MundialTickets.Negocio;
@@ -66,29 +71,102 @@ builder.Services.AddScoped<VendaNegocio>();
 // sobe e mostra "Unable to resolve service for type ...".
 // --------------------------------------------
 
+// ---------- Só da Web (a Api usa JWT e não tem estas linhas) ----------
+
+// Login por COOKIE: depois de entrar, o navegador manda o cookie em cada requisição.
+// O perfil (CLIENTE ou ADMIN) vai dentro do cookie e é o que [Authorize(Roles = "ADMIN")] confere.
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(opcoes =>
+    {
+        opcoes.LoginPath = "/Conta/Entrar";
+        opcoes.LogoutPath = "/Conta/Sair";
+        opcoes.AccessDeniedPath = "/Conta/AcessoNegado";
+        opcoes.Cookie.Name = "MundialTickets.Login";
+        opcoes.Cookie.HttpOnly = true;
+        opcoes.Cookie.SameSite = SameSiteMode.Lax;
+        opcoes.ExpireTimeSpan = TimeSpan.FromHours(8);
+        opcoes.SlidingExpiration = true;
+
+        // A cada requisição, confere se a conta continua existindo, ativa e com o mesmo perfil.
+        // Assim uma conta desativada, ou um usuário promovido a ADMIN, vale já na hora, sem
+        // esperar o cookie vencer.
+        opcoes.Events = new CookieAuthenticationEvents
+        {
+            OnValidatePrincipal = async contexto =>
+            {
+                var caminho = contexto.Request.Path;
+                if (caminho.StartsWithSegments("/css") || caminho.StartsWithSegments("/js") || caminho.StartsWithSegments("/lib")
+                    || caminho.StartsWithSegments("/img") || caminho.StartsWithSegments("/flags"))
+                    return;   // arquivos estáticos não precisam consultar o banco
+
+                var usuarioId = contexto.Principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+                var perfilNoCookie = contexto.Principal?.FindFirstValue(ClaimTypes.Role);
+                var usuario = int.TryParse(usuarioId, out var id)
+                    ? contexto.HttpContext.RequestServices.GetRequiredService<UsuarioNegocio>().ObterPorId(id)
+                    : null;
+
+                if (usuario is null || !usuario.Ativo || usuario.Perfil != perfilNoCookie)
+                {
+                    contexto.RejectPrincipal();
+                    await contexto.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                }
+            }
+        };
+    });
+builder.Services.AddAuthorization();
+
+// Sessão do ASP.NET Core: é onde o carrinho de compras fica guardado (só os ids dos ingressos).
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(opcoes =>
+{
+    opcoes.Cookie.Name = "MundialTickets.Sessao";
+    opcoes.Cookie.HttpOnly = true;
+    opcoes.Cookie.IsEssential = true;
+    opcoes.IdleTimeout = TimeSpan.FromHours(2);
+});
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Cultura invariante para LER os formulários: o <input type="number"> envia "95.50" (com ponto)
+// e, com a cultura do Windows em português, o servidor leria isso como 9550. A exibição em
+// formato brasileiro (R$ 95,50 e 11/06/2026) é feita à parte, pela classe Formatacao.
+var culturaInvariante = CultureInfo.InvariantCulture;
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(culturaInvariante),
+    SupportedCultures = new List<CultureInfo> { culturaInvariante },
+    SupportedUICultures = new List<CultureInfo> { culturaInvariante }
+});
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseSession();
+
+// Primeiro descobre QUEM é o usuário (autenticação, pelo cookie) e só depois confere
+// se ele PODE entrar na página (autorização, pelo perfil). A ordem importa.
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+
+// A área de Administração (/Admin/...) vem primeiro; depois a rota normal do site.
+app.MapControllerRoute(
+    name: "areas",
+    pattern: "{area:exists}/{controller=Home}/{action=Index}/{id?}")
+    .WithStaticAssets();
 
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

@@ -1,0 +1,35 @@
+@model JogosViewModel
+@{
+    ViewData["Title"] = "Ingressos";
+}
+
+<h1 class="titulo-pagina">Próximos jogos</h1>
+<p class="subtitulo-pagina">Escolha uma partida para ver os setores e marcar seus assentos.</p>
+
+@if (Model.Jogos.Count == 0)
+{
+    <p class="vazio">Ainda não há jogos cadastrados.</p>
+}
+else
+{
+    <div class="eventos-grid">
+        @foreach (var card in Model.Jogos)
+        {
+            <a class="evento-card" asp-controller="Jogos" asp-action="Detalhes" asp-route-id="@card.Jogo.Id">
+                <div class="evento-quadro">
+                    <div class="placar-visual">
+                        <div class="lado" style="@(card.BandeiraA is null ? "" : $"background-image:url('{card.BandeiraA}')")">@(card.BandeiraA is null ? card.Jogo.TimeA : "")</div>
+                        <span class="vs">VS</span>
+                        <div class="lado" style="@(card.BandeiraB is null ? "" : $"background-image:url('{card.BandeiraB}')")">@(card.BandeiraB is null ? card.Jogo.TimeB : "")</div>
+                    </div>
+                </div>
+                <div class="evento-detalhes">
+                    <h3>@card.Jogo.TimeA x @card.Jogo.TimeB</h3>
+                    <p class="evento-data">📅 @Formatacao.DataHora(card.Jogo.DataHora)</p>
+                    <p class="evento-local">@card.Jogo.EstadioNome — @card.Jogo.EstadioCidade</p>
+                    <span class="btn-mt btn-mt-bloco">Escolher assentos</span>
+                </div>
+            </a>
+        }
+    </div>
+}

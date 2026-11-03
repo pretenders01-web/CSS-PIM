@@ -1,47 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - MundialTickets.Web</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - Mundial Tickets</title>
+    <link rel="icon" href="~/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/MundialTickets.Web.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/mundial.css" asp-append-version="true" />
+    @await RenderSectionAsync("Styles", required: false)
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MundialTickets.Web</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+@* A página escolhe o visual do fundo: "fundo-jogo" (padrão das internas) ou "pagina-dividida" (login/cadastro). *@
+<body class="@(ViewData["ClasseBody"] ?? "fundo-jogo")">
+    @{
+        var logado = User.Identity?.IsAuthenticated == true;
+        var admin = User.IsInRole(PerfilUsuario.Admin);
+        var controle = ViewContext.RouteData.Values["controller"]?.ToString();
+        var area = ViewContext.RouteData.Values["area"]?.ToString();
+        var naAdmin = string.Equals(area, "Admin", StringComparison.OrdinalIgnoreCase);
+        var itensNoCarrinho = CarrinhoNaSessao.Contar(Context.Session);
+        string Ativo(string nome) => !naAdmin && string.Equals(controle, nome, StringComparison.OrdinalIgnoreCase) ? "ativo" : "";
+    }
+    <header class="topo">
+        <a asp-area="" asp-controller="Home" asp-action="Index" aria-label="Mundial Tickets - início">
+            <img src="~/img/logo.png" alt="Mundial Tickets" class="logo" />
+        </a>
+        <nav class="menu" aria-label="Menu principal">
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="@Ativo("Home")">Início</a>
+            <a asp-area="" asp-controller="Jogos" asp-action="Index" class="@Ativo("Jogos")">Ingressos</a>
+            @if (logado)
+            {
+                <a asp-area="" asp-controller="MeusIngressos" asp-action="Index" class="@Ativo("MeusIngressos")">Meus ingressos</a>
+                <a asp-area="" asp-controller="Conta" asp-action="MinhaConta" class="@Ativo("Conta")">Minha conta</a>
+                @if (admin)
+                {
+                    <a asp-area="Admin" asp-controller="Home" asp-action="Index" class="menu-admin @(naAdmin ? "ativo" : "")">Administração</a>
+                }
+                <form asp-area="" asp-controller="Conta" asp-action="Sair" method="post">
+                    <button type="submit" class="menu-botao">Sair</button>
+                </form>
+            }
+            else
+            {
+                <a asp-area="" asp-controller="Conta" asp-action="Entrar" class="@Ativo("Conta")">Entrar</a>
+            }
+            <a asp-area="" asp-controller="Carrinho" asp-action="Index" class="menu-carrinho">🛒 Carrinho@(itensNoCarrinho > 0 ? $" ({itensNoCarrinho})" : "")</a>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - MundialTickets.Web - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    @if (TempData["Mensagem"] is string mensagem || TempData["Erro"] is string)
+    {
+        <div class="avisos">
+            @if (TempData["Mensagem"] is string aviso)
+            {
+                <div class="alerta alerta-sucesso" role="status">@aviso</div>
+            }
+            @if (TempData["Erro"] is string erro)
+            {
+                <div class="alerta alerta-erro" role="alert">@erro</div>
+            }
         </div>
+    }
+
+    <main role="main" class="@(ViewData["SemContainer"] is true ? "" : "conteudo " + (ViewData["Largo"] is true ? "conteudo-largo" : ""))">
+        @RenderBody()
+    </main>
+
+    <footer class="rodape">
+        &copy; 2026 Mundial Tickets - Projeto Integrado Multidisciplinar (PIM IV). Pagamento simulado, sem cobrança real.
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>

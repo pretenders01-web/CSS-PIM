@@ -1,0 +1,89 @@
+@model JogoDetalhesViewModel
+@{
+    var jogo = Model.Jogo.Jogo;
+    ViewData["Title"] = $"{jogo.TimeA} x {jogo.TimeB}";
+}
+
+<p><a asp-action="Index" class="btn-mt btn-mt-secundario btn-mt-pequeno">← Todos os jogos</a></p>
+
+<div class="jogo-cabecalho">
+    <div class="confronto">
+        <partial name="_Time" model="(jogo.TimeA, Model.Jogo.BandeiraA)" />
+        <span class="x">x</span>
+        <partial name="_Time" model="(jogo.TimeB, Model.Jogo.BandeiraB)" />
+    </div>
+    <div class="jogo-meta">
+        <div><strong>@Formatacao.DataHora(jogo.DataHora)</strong> · @jogo.Fase</div>
+        <div>@jogo.EstadioNome — @jogo.EstadioCidade</div>
+    </div>
+</div>
+
+<h2 class="h4 fw-bold mb-3">1. Escolha o setor</h2>
+@if (Model.Setores.Count == 0)
+{
+    <p class="vazio">Este estádio ainda não tem setores cadastrados.</p>
+}
+else
+{
+    <div class="setores-grid">
+        @foreach (var setor in Model.Setores)
+        {
+            var esgotado = setor.AssentosDisponiveis == 0;
+            <a asp-action="Detalhes" asp-route-id="@jogo.Id" asp-route-setorId="@setor.SetorId"
+               class="setor-card @(setor.SetorId == Model.SetorSelecionadoId ? "selecionado" : "") @(esgotado ? "esgotado" : "")">
+                <div class="nome">@setor.NomeSetor</div>
+                <div class="preco">@Formatacao.Moeda(setor.PrecoBase)</div>
+                <div class="vagas">@(esgotado ? "Esgotado" : setor.AssentosDisponiveis == 1 ? "1 assento disponível" : $"{setor.AssentosDisponiveis} assentos disponíveis")</div>
+            </a>
+        }
+    </div>
+}
+
+@if (Model.SetorSelecionado is not null)
+{
+    <h2 class="h4 fw-bold mb-3">2. Marque seus assentos — @Model.SetorSelecionado.NomeSetor</h2>
+
+    @if (Model.Assentos.Count == 0)
+    {
+        <p class="vazio">Não há assentos disponíveis neste setor.</p>
+    }
+    else
+    {
+        <div class="legenda">
+            <span><i style="background: rgba(255,255,255,0.08)"></i>Livre</span>
+            <span><i style="background: var(--verde)"></i>Selecionado</span>
+            <span><i style="background: rgba(255,204,41,0.2)"></i>Já está no seu carrinho</span>
+        </div>
+
+        <form asp-controller="Carrinho" asp-action="Adicionar" method="post">
+            <input type="hidden" name="jogoId" value="@jogo.Id" />
+            <input type="hidden" name="setorId" value="@Model.SetorSelecionado.SetorId" />
+
+            <div class="palco">Campo</div>
+            <div class="assentos-grid">
+                @foreach (var assento in Model.Assentos)
+                {
+                    var noCarrinho = Model.NoCarrinho.Contains(assento.IngressoId);
+                    <div>
+                        <input type="checkbox" class="assento-check" id="assento-@assento.IngressoId" name="ingressoIds"
+                               value="@assento.IngressoId" data-preco="@Formatacao.ParaCampoNumero(assento.Preco)"
+                               checked="@noCarrinho" disabled="@noCarrinho" />
+                        <label class="assento" for="assento-@assento.IngressoId">@assento.Numero</label>
+                    </div>
+                }
+            </div>
+
+            <div class="barra-selecao" data-barra-selecao>
+                <div class="resumo">
+                    <span data-contador>0</span> assento(s) marcado(s) · <span data-total>R$ 0,00</span>
+                    <small>Preço de @Formatacao.Moeda(Model.SetorSelecionado.PrecoBase) por assento</small>
+                </div>
+                <button type="submit" class="btn-mt" disabled>Adicionar ao carrinho</button>
+            </div>
+        </form>
+    }
+}
+else if (Model.Setores.Count > 0)
+{
+    <p class="vazio">Escolha um setor acima para ver os assentos disponíveis.</p>
+}

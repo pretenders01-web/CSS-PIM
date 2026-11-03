@@ -1,0 +1,108 @@
+@model JogosPaginaViewModel
+@{
+    ViewData["Title"] = "Jogos (administração)";
+    ViewData["Aba"] = "Jogos";
+
+    // Formulário novo: o campo de data e hora começa em branco (e não em 01/01/0001).
+    var dataHoraInicial = Model.Formulario.DataHora == default ? "" : Formatacao.ParaCampoDataHora(Model.Formulario.DataHora);
+}
+
+<h1 class="titulo-pagina">Jogos</h1>
+<partial name="_Abas" />
+
+<div class="admin-layout">
+    <section class="cartao-vidro admin-form">
+        <h2>@(Model.EmEdicao ? "Alterar jogo" : "Novo jogo")</h2>
+
+        @if (Model.Estadios.Count == 0)
+        {
+            <p class="alerta alerta-aviso">Cadastre um estádio antes de criar jogos.</p>
+        }
+
+        <form asp-area="Admin" asp-action="Salvar" method="post" novalidate>
+            @if (Model.EmEdicao)
+            {
+                <input type="hidden" name="id" value="@Model.IdEmEdicao" />
+            }
+            <div asp-validation-summary="ModelOnly" class="alerta alerta-erro" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Formulario.EstadioID" class="form-label"></label>
+                <select asp-for="Formulario.EstadioID" class="form-select"
+                        asp-items="@(new SelectList(Model.Estadios, nameof(EstadioDto.Id), nameof(EstadioDto.Nome)))">
+                    <option value="0">— Escolha o estádio —</option>
+                </select>
+                <span asp-validation-for="Formulario.EstadioID"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Formulario.DataHora" class="form-label"></label>
+                <input asp-for="Formulario.DataHora" type="datetime-local" class="form-control" value="@dataHoraInicial" />
+                <span asp-validation-for="Formulario.DataHora"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Formulario.TimeA" class="form-label"></label>
+                <input asp-for="Formulario.TimeA" class="form-control" placeholder="Ex.: Brasil" />
+                <span asp-validation-for="Formulario.TimeA"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Formulario.TimeB" class="form-label"></label>
+                <input asp-for="Formulario.TimeB" class="form-control" placeholder="Ex.: Sérvia" />
+                <span asp-validation-for="Formulario.TimeB"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Formulario.Fase" class="form-label"></label>
+                <input asp-for="Formulario.Fase" class="form-control" placeholder="Ex.: Fase de grupos" />
+                <span asp-validation-for="Formulario.Fase"></span>
+            </div>
+
+            <button type="submit" class="btn-mt">@(Model.EmEdicao ? "Salvar alterações" : "Cadastrar")</button>
+            @if (Model.EmEdicao)
+            {
+                <a asp-action="Index" class="btn-mt btn-mt-secundario">Cancelar</a>
+            }
+        </form>
+    </section>
+
+    <section class="cartao-vidro admin-tabela">
+        <h2>@Model.Itens.Count jogo(s) cadastrado(s)</h2>
+        @if (Model.Itens.Count == 0)
+        {
+            <p class="vazio">Nenhum jogo cadastrado ainda.</p>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="tabela-mt">
+                    <thead>
+                        <tr><th>Data e hora</th><th>Partida</th><th>Estádio</th><th>Fase</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var jogo in Model.Itens)
+                        {
+                            <tr class="@(jogo.Id == Model.IdEmEdicao ? "em-edicao" : "")">
+                                <td>@Formatacao.DataHora(jogo.DataHora)</td>
+                                <td>
+                                    <partial name="_Time" model="(jogo.TimeA, Bandeiras.Url(jogo.TimeA))" /> <span class="text-secondary">x</span>
+                                    <partial name="_Time" model="(jogo.TimeB, Bandeiras.Url(jogo.TimeB))" />
+                                </td>
+                                <td>@jogo.EstadioNome <span class="text-secondary">— @jogo.EstadioCidade</span></td>
+                                <td>@jogo.Fase</td>
+                                <td class="acoes">
+                                    <a asp-action="Index" asp-route-editar="@jogo.Id" class="btn-mt btn-mt-secundario btn-mt-pequeno">Editar</a>
+                                    <form asp-area="Admin" asp-action="Excluir" method="post" data-confirmar="Excluir o jogo @jogo.Partida?">
+                                        <input type="hidden" name="id" value="@jogo.Id" />
+                                        <button type="submit" class="btn-mt btn-mt-perigo btn-mt-pequeno">Excluir</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

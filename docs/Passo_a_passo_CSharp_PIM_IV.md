@@ -18,7 +18,7 @@ Marque cada fase aqui quando todos os passos dela (seção 5) estiverem concluí
 - [x] **Fase 3:** Negócio
 - [x] **Fase 4:** injeção de dependência
 - [x] **Fase 5:** Api
-- [ ] **Fase 6:** Web
+- [x] **Fase 6:** Web
 - [ ] **Fase 7:** fechamento e evidências do manual
 
 ---
@@ -279,15 +279,15 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
 
 **Telas do comprador**
 
-- [ ] **6.1** Criar **ViewModels** para as telas (o manual recomenda). Os controllers só recebem, chamam o Negócio e devolvem a view. Configurar a autenticação por cookie no `Program.cs` da Web, com o `Perfil` como *claim* de papel (já faz parte do ASP.NET Core), e a sessão para o carrinho.
-- [ ] **6.2** Telas de **Login** e **Cadastro**, substituindo `1.html/LOGIN.html` e `cadastro.html`. Não levar os defeitos dos HTMLs: o cadastro tem **dois campos com o mesmo `name="Senha"`** (precisam de nomes diferentes, por exemplo `Senha` e `ConfirmarSenha`) e o login aponta para `CADASTRO.html` em maiúsculas, enquanto o arquivo é `cadastro.html`. Os ícones de login social não vão (premissa 4.8), e o texto "Brazil Tickets" do `alt` do logo no login deve ser "Mundial Tickets".
-- [ ] **6.3** Migrar o visual: `2.css/*.css` para `wwwroot/css`, e de `4.flags/` as bandeiras (`argentina`, `brazil`, `canada`, `chile`, `denmark`, `france`, `germany`, `japan`, `mexico`, `serbia`, `uruguay`, `usa`, todas `.svg`), `jogo.jpeg`, `futebol.jpeg`, `imagem_trofeu_copa.webp` e o logo (`logo 3 - Editado.png`). **Não** copiar o `Claude Setup.exe`, que está na mesma pasta. As bandeiras hoje são escolhidas por uma **classe CSS por jogo** (`.mexico-canada` etc.); com os jogos vindos do banco, o nome do time (`TimeA`/`TimeB`) é ligado ao arquivo da bandeira por uma **tabela de correspondência na Web** (premissa 4.11), sem coluna nova no banco.
-- [ ] **6.4** Migrar o cabeçalho e o rodapé dos HTMLs para o `_Layout.cshtml` e usar partial views para o que se repete (card de jogo). O menu mostra o item **Administração** só para quem tem o papel `ADMIN`.
-- [ ] **6.5** **Home** e **Ingressos**: lista de jogos, com o carrossel e os cards (de `index.html` e `INGRESSOS.html`), lendo do banco.
-- [ ] **6.6** **Escolha do ingresso**: página de um jogo com seus setores (nome, preço e vagas) e, ao escolher um setor, os **assentos disponíveis** para marcar. Os assentos marcados vão para o **carrinho**.
-- [ ] **6.7** **Carrinho** (guardado na sessão do ASP.NET Core, com os ids dos ingressos) e **Pagamento** (substitui o `PAGAMENTO.html`, hoje vazio): o comprador escolhe Pix, Cartão ou Boleto e a compra chama `VendaNegocio.Comprar`. Exigir login antes de pagar. Mostrar a mensagem de erro do Negócio quando algum assento já foi vendido.
-- [ ] **6.8** **Meus ingressos**, mostrando o **texto** do código do QR (a imagem é desenhada pelo Flutter).
-- [ ] **6.9** **Minha conta**: ver, alterar e desativar a conta (CRUD de Usuário).
+- [x] **6.1** Criar **ViewModels** para as telas (o manual recomenda). Os controllers só recebem, chamam o Negócio e devolvem a view. Configurar a autenticação por cookie no `Program.cs` da Web, com o `Perfil` como *claim* de papel (já faz parte do ASP.NET Core), e a sessão para o carrinho.
+- [x] **6.2** Telas de **Login** e **Cadastro**, substituindo `1.html/LOGIN.html` e `cadastro.html`. Não levar os defeitos dos HTMLs: o cadastro tem **dois campos com o mesmo `name="Senha"`** (precisam de nomes diferentes, por exemplo `Senha` e `ConfirmarSenha`) e o login aponta para `CADASTRO.html` em maiúsculas, enquanto o arquivo é `cadastro.html`. Os ícones de login social não vão (premissa 4.8), e o texto "Brazil Tickets" do `alt` do logo no login deve ser "Mundial Tickets".
+- [x] **6.3** Migrar o visual: `2.css/*.css` para `wwwroot/css`, e de `4.flags/` as bandeiras (`argentina`, `brazil`, `canada`, `chile`, `denmark`, `france`, `germany`, `japan`, `mexico`, `serbia`, `uruguay`, `usa`, todas `.svg`), `jogo.jpeg`, `futebol.jpeg`, `imagem_trofeu_copa.webp` e o logo (`logo 3 - Editado.png`). **Não** copiar o `Claude Setup.exe`, que está na mesma pasta. As bandeiras hoje são escolhidas por uma **classe CSS por jogo** (`.mexico-canada` etc.); com os jogos vindos do banco, o nome do time (`TimeA`/`TimeB`) é ligado ao arquivo da bandeira por uma **tabela de correspondência na Web** (premissa 4.11), sem coluna nova no banco.
+- [x] **6.4** Migrar o cabeçalho e o rodapé dos HTMLs para o `_Layout.cshtml` e usar partial views para o que se repete (card de jogo). O menu mostra o item **Administração** só para quem tem o papel `ADMIN`.
+- [x] **6.5** **Home** e **Ingressos**: lista de jogos, com o carrossel e os cards (de `index.html` e `INGRESSOS.html`), lendo do banco.
+- [x] **6.6** **Escolha do ingresso**: página de um jogo com seus setores (nome, preço e vagas) e, ao escolher um setor, os **assentos disponíveis** para marcar. Os assentos marcados vão para o **carrinho**.
+- [x] **6.7** **Carrinho** (guardado na sessão do ASP.NET Core, com os ids dos ingressos) e **Pagamento** (substitui o `PAGAMENTO.html`, hoje vazio): o comprador escolhe Pix, Cartão ou Boleto e a compra chama `VendaNegocio.Comprar`. Exigir login antes de pagar. Mostrar a mensagem de erro do Negócio quando algum assento já foi vendido.
+- [x] **6.8** **Meus ingressos**, mostrando o **texto** do código do QR (a imagem é desenhada pelo Flutter).
+- [x] **6.9** **Minha conta**: ver, alterar e desativar a conta (CRUD de Usuário).
 
 **Área administrativa** (só o papel `ADMIN`; acesso negado para os demais). **Uma tela por entidade**, com todas as funções do CRUD na mesma página, em vez de `Index`, `Criar`, `Editar` e `Excluir` separados:
 
@@ -297,10 +297,10 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
 - os erros de validação e de regra de negócio aparecem junto do formulário;
 - o formulário fica numa partial reaproveitada pela página, e a tabela usa `table-responsive`.
 
-- [ ] **6.10** Página de **Estádio**, no desenho acima.
-- [ ] **6.11** Páginas de **Setor** e de **Jogo**, no mesmo desenho, com **lista para escolher o estádio** no formulário.
-- [ ] **6.12** Página de **Assento**, com lista para escolher o setor e uma segunda seção, **criar vários** (setor e quantidade, premissa 4.2).
-- [ ] **6.13** Página de **Ingresso** (premissas 4.1 e 4.3): tabela com filtro por jogo e status, o formulário (criar e editar o preço), o botão **gerar para um jogo**, o botão **cancelar** em cada linha e a exclusão.
+- [x] **6.10** Página de **Estádio**, no desenho acima.
+- [x] **6.11** Páginas de **Setor** e de **Jogo**, no mesmo desenho, com **lista para escolher o estádio** no formulário.
+- [x] **6.12** Página de **Assento**, com lista para escolher o setor e uma segunda seção, **criar vários** (setor e quantidade, premissa 4.2).
+- [x] **6.13** Página de **Ingresso** (premissas 4.1 e 4.3): tabela com filtro por jogo e status, o formulário (criar e editar o preço), o botão **gerar para um jogo**, o botão **cancelar** em cada linha e a exclusão.
 
 **Notas da Fase 1 (decisões tomadas durante a execução):**
 
@@ -311,8 +311,21 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
 - As **entidades** seguem os nomes das colunas (`SetorID`, `NomeSetor`...) e os **DTOs** usam `Id`, como o `Estadio`. As classes de `3.Classes` não foram alteradas nem apagadas.
 - **Não foram criados** os DTOs da criação em lote de assentos nem da geração de ingressos para um jogo: eles dependem do desenho dos passos 3.4 e 3.5 e serão criados nessas fases.
 - Entidades e DTOs foram testados fora do repositório (38 verificações: pagamentos, constantes, padrões, validações e conversões).
-- [ ] **6.14** Responsividade: manter o `viewport` e as *media queries* dos CSS (há pontos entre 480 px e 1400 px), testar em largura de celular.
-- [ ] **6.15** *Pronto quando:* o administrador cadastra um jogo e gera os ingressos, e um comprador navega da Home até uma compra completa pelo navegador, escolhendo jogo, setor e assento, com a mesma regra de negócio da Api.
+- [x] **6.14** Responsividade: manter o `viewport` e as *media queries* dos CSS (há pontos entre 480 px e 1400 px), testar em largura de celular.
+- [x] **6.15** *Pronto quando:* o administrador cadastra um jogo e gera os ingressos, e um comprador navega da Home até uma compra completa pelo navegador, escolhendo jogo, setor e assento, com a mesma regra de negócio da Api.
+
+**Notas da Fase 6 (decisões tomadas durante a execução):**
+
+- **Autenticação da Web:** cookie com o `Perfil` como *claim* de papel. A cada requisição, o `OnValidatePrincipal` consulta o usuário no banco e derruba o cookie se a conta foi **desativada** ou se o **perfil mudou** (testado: conta desativada deixa de entrar na hora; quem é promovido a `ADMIN` precisa entrar de novo). Sem login social (premissa 4.8).
+- **Carrinho na sessão** guarda só os ids dos ingressos; preço e disponibilidade são relidos do banco a cada tela (`CarrinhoMontador`). O formulário de pagamento só aceita o método (`[Bind("MetodoPagamento")]`): total e usuário vêm do servidor. Boleto continua recusado pelo Negócio (premissa de pagamento simulado). Sair da conta esvazia o carrinho.
+- **Para a Web chegar aos ingressos escolhidos** foi acrescentado `IngressoNegocio.ListarPorIds` (usa o `ObterPorIds` que o repositório já tinha).
+- **Um único CSS** (`wwwroot/css/mundial.css`) no lugar dos vários `.css` do modelo antigo, mais o Bootstrap da pasta `lib`. As bandeiras vêm da tabela `Bandeiras` (nome do time → arquivo `.svg`), sem coluna nova no banco; time desconhecido aparece sem bandeira. Os arquivos de imagem foram copiados; o `Claude Setup.exe` não.
+- **Cultura:** a requisição usa a cultura invariante (decimais com ponto e datas ISO nos campos `number` e `datetime-local`); a **exibição** é em pt-BR pela classe `Formatacao`.
+- **Área `Admin`** (`Areas/Admin`): controladores herdam de `AdminControllerBase` (`[Authorize(Roles = ADMIN)]`). Uma página por entidade (Estádios, Setores, Assentos, Jogos, Ingressos) com tabela, formulário na mesma página (`?editar=id`), `Salvar` e `Excluir` por POST; erros de regra aparecem na própria página. Assentos tem a seção "criar vários" e Ingressos tem "gerar para um jogo", "criar individual", alterar preço (só se `DISPONIVEL`), cancelar e excluir (nunca `VENDIDO`).
+- **Todo POST tem token antifalsificação**; sem token a resposta é 400 (testado). Após o login, só volta para endereços do próprio site (`Url.IsLocalUrl`).
+- **Verificação (6.15):** a Web foi iniciada de verdade e exercitada por HTTP (cookies e tokens reais) contra o banco real: em dois roteiros (comprador e administração); as falhas que apareceram foram defeitos dos próprios roteiros (texto HTML codificado, caminho convertido pelo Git Bash, conta de teste usando assento já vendido, contagem errada) e o do layout descrito abaixo, e no fim tudo passou. Cobriu páginas públicas, 302 para o login e 403/Acesso negado, cadastro e login com todas as falhas, **dois compradores disputando o mesmo assento** (o segundo é avisado e paga só o que sobrou), Pix aprovado e Boleto recusado, Meus ingressos com o QR, Minha conta (nome, e-mail repetido, senha, desativar) e o CRUD de cada página de administração, inclusive as recusas (setor acima da capacidade do estádio, assento repetido, lote acima da capacidade, excluir com dependentes, mexer em ingresso vendido). Tudo o que o roteiro criou foi desfeito (banco com 7/21/175/6/150 e nenhum usuário).
+- **Responsividade (6.14):** capturas em 1366, 768 e 390 px, sem rolagem horizontal da página em nenhuma tela; as tabelas da administração rolam dentro do cartão no celular. Defeito encontrado e corrigido: em tela estreita o painel de administração era esticado pela tabela (a grade foi trocada por bloco abaixo de 1024 px).
+- **Observações:** (1) os nomes de estádio **não são únicos** no banco; cadastrar o mesmo nome duas vezes é aceito. (2) Em desenvolvimento, o `MapStaticAssets` serve a versão compactada do CSS gerada na **compilação**; depois de mudar um arquivo de `wwwroot`, é preciso compilar de novo para ver a alteração no navegador. (3) Não há projeto de testes automatizados no repositório: os roteiros ficaram fora dele.
 
 ### Fase 7: fechamento e evidências do manual (Etapa 4)
 

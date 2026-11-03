@@ -1,0 +1,43 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Entrar";
+    ViewData["ClasseBody"] = "pagina-dividida";
+    ViewData["SemContainer"] = true;
+}
+
+<div class="divisao">
+    <section class="painel-form">
+        <h1>Faça login</h1>
+
+        <form asp-action="Entrar" method="post" novalidate>
+            <input type="hidden" asp-for="ReturnUrl" />
+            <div asp-validation-summary="ModelOnly" class="alerta alerta-erro" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" placeholder="seuemail@exemplo.com" autocomplete="email" autofocus />
+                <span asp-validation-for="Email"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Senha" class="form-label"></label>
+                <input asp-for="Senha" type="password" class="form-control" placeholder="Sua senha" autocomplete="current-password" />
+                <span asp-validation-for="Senha"></span>
+            </div>
+
+            <button type="submit" class="btn-mt btn-mt-bloco mt-2">Entrar</button>
+        </form>
+
+        <p class="troca">Não possui conta? <a asp-action="Cadastro">Cadastre-se</a></p>
+    </section>
+
+    <section class="painel-imagem" aria-hidden="true">
+        <div>
+            <h2>O melhor site de venda de ingressos do Brasil</h2>
+            <p>Garanta seu lugar na história. A Copa começa aqui.</p>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

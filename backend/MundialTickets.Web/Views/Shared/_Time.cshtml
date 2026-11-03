@@ -1,0 +1,14 @@
+@* Nome de um time com a bandeira ao lado. Sem bandeira cadastrada (ver Servicos/Bandeiras.cs),
+   mostra um ícone genérico no lugar. Modelo: (nome do time, caminho da bandeira ou null). *@
+@model (string Nome, string? Bandeira)
+<span class="time">
+    @if (Model.Bandeira is not null)
+    {
+        <img class="bandeira" src="@Model.Bandeira" alt="" />
+    }
+    else
+    {
+        <span class="bandeira-vazia" aria-hidden="true">⚽</span>
+    }
+    <span>@Model.Nome</span>
+</span>

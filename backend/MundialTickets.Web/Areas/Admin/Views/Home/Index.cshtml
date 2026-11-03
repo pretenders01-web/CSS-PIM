@@ -1,0 +1,31 @@
+@{
+    ViewData["Title"] = "Administração";
+}
+
+<h1 class="titulo-pagina">Administração</h1>
+<p class="subtitulo-pagina">Cadastre o que o comprador vê: estádios, setores, assentos, jogos e ingressos.</p>
+
+<div class="admin-cartoes">
+    <a asp-controller="Estadios" asp-action="Index" class="cartao-vidro">
+        <h3>1. Estádios</h3>
+        <p>Onde os jogos acontecem e a capacidade total.</p>
+    </a>
+    <a asp-controller="Setores" asp-action="Index" class="cartao-vidro">
+        <h3>2. Setores</h3>
+        <p>As áreas de cada estádio, com a capacidade e o preço base.</p>
+    </a>
+    <a asp-controller="Assentos" asp-action="Index" class="cartao-vidro">
+        <h3>3. Assentos</h3>
+        <p>Os lugares numerados de cada setor, um a um ou em lote.</p>
+    </a>
+    <a asp-controller="Jogos" asp-action="Index" class="cartao-vidro">
+        <h3>4. Jogos</h3>
+        <p>As partidas: estádio, data, hora, times e fase.</p>
+    </a>
+    <a asp-controller="Ingressos" asp-action="Index" class="cartao-vidro">
+        <h3>5. Ingressos</h3>
+        <p>Gere os ingressos de um jogo, ajuste preços e cancele.</p>
+    </a>
+</div>
+
+<p class="mt-4 text-secondary small">Siga a ordem dos números: um setor precisa de um estádio, um assento de um setor, e os ingressos de um jogo saem dos assentos do estádio dele.</p>

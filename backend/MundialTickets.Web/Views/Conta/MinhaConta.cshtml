@@ -1,0 +1,60 @@
+@model UsuarioAtualizarDto
+@{
+    ViewData["Title"] = "Minha conta";
+}
+
+<h1 class="titulo-pagina">Minha conta</h1>
+<p class="subtitulo-pagina">Altere seus dados. Deixe a nova senha em branco para manter a atual.</p>
+
+<div class="row g-4">
+    <div class="col-12 col-lg-7">
+        <form asp-action="MinhaConta" method="post" class="cartao-vidro" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alerta alerta-erro" role="alert"></div>
+
+            <div class="mb-3">
+                <label asp-for="Nome" class="form-label"></label>
+                <input asp-for="Nome" class="form-control" autocomplete="name" />
+                <span asp-validation-for="Nome"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label"></label>
+                <input asp-for="Email" class="form-control" autocomplete="email" />
+                <span asp-validation-for="Email"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Cpf" class="form-label"></label>
+                <input asp-for="Cpf" class="form-control" placeholder="000.000.000-00 (opcional)" inputmode="numeric" />
+                <span asp-validation-for="Cpf"></span>
+            </div>
+            <div class="row">
+                <div class="col-12 col-md-6 mb-3">
+                    <label asp-for="NovaSenha" class="form-label"></label>
+                    <input asp-for="NovaSenha" type="password" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="NovaSenha"></span>
+                </div>
+                <div class="col-12 col-md-6 mb-3">
+                    <label asp-for="ConfirmarNovaSenha" class="form-label"></label>
+                    <input asp-for="ConfirmarNovaSenha" type="password" class="form-control" autocomplete="new-password" />
+                    <span asp-validation-for="ConfirmarNovaSenha"></span>
+                </div>
+            </div>
+            <button type="submit" class="btn-mt">Salvar alterações</button>
+        </form>
+    </div>
+
+    <div class="col-12 col-lg-5">
+        <div class="cartao-vidro">
+            <h2 class="h5">Desativar a conta</h2>
+            <p class="text-secondary">
+                A conta é desativada e você não consegue mais entrar. Os ingressos já comprados continuam registrados.
+            </p>
+            <form asp-action="Desativar" method="post" data-confirmar="Desativar a sua conta? Você não poderá mais entrar.">
+                <button type="submit" class="btn-mt btn-mt-perigo">Desativar minha conta</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
