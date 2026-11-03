@@ -58,12 +58,25 @@ public class VendaRepositorio : IVendaRepositorio
         }
         catch (SqlException ex)
         {
-            // A procedure desfaz tudo (ROLLBACK) e relança o erro com RAISERROR, que perde o
-            // número original do erro. Por isso a distinção abaixo é pelo texto da trigger,
-            // que está escrito no script do banco em português.
-            var mensagem = ex.Message.Contains("não estão disponíveis")
-                ? "Um ou mais ingressos não estão disponíveis para venda."
-                : "Não foi possível concluir a compra. Algum dos ingressos pode ter acabado de ser vendido. Tente novamente.";
+            // Há dois tipos de falha vindo da procedure:
+            //  1) As validações que ela faz ANTES de abrir a transação usam THROW com número
+            //     próprio (50010 a 50013), e o número chega aqui. As mensagens do banco vêm sem
+            //     acento, por isso cada número vira uma mensagem nossa.
+            //  2) Qualquer erro DENTRO da transação (trigger, índice único, chave estrangeira)
+            //     é relançado pelo CATCH da procedure com RAISERROR, que perde o número
+            //     original (vira 50000). Nesse caso a distinção é pelo texto da trigger, escrito
+            //     em português no script do banco.
+            // O erro técnico completo continua em InnerException.
+            var mensagem = ex.Number switch
+            {
+                50010 => "Informe ao menos um ingresso para realizar a compra.",
+                50011 => "A lista de ingressos contém IDs inválidos ou vazios.",
+                50012 => "Um ou mais ingressos informados não existem.",
+                50013 => "A lista contém ingressos repetidos.",
+                _ when ex.Message.Contains("não estão disponíveis")
+                    => "Um ou mais ingressos não estão disponíveis para venda.",
+                _ => "Não foi possível concluir a compra. Algum dos ingressos pode ter acabado de ser vendido. Tente novamente."
+            };
 
             throw new OperacaoNoBancoException(mensagem, ex);
         }

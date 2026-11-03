@@ -82,8 +82,8 @@ Chaves estrangeiras (11): Assento→Setor; Ingresso→Assento, Jogo e Setor; Ite
 
 | Trigger | O que faz |
 |---|---|
-| `trg_ItemVenda_Insert` | Se algum ingresso inserido não estiver `DISPONIVEL`, dá `RAISERROR('Um ou mais ingressos não estão disponíveis para venda.')`; senão marca os ingressos como `VENDIDO` |
-| `trg_ItemVenda_UpdateValorTotal` (também em `DELETE`) | Recalcula `Venda.ValorTotal` como a soma de `PrecoUnitario`. Usa `TOP 1 VendaID`, então assume que cada INSERT é de **uma única venda** |
+| `trg_ItemVenda_Insert` | Se algum ingresso inserido tiver status nulo ou diferente de `DISPONIVEL`, dá `RAISERROR('Um ou mais ingressos não estão disponíveis para venda.')`; senão marca os ingressos como `VENDIDO` |
+| `trg_ItemVenda_UpdateValorTotal` (também em `DELETE`) | Recalcula `Venda.ValorTotal` como a soma de `PrecoUnitario`, para **todas** as vendas afetadas pelo INSERT ou DELETE (corrigida: antes só recalculava a primeira) |
 | `trg_ItemVenda_GerarQRCode` | Cria 1 `QRCode` por item: `CodigoQR` = `NEWID()` + `-` + IngressoID; `DataExpiracao` = data/hora do jogo |
 
 ### Procedure `sp_RealizarCompra`
@@ -91,20 +91,24 @@ Chaves estrangeiras (11): Assento→Setor; Ingresso→Assento, Jogo e Setor; Ite
 - Parâmetros: `@UsuarioID INT`, `@Ingressos VARCHAR(MAX)` (ids separados por vírgula), `@MetodoPagamento VARCHAR(30)`.
 - Cria a `Venda` como `PENDENTE`, insere um `ItemVenda` por id (o preço vem de `Ingresso.PrecoFinal`), atualiza a venda para **`APROVADO` sempre** e confirma a transação.
 - Devolve um conjunto de linhas com as colunas **`CodigoQR`, `DataJogo`, `Partida`** (`TimeA x TimeB`).
-- Em erro: faz `ROLLBACK` e relança a mensagem com `RAISERROR` (vira uma `SqlException` no C#).
+- **Antes** de abrir a transação, valida a lista e recusa com `THROW`: lista vazia (50010), IDs inválidos (50011), ingressos inexistentes (50012) e ingressos repetidos (50013). Não valida o usuário nem a disponibilidade: isso fica por conta da chave estrangeira e da trigger.
+- Em erro **dentro da transação**: faz `ROLLBACK` e relança a mensagem com `RAISERROR` (vira uma `SqlException` no C#, número 50000).
 
-### Comportamento da procedure em falha (testado em 30/10/2026, com tudo desfeito depois)
+### Comportamento da procedure em falha (testado em 31/10/2026 com os scripts atuais, com tudo desfeito depois)
 
-| Situação | O que o SQL devolve |
-|---|---|
-| Ingresso já vendido, comprado de novo | Violação da UNIQUE KEY de `ItemVenda.IngressoID` (mensagem técnica, **não** a da trigger) |
-| Mesmo id duas vezes na lista | A mesma violação UNIQUE |
-| Id de ingresso inexistente | "Não é possível inserir o valor NULL na coluna 'PrecoUnitario'" |
-| Lista vazia | A mesma mensagem de `PrecoUnitario` NULL |
-| Usuário inexistente | Violação da FK `FK_Venda_Usuario` |
-| Ingresso `CANCELADO` (ou não `DISPONIVEL`) | "Um ou mais ingressos não estão disponíveis para venda." |
+As validações do início usam `THROW` **antes** da transação: nada chega a ser gravado e o número do erro chega ao C#. As demais falhas acontecem dentro da transação e o `CATCH` da procedure as relança com `RAISERROR` (número 50000).
 
-**Consequência para o plano:** a procedure protege os dados (nada fica gravado em falha), mas suas mensagens são técnicas. Por isso o Negócio **valida antes** de chamar a procedure (passo 3.7) e a camada Repositório trata a `SqlException` como segunda barreira.
+| Situação | Número | O que o SQL devolve |
+|---|---|---|
+| Lista vazia | 50010 | "Informe ao menos um ingresso para realizar a compra." |
+| ID vazio, não numérico ou não positivo | 50011 | "A lista de ingressos contem IDs invalidos ou vazios." |
+| Id de ingresso inexistente | 50012 | "Um ou mais ingressos informados nao existem." |
+| Mesmo id duas vezes na lista | 50013 | "A lista contem ingressos repetidos." |
+| Ingresso `CANCELADO`, com status nulo ou não `DISPONIVEL` | 50000 | "Um ou mais ingressos não estão disponíveis para venda." (mensagem da trigger) |
+| Ingresso já vendido, comprado de novo | 50000 | Violação da UNIQUE KEY de `ItemVenda.IngressoID` (mensagem técnica, **não** a da trigger) |
+| Usuário inexistente | 50000 | Violação da FK `FK_Venda_Usuario` |
+
+**Consequência para o plano:** a procedure protege os dados (nada fica gravado em falha). As quatro validações do início têm mensagem própria, mas sem acento, e as falhas de dentro da transação são técnicas. Por isso o Negócio **valida antes** de chamar a procedure (passo 3.7), com mensagens nossas, e a camada Repositório trata a `SqlException` como segunda barreira, trocando cada número por uma mensagem em português correto.
 
 ---
 
@@ -123,7 +127,7 @@ Nenhuma bloqueia a Fase 1. Cada linha diz a partir de qual passo precisa de resp
 | 4.7 | **Valores do script de dados.** Capacidades, preços, fase e horário dos jogos não existem no HTML (só as datas) | Passo 0.2 | Valores **fictícios e pequenos**, avisados nos comentários do script |
 | 4.8 | **Tela de login social** (ícones de E-mail, Facebook e Outlook, que só mostram um aviso) | Passo 6.2 | Não levar para o sistema novo |
 | 4.11 | **Bandeiras dos times.** Hoje são arquivos em `4.flags/` ligados aos jogos por classes CSS, e o banco não guarda nada de bandeira | Passo 6.3 | **Decidido:** uma tabela de correspondência na Web (nome do time para o arquivo `.svg`), sem alterar o banco. Time sem bandeira cadastrada mostra um ícone genérico |
-| 4.10 | **Datas dos jogos.** As do HTML (junho de 2026) já passaram em relação à data atual, então um filtro por jogos futuros esconderia todos | Passos 2.5, 3.2 e 5.5 | O sistema **não filtra por data**: lista e vende todos os jogos, ordenados por data. Para o seed ficar no futuro, as datas de @Jogos em  5_Dados_Teste.sql podem ser trocadas |
+| 4.10 | **Datas dos jogos.** As do HTML (junho de 2026) já passaram em relação à data atual, então um filtro por jogos futuros esconderia todos | Passos 2.5, 3.2 e 5.5 | O sistema **não filtra por data**: lista e vende todos os jogos, ordenados por data. Para o seed ficar no futuro, as datas de `@Jogos` em `05_Dados_Teste.sql` podem ser trocadas |
 | 4.9 | **Versões dos pacotes NuGet** (JwtBearer e outros) | Passos 5.2 e 6.1 | Instalar a versão 9.x e confirmar com `dotnet build` |
 
 ---
@@ -168,20 +172,21 @@ Convenção: **[BANCO]** = regra que o banco já impõe; **[PROPOSTA]** = escolh
 - [x] **2.6** `IngressoRepositorio`: listar com filtros (jogo, status), contar e listar os `DISPONIVEL` de um jogo por setor (com o `Assento`), obter vários por id (com `Jogo`, `Setor` e `Assento`) e inserir vários de uma vez.
 - [x] **2.7** `UsuarioRepositorio`: incluir, obter por id, obter por e-mail, alterar e desativar.
 - [x] **2.8** `VendaRepositorio.RealizarCompra(usuarioId, ids, metodo)`, com **Dapper**, no molde de `BuscarPorNome` do template: pegar a conexão por `_contexto.Database.GetDbConnection()` e chamar `sp_RealizarCompra` com `commandType: CommandType.StoredProcedure`. Os parâmetros se chamam `UsuarioID`, `Ingressos` (`string.Join(",", ids)`) e `MetodoPagamento`, e o resultado mapeia as colunas `CodigoQR`, `DataJogo` e `Partida`. Esta é a evidência da "chamada da stored procedure" que o manual pede.
-- [x] **2.9** No `RealizarCompra`, capturar `Microsoft.Data.SqlClient.SqlException` e relançar como `OperacaoNoBancoException` (exceção do próprio Repositório, com mensagem em português e o erro técnico em `InnerException`), como segunda barreira (a primeira é a validação do passo 3.7). O **Negócio** captura essa exceção e a converte em `RegraDeNegocioException`.
+- [x] **2.9** No `RealizarCompra`, capturar `Microsoft.Data.SqlClient.SqlException` e relançar como `OperacaoNoBancoException` (exceção do próprio Repositório, com mensagem em português e o erro técnico em `InnerException`), como segunda barreira (a primeira é a validação do passo 3.7). As validações da procedure (números 50010 a 50013) e a mensagem da trigger viram mensagens específicas; o resto vira uma mensagem genérica. O **Negócio** captura essa exceção e a converte em `RegraDeNegocioException`.
 - [x] **2.10** Consulta de "meus ingressos": ingressos de um usuário com o QR code (`Venda`, `ItemVenda`, `QRCode`, `Jogo`, `Setor`, `Assento`).
 - [x] **2.11** *Pronto quando:* o build passa e cada repositório responde contra o banco com os dados do passo 0.2. A única classe que acessa o banco é o Repositório.
 
 **Notas da Fase 2 (decisões tomadas durante a execução):**
 
 - **A exceção do Repositório é nova e não estava no plano.** O passo 2.9 original mandava relançar como erro de negócio, mas a `RegraDeNegocioException` mora no projeto Negócio, que referencia o Repositório, e uma camada de baixo não pode conhecer a de cima. Por isso o Repositório lança a `OperacaoNoBancoException` e o Negócio faz a conversão (passo 3.7).
-- **A procedure perde o número do erro original.** O `CATCH` dela relança com `RAISERROR`, então toda falha chega ao C# com o mesmo número (50000). A distinção é feita pelo **texto**: se contém "não estão disponíveis" (mensagem da trigger, escrita em português no script do banco), vira essa mensagem; qualquer outra falha vira "Não foi possível concluir a compra. Algum dos ingressos pode ter acabado de ser vendido. Tente novamente."
+- **O número do erro depende de onde a falha acontece.** As validações da procedure feitas **antes** de abrir a transação usam `THROW` com número próprio (50010 a 50013) e o número chega ao C#; cada um vira uma mensagem nossa, com acento (as do banco vêm sem acento). Qualquer falha **dentro** da transação (trigger, índice único, chave estrangeira) é relançada pelo `CATCH` com `RAISERROR` e perde o número original (vira 50000): aí a distinção é pelo **texto** da trigger ("não estão disponíveis"), escrito em português no script do banco, e o resto vira "Não foi possível concluir a compra. Algum dos ingressos pode ter acabado de ser vendido. Tente novamente."
+- **O banco local foi sincronizado com os scripts de 31/10** (procedure com validações e as triggers corrigidas, commits do Caique Moraes). Os scripts `03_Procedure.sql` e `04_Triggers` usam `CREATE`, então a sincronização apagou e recriou a procedure e as 3 triggers (sem vendas no banco). O `04_Triggers` termina com `USE [master]` e `ALTER DATABASE ... SET READ_WRITE`, um rodapé do SSMS que o SQL Server não aceita dentro de uma transação: ao aplicar o script em uma transação, esse rodapé precisa ser pulado. Em uma execução normal no SSMS ele não causa problema.
 - **O Dapper participa da transação aberta no contexto** (`transaction: _contexto.Database.CurrentTransaction`). Sem isso, a chamada da procedure falharia dentro de uma transação do EF.
 - **Não há `AssentoRepositorio` com consultas de disponibilidade**: quem sabe o que está disponível é o `IngressoRepositorio` (`ListarDisponiveis` e `ContarDisponiveisPorSetor`), que só considera ingressos com assento (premissa 4.3).
 - **`ObterPorId` devolve a entidade rastreada** (para o Negócio alterar e chamar `Atualizar`); as listagens usam `AsNoTracking`. O `Usuario.Desativar` usa `ExecuteUpdate` (um UPDATE direto); como não passa pelo rastreador, uma entidade já carregada no mesmo contexto continua com o valor antigo. Em uma requisição web isso não ocorre, porque cada requisição tem o seu contexto.
 - **As chaves estrangeiras do mapeamento usam `OnDelete(Restrict)`**, espelhando o banco (as FKs dele recusam a exclusão, não apagam em cascata).
 - **Os repositórios ainda não estão registrados na injeção de dependência**: isso é a Fase 4.
-- Testado contra o banco real, com os dados de teste carregados, por um programa fora do repositório (71 verificações, todas dentro de transações desfeitas). Isso incluiu o `HasTrigger`: o EF gravou um `ItemVenda` e as três triggers rodaram. O banco ficou com os dados de teste (7 estádios, 21 setores, 175 assentos, 6 jogos e 150 ingressos) e sem usuários, vendas, itens nem QR codes.
+- Testado contra o banco real, com os dados de teste carregados, por um programa fora do repositório (75 verificações, todas dentro de transações desfeitas, repetidas depois da sincronização com os scripts do banco de 31/10). Isso incluiu o `HasTrigger`: o EF gravou um `ItemVenda` e as três triggers rodaram. O banco ficou com os dados de teste (7 estádios, 21 setores, 175 assentos, 6 jogos e 150 ingressos) e sem usuários, vendas, itens nem QR codes.
 
 ### Fase 3: Negócio (`MundialTickets.Negocio`)
 
@@ -292,7 +297,7 @@ Um commit por fase concluída (Fases 0 a 7), com mensagens no padrão do histór
 
 ## 7. Riscos já identificados
 
-- A trigger `trg_ItemVenda_UpdateValorTotal` usa `TOP 1 VendaID`: se algum dia um único INSERT misturar itens de vendas diferentes, só a primeira venda é recalculada. A procedure atual insere sempre uma venda por vez, então não afeta o plano.
+- A trigger `trg_ItemVenda_UpdateValorTotal` tinha o limite de `TOP 1 VendaID` (só recalculava a primeira venda de um INSERT com itens de vendas diferentes). Foi corrigida no banco (commits do Caique de 30 e 31/10) e testada: o INSERT com duas vendas recalcula as duas. O risco deixou de existir.
 - A procedure grava `APROVADO` sem consultar o método de pagamento. O plano contorna isso decidindo no Negócio, sem alterar o banco.
 - Dois compradores escolhendo o mesmo assento ao mesmo tempo: o banco protege (UNIQUE e trigger), mas sem reserva (premissa 4.6) o segundo só descobre ao pagar. A tradução da `SqlException` (passo 2.9) garante uma mensagem clara.
 - O `Perfil` é gravado na tabela e promovido por `UPDATE` manual (premissa 4.4): quem tem acesso ao banco pode se tornar `ADMIN`. É aceitável para o contexto acadêmico.
