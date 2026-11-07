@@ -1,19 +1,23 @@
 ﻿/****** Dados de teste para o banco CopaDoMundoVendas ******/
--- Execute DEPOIS dos scripts 00 a 04. Este arquivo so INSERE linhas: nao altera
--- tabelas, indices, triggers nem a procedure.
+-- Execute DEPOIS dos scripts 00 a 04. Este arquivo insere linhas e acerta as datas dos
+-- 6 jogos abaixo: nao altera tabelas, indices, triggers nem a procedure.
 --
--- Pode ser executado varias vezes: cada linha so e inserida se ainda nao existir.
+-- Pode ser executado varias vezes: cada linha so e inserida se ainda nao existir, e os
+-- 6 jogos voltam sempre as datas de @Jogos.
+-- ATENCAO: por isso, repetir o script desfaz uma mudanca de data feita pelo administrador
+-- nesses 6 jogos.
 --
 -- O QUE VEM DO PROJETO E O QUE E FICTICIO
---   Vem de 1.html/index.html: os 6 jogos, as datas, os times e 6 estadios com a cidade.
+--   Vem de 1.html/index.html: os 6 jogos, os times e 6 estadios com a cidade.
 --   Estadio Sao Januario (Rio de Janeiro): acrescentado a pedido, nao esta no HTML.
 --   Ele recebe setores e assentos, mas nenhum jogo, entao nao tem ingressos ainda.
 --   FICTICIO (o HTML nao tem esses valores): CapacidadeTotal dos estadios, os setores,
---   os precos, o numero de assentos, o horario (16:00) e a fase dos jogos.
+--   os precos, o numero de assentos, as datas, o horario (16:00) e a fase dos jogos.
 --
--- ATENCAO: as datas dos jogos sao as do HTML (junho de 2026). Se a data atual ja
--- passou delas, os jogos aparecem como realizados. Para mudar, troque os valores de
--- @Jogos abaixo e rode de novo em um banco limpo (veja o bloco de limpeza no fim).
+-- DATAS: as do HTML (junho de 2026) ja passaram. Para existir "proximo jogo" no app e a
+-- validacao do ingresso funcionar na demonstracao, os jogos ficam de 14 a 19/12/2026, um
+-- por dia, na mesma ordem. Para mudar, troque os valores de @Jogos e rode de novo.
+-- QRCode.DataExpiracao nao e atualizada, porque a validacao usa a data atual do jogo.
 
 USE [CopaDoMundoVendas]
 GO
@@ -71,21 +75,28 @@ INNER JOIN Numeros n ON n.N <= s.Capacidade
 CROSS APPLY (SELECT s.Prefixo + RIGHT('0' + CAST(n.N AS varchar(2)), 2) AS Numero) c
 WHERE NOT EXISTS (SELECT 1 FROM Assento x WHERE x.SetorID = st.SetorID AND x.Numero = c.Numero);
 
--- ---------- Jogos (os 6 de 1.html/index.html; horario 16:00 e fase FICTICIOS) ----------
+-- ---------- Jogos (os 6 de 1.html/index.html; data, horario 16:00 e fase FICTICIOS) ----------
 DECLARE @Jogos TABLE (EstadioNome varchar(100), Cidade varchar(100), Dia varchar(8), TimeA varchar(50), TimeB varchar(50));
 INSERT INTO @Jogos (EstadioNome, Cidade, Dia, TimeA, TimeB) VALUES
-    ('Estádio Azteca',         'Cidade do México', '20260611', 'México',         'Canadá'),
-    ('SoFi Stadium',           'Los Angeles',      '20260612', 'Estados Unidos', 'Uruguai'),
-    ('AT&T Stadium',           'Dallas',           '20260615', 'Brasil',         'Sérvia'),
-    ('Mercedes-Benz Stadium',  'Atlanta',          '20260616', 'Argentina',      'Dinamarca'),
-    ('BC Place',               'Vancouver',        '20260617', 'França',         'Chile'),
-    ('MetLife Stadium',        'Nova Jersey',      '20260618', 'Alemanha',       'Japão');
+    ('Estádio Azteca',         'Cidade do México', '20261214', 'México',         'Canadá'),
+    ('SoFi Stadium',           'Los Angeles',      '20261215', 'Estados Unidos', 'Uruguai'),
+    ('AT&T Stadium',           'Dallas',           '20261216', 'Brasil',         'Sérvia'),
+    ('Mercedes-Benz Stadium',  'Atlanta',          '20261217', 'Argentina',      'Dinamarca'),
+    ('BC Place',               'Vancouver',        '20261218', 'França',         'Chile'),
+    ('MetLife Stadium',        'Nova Jersey',      '20261219', 'Alemanha',       'Japão');
 
 INSERT INTO Jogo (EstadioID, DataHora, TimeA, TimeB, Fase)
 SELECT e.EstadioID, DATEADD(HOUR, 16, CONVERT(datetime, sj.Dia, 112)), sj.TimeA, sj.TimeB, 'Fase de grupos'
 FROM @Jogos sj
 INNER JOIN Estadio e ON e.Nome = sj.EstadioNome AND e.Cidade = sj.Cidade
 WHERE NOT EXISTS (SELECT 1 FROM Jogo x WHERE x.EstadioID = e.EstadioID AND x.TimeA = sj.TimeA AND x.TimeB = sj.TimeB);
+
+-- O INSERT acima ignora os jogos que ja existem: este UPDATE acerta a data deles.
+UPDATE j
+SET j.DataHora = DATEADD(HOUR, 16, CONVERT(datetime, sj.Dia, 112))
+FROM Jogo j
+INNER JOIN Estadio e ON e.EstadioID = j.EstadioID
+INNER JOIN @Jogos sj ON sj.EstadioNome = e.Nome AND sj.Cidade = e.Cidade AND sj.TimeA = j.TimeA AND sj.TimeB = j.TimeB;
 
 -- ---------- Ingressos: um por assento do estadio de cada jogo acima ----------
 -- PrecoFinal = PrecoBase do setor. Status DISPONIVEL (padrao da coluna).

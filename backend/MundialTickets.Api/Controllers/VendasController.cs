@@ -1,12 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MundialTickets.Api.Seguranca;
+using MundialTickets.Modelos.Constantes;
 using MundialTickets.Modelos.Dtos;
 using MundialTickets.Negocio;
 
 namespace MundialTickets.Api.Controllers;
 
-// A compra e "meus ingressos". Tudo aqui exige login, e o comprador é sempre quem está no token.
+// A compra, "meus ingressos" e a validação na portaria. Tudo aqui exige login, e o comprador é
+// sempre quem está no token.
 [ApiController]
 [Route("api/[controller]")]
 [Authorize]
@@ -34,4 +36,11 @@ public class VendasController : ControllerBase
     [HttpGet("meus-ingressos")]
     public ActionResult<List<IngressoCompradoDto>> ListarMeusIngressos() =>
         Ok(_negocio.ListarIngressosDoUsuario(User.ObterUsuarioId()));
+
+    // POST api/vendas/validar   → 200 com partida, setor, assento e data, ou 400 com o motivo da recusa.
+    // Além do login exigido pela classe, esta rota exige o perfil ADMIN (quem opera a portaria).
+    [HttpPost("validar")]
+    [Authorize(Roles = PerfilUsuario.Admin)]
+    public ActionResult<IngressoValidadoDto> ValidarIngresso(IngressoValidarDto dto) =>
+        Ok(_negocio.ValidarIngresso(dto.CodigoQR));
 }

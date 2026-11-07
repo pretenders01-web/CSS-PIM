@@ -225,3 +225,75 @@ Authorization: Bearer {{token}}
 ### Excluir um ingresso (espera 204; 400 se já foi vendido)
 DELETE {{MundialTickets.Api_HostAddress}}/api/ingressos/151
 Authorization: Bearer {{token}}
+
+###############################################################################
+# 5. Portaria: validação do ingresso (só ADMIN)
+###############################################################################
+# Cole em @codigoQR um "codigoQR" devolvido pela compra ou por /api/vendas/meus-ingressos.
+# Um código válido só passa uma vez: para repetir o teste, use o código de outro ingresso.
+@codigoQR = cole-aqui-o-codigoQR
+
+### Validar sem o token (espera 401)
+POST {{MundialTickets.Api_HostAddress}}/api/vendas/validar
+Content-Type: application/json
+
+{
+  "codigoQR": "{{codigoQR}}"
+}
+
+### Entrar com uma conta CLIENTE (espera 200). Cadastre uma na seção 1, com outro e-mail, se preciso.
+# @name loginCliente
+POST {{MundialTickets.Api_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "bruno@exemplo.com",
+  "senha": "senha123"
+}
+
+@tokenCliente = {{loginCliente.response.body.$.token}}
+
+### Validar com o token de CLIENTE (espera 403)
+POST {{MundialTickets.Api_HostAddress}}/api/vendas/validar
+Authorization: Bearer {{tokenCliente}}
+Content-Type: application/json
+
+{
+  "codigoQR": "{{codigoQR}}"
+}
+
+### Validar um código que não existe (espera 400: "Código não encontrado...")
+POST {{MundialTickets.Api_HostAddress}}/api/vendas/validar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "codigoQR": "este-codigo-nao-existe"
+}
+
+### Validar um código em branco (espera 400, validação do DTO)
+POST {{MundialTickets.Api_HostAddress}}/api/vendas/validar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "codigoQR": ""
+}
+
+### Validar com o token de ADMIN (espera 200, com partida, setor, assento e data)
+POST {{MundialTickets.Api_HostAddress}}/api/vendas/validar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "codigoQR": "{{codigoQR}}"
+}
+
+### Validar o mesmo código de novo (espera 400: "Este ingresso já foi utilizado.")
+POST {{MundialTickets.Api_HostAddress}}/api/vendas/validar
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "codigoQR": "{{codigoQR}}"
+}

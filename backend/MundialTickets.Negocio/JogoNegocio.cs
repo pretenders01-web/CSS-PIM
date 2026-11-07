@@ -4,7 +4,7 @@ using MundialTickets.Repositorio.Interfaces;
 namespace MundialTickets.Negocio;
 
 // Regras do jogo. Web e Api chamam esta classe; esta classe chama o repositório.
-// O sistema lista e vende todos os jogos, sem filtrar por data (as datas do seed já passaram).
+// O sistema lista e vende todos os jogos, sem filtrar por data, de propósito (premissa 4.10 do plano).
 public class JogoNegocio
 {
     private readonly IJogoRepositorio _jogos;

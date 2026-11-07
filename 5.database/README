@@ -4,7 +4,7 @@ Ordem de execução (no SSMS, conectado ao servidor):
 02_Indices_Constraints_Fks.sql
 03_Procedure.sql
 04_Triggers
-05_Dados_Teste.sql   (opcional: insere jogos, setores, assentos e ingressos de exemplo)
+05_Dados_Teste.sql   (opcional: insere jogos, setores, assentos e ingressos de exemplo e acerta as datas dos jogos)
 
 Observações:
 - O 00_Banco.sql cria o banco CopaDoMundoVendas e termina com USE nele. Os arquivos 01 a 04
@@ -13,5 +13,6 @@ Observações:
 - O 00_Banco.sql tem o caminho dos arquivos do banco fixo (MSSQL17.MSSQLSERVER) e define o
   nível de compatibilidade 170 (SQL Server 2025). Em outra instalação, ajuste esses dois pontos.
 - O arquivo 04_Triggers não tem extensão: abra pelo menu Arquivo > Abrir > Arquivo.
-- O 05_Dados_Teste.sql pode ser executado mais de uma vez sem duplicar linhas. Os valores
-  de capacidade, preço, horário e fase são fictícios (está explicado dentro do arquivo).
+- O 05_Dados_Teste.sql pode ser executado mais de uma vez sem duplicar linhas, e cada execução
+  devolve os 6 jogos às datas do arquivo. Os valores de capacidade, preço, data, horário e fase
+  são fictícios (está explicado dentro do arquivo).

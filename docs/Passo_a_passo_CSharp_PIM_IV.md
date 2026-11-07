@@ -20,6 +20,7 @@ Marque cada fase aqui quando todos os passos dela (seção 5) estiverem concluí
 - [x] **Fase 5:** Api
 - [x] **Fase 6:** Web
 - [ ] **Fase 7:** fechamento e evidências do manual
+- [x] **Fase 8:** apoio ao app mobile (validação do ingresso, dados do cartão e datas futuras)
 
 ---
 
@@ -127,7 +128,7 @@ Nenhuma bloqueia a Fase 1. Cada linha diz a partir de qual passo precisa de resp
 | 4.7 | **Valores do script de dados.** Capacidades, preços, fase e horário dos jogos não existem no HTML (só as datas) | Passo 0.2 | Valores **fictícios e pequenos**, avisados nos comentários do script |
 | 4.8 | **Tela de login social** (ícones de E-mail, Facebook e Outlook, que só mostram um aviso) | Passo 6.2 | Não levar para o sistema novo |
 | 4.11 | **Bandeiras dos times.** Hoje são arquivos em `4.flags/` ligados aos jogos por classes CSS, e o banco não guarda nada de bandeira | Passo 6.3 | **Decidido:** uma tabela de correspondência na Web (nome do time para o arquivo `.svg`), sem alterar o banco. Time sem bandeira cadastrada mostra um ícone genérico |
-| 4.10 | **Datas dos jogos.** As do HTML (junho de 2026) já passaram em relação à data atual, então um filtro por jogos futuros esconderia todos | Passos 2.5, 3.2 e 5.5 | O sistema **não filtra por data**: lista e vende todos os jogos, ordenados por data. Para o seed ficar no futuro, as datas de `@Jogos` em `05_Dados_Teste.sql` podem ser trocadas |
+| 4.10 | **Datas dos jogos.** As do HTML (junho de 2026) já passaram em relação à data atual, então um filtro por jogos futuros esconderia todos | Passos 2.5, 3.2 e 5.5 | O sistema **não filtra por data**: lista e vende todos os jogos, ordenados por data. **Atualizado na Fase 8:** o seed agora traz os jogos de 14 a 19/12/2026 e acerta as datas em um banco já povoado. A decisão de não filtrar continua |
 | 4.9 | **Versões dos pacotes NuGet** (JwtBearer e outros) | Passos 5.2 e 6.1 | Instalar a versão 9.x e confirmar com `dotnet build` |
 
 ---
@@ -254,6 +255,7 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
   | `GET /api/jogos/{id}/setores/{setorId}/assentos` | público | assentos disponíveis |
   | `POST /api/vendas` | logado | comprar |
   | `GET /api/vendas/meus-ingressos` | logado | ingressos comprados, com o QR |
+  | `POST /api/vendas/validar` | **`ADMIN`** | validar o ingresso na portaria (acrescentada na Fase 8) |
   | `GET`, `POST`, `PUT`, `DELETE /api/estadios`, `/setores`, `/assentos`, `/jogos`, `/ingressos` | **`ADMIN`** | CRUD de administração (e, em `/assentos` e `/ingressos`, a criação em lote e o cancelamento) |
 
 - [x] **5.6** Configurar **CORS** para o app Flutter.
@@ -334,11 +336,31 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
 - [ ] **7.3** Conferir as regras de dependência do manual: Web e Api não acessam o banco nem o Repositório diretamente; nenhuma regra em controller ou view; Modelos não referencia ninguém; connection string só no `appsettings.json`; consultas parametrizadas.
 - [ ] **7.4** *Pronto quando:* a lista acima está atendida e o `git status` mostra só o que deve ser commitado.
 
+### Fase 8: apoio ao app mobile
+
+Feita depois da Fase 6, a pedido do grupo, para o app Flutter. O plano do app (`docs/Passo_a_passo_Mobile_PIM_IV.md`, Fase 1 e seção 4) traz o motivo de cada decisão.
+
+- [x] **8.1** `IngressoCompradoDto` (`GET /api/vendas/meus-ingressos`) ganhou `TimeA`, `TimeB`, `EstadioNome` e `EstadioCidade`, os mesmos nomes do `JogoDto`. `Partida` continua, porque a Web usa.
+- [x] **8.2** `POST /api/vendas/validar`, só `ADMIN`: recebe o `CodigoQR`, confere as regras e marca o ingresso como utilizado. Caminho: `VendasController`, `VendaNegocio.ValidarIngresso` e `VendaRepositorio`, com os DTOs `IngressoValidarDto` e `IngressoValidadoDto`. Recusas viram 400 com `{ "erro": "..." }`, pelo `RegraDeNegocioFiltro`.
+- [x] **8.3** `05_Dados_Teste.sql`: jogos de 14 a 19/12/2026, com um `UPDATE` que acerta as datas em um banco já povoado.
+- [x] **8.4** `MundialTickets.Api.http`: seção nova com as chamadas da Portaria.
+
+**Notas da Fase 8 (decisões tomadas durante a execução):**
+
+- **Ordem das conferências:** o código existe, o ingresso está `VENDIDO`, ainda não foi utilizado e o jogo não começou. Só então o ingresso é marcado.
+- **A validade vem de `Jogo.DataHora`, e não de `QRCode.DataExpiracao`.** A trigger copia a data do jogo para `DataExpiracao` no momento da venda, e o `JogoNegocio.Atualizar` não mexe nessa cópia. Com a data atual do jogo, uma mudança de data vale na hora, sem sincronizar nada. A coluna e o campo do DTO continuam existindo.
+- **Primeira gravação em `QRCode` pelo EF.** A regra "só a procedure e as triggers gravam" passa a ter uma exceção: o campo `Utilizado`, marcado por `ExecuteUpdate`. A tabela `QRCode` não tem trigger, então não precisa de `HasTrigger`.
+- **Dois leitores ao mesmo tempo:** o `UPDATE` único leva a condição `Utilizado = 0`. O segundo leitor espera o primeiro, altera zero linhas e recebe "Este ingresso já foi utilizado.". A leitura anterior é sem rastreamento, porque o `ExecuteUpdate` não atualiza objetos já carregados (o mesmo cuidado das notas da Fase 2).
+- **Limites aceitos:** não há tolerância depois do início do jogo, e a validação aceita qualquer jogo futuro, porque não sabe qual jogo está acontecendo. Por isso a resposta traz `DataJogo`, para quem está na portaria conferir o dia. O banco não guarda a hora da validação.
+- **Nenhum registro novo na injeção de dependência:** a rota usa o `VendaNegocio`, e o `VendaRepositorio` continua sendo a única classe que fala com `QRCode`. Os dois blocos do `Program.cs` não mudaram.
+- **Seed:** o `INSERT` de `Jogo` ignora jogos que já existem, e por isso o script ganhou um `UPDATE`. Repetir o script devolve os 6 jogos às datas do arquivo, o que desfaz uma mudança de data feita pelo administrador neles. Pelo `sqlcmd`, use a opção `-I`: sem ela, o `INSERT` em `Ingresso` falha com o erro 1934 (`QUOTED_IDENTIFIER`), sem gravar nada. O SSMS já usa esse padrão.
+- **Verificação:** a Api e a Web foram iniciadas e exercitadas por HTTP contra o banco real, em 28 conferências. Cobriram sem token (401), token de `CLIENTE` (403), código inexistente, código em branco, código válido, código repetido, status alterado, jogo no passado, `DataExpiracao` no passado com o jogo no futuro (200), três rodadas de dois leitores simultâneos (sempre um 200 e um 400), a Web com os selos certos, o OpenAPI com o cadeado e o Scalar. Duas falhas foram do próprio roteiro (acentos codificados no HTML e o Scalar devolvendo HTML) e foram reconferidas. O comprador temporário do teste foi apagado.
+
 ---
 
 ## 6. Ordem de commits sugerida
 
-Um commit por fase concluída (Fases 0 a 7), com mensagens no padrão do histórico (`Add: ...`), para que cada etapa possa ser revertida sozinha. A coluna `Perfil` nos scripts `01` e `02` pode ir em um commit próprio, antes da Fase 1.
+Um commit por fase concluída (Fases 0 a 8), com mensagens no padrão do histórico (`Add: ...`), para que cada etapa possa ser revertida sozinha. A coluna `Perfil` nos scripts `01` e `02` pode ir em um commit próprio, antes da Fase 1.
 
 ## 7. Riscos já identificados
 

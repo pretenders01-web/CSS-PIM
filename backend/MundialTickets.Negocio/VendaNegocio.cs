@@ -7,14 +7,17 @@ using MundialTickets.Repositorio.Interfaces;
 
 namespace MundialTickets.Negocio;
 
-// Regras da compra. É aqui que a stored procedure sp_RealizarCompra é disparada, e só depois
-// de todas as conferências abaixo passarem e do pagamento (simulado) ser aprovado.
+// Regras da compra e da validação do ingresso na portaria.
+// É aqui que a stored procedure sp_RealizarCompra é disparada, e só depois de todas as
+// conferências da compra passarem e do pagamento (simulado) ser aprovado.
 public class VendaNegocio
 {
     private readonly IVendaRepositorio _vendas;
     private readonly IIngressoRepositorio _ingressos;
     private readonly IUsuarioRepositorio _usuarios;
     private readonly IEnumerable<IMetodoPagamento> _metodos;
+
+    private const string IngressoJaUtilizado = "Este ingresso já foi utilizado.";
 
     // INJEÇÃO DE DEPENDÊNCIA: os repositórios e as formas de pagamento chegam prontos.
     // Quem recebe um IMetodoPagamento não sabe se é Pix, cartão ou boleto (polimorfismo).
@@ -91,6 +94,49 @@ public class VendaNegocio
     // Os ingressos que o usuário já comprou, com o código do QR.
     public List<IngressoCompradoDto> ListarIngressosDoUsuario(int usuarioId) =>
         _vendas.ListarIngressosDoUsuario(usuarioId);
+
+    // Validação na portaria: confere o código lido no QR e, se estiver tudo certo, marca o
+    // ingresso como utilizado. Cada recusa é uma RegraDeNegocioException com o motivo, que a
+    // Api devolve como 400. Quem pode chamar (só ADMIN) é decidido no controller.
+    public IngressoValidadoDto ValidarIngresso(string codigoQR)
+    {
+        var codigo = (codigoQR ?? string.Empty).Trim();
+        if (codigo.Length == 0)
+            throw new RegraDeNegocioException("Informe o código do QR.");
+
+        // 1. O código existe.
+        var qrCode = _vendas.ObterQRCodePorCodigo(codigo)
+            ?? throw new RegraDeNegocioException("Código não encontrado: este QR não pertence a nenhum ingresso.");
+        var ingresso = qrCode.Ingresso!;
+        var jogo = ingresso.Jogo!;
+
+        // 2. O ingresso está vendido.
+        if (ingresso.Status != StatusIngresso.Vendido)
+            throw new RegraDeNegocioException("Este ingresso não está vendido.");
+
+        // 3. Ainda não foi usado.
+        if (qrCode.Utilizado)
+            throw new RegraDeNegocioException(IngressoJaUtilizado);
+
+        // 4. O jogo ainda não começou, sem tolerância depois do início. Vale a data ATUAL do jogo,
+        //    e não a DataExpiracao do QR, que é uma cópia feita na venda: assim, mudar a data do
+        //    jogo vale na hora, sem precisar sincronizar nada.
+        if (jogo.DataHora <= DateTime.Now)
+            throw new RegraDeNegocioException("O prazo deste ingresso já passou: o jogo já começou.");
+
+        // 5. Marca como utilizado. Se nenhuma linha mudou, outro leitor chegou um instante antes.
+        if (!_vendas.MarcarQRCodeComoUtilizado(codigo))
+            throw new RegraDeNegocioException(IngressoJaUtilizado);
+
+        return new IngressoValidadoDto
+        {
+            IngressoId = ingresso.IngressoID,
+            Partida = $"{jogo.TimeA} x {jogo.TimeB}",
+            DataJogo = jogo.DataHora,
+            NomeSetor = ingresso.Setor!.NomeSetor,
+            NumeroAssento = ingresso.NumeroAssento
+        };
+    }
 
     // Texto curto para as mensagens: "A01 do setor X (Brasil x Sérvia)".
     private static string Descrever(Ingresso ingresso)
