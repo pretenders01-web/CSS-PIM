@@ -281,12 +281,24 @@ class _TextoDoCodigo extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Text('CÓDIGO DO QR', style: TextStyle(color: Cores.textoSuave, fontSize: 11, letterSpacing: 1)),
+          const ExcludeSemantics(
+            child: Text(
+              'CÓDIGO DO QR',
+              style: TextStyle(color: Cores.textoSuave, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1),
+            ),
+          ),
           const SizedBox(height: 4),
-          SelectableText(
-            codigo,
-            textAlign: TextAlign.center,
-            style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+          // Para o leitor de tela, é só um texto: selecionar fica para quem enxerga a tela. Sem isto,
+          // o texto selecionável vira um alvo de toque de 19 de altura, abaixo do mínimo de 48.
+          Semantics(
+            label: 'Código do QR: $codigo',
+            child: ExcludeSemantics(
+              child: SelectableText(
+                codigo,
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontFamily: 'monospace', fontSize: 13),
+              ),
+            ),
           ),
         ],
       ),

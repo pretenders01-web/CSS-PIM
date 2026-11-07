@@ -23,7 +23,7 @@ class CampoIngresso extends StatelessWidget {
       children: [
         Text(
           rotulo.toUpperCase(),
-          style: const TextStyle(color: Cores.textoSuave, fontSize: 11, letterSpacing: 1),
+          style: const TextStyle(color: Cores.textoSuave, fontSize: 12, fontWeight: FontWeight.w500, letterSpacing: 1),
         ),
         Text(valor, style: const TextStyle(fontWeight: FontWeight.w700)),
       ],
