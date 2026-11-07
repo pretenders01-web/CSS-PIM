@@ -13,7 +13,7 @@ abstract interface class ArmazenamentoSessao {
   Future<void> limpar();
 }
 
-/// A versão real, no armazenamento seguro do aparelho. Nunca em SharedPreferences.
+/// A versão real, no armazenamento seguro do aparelho, que cifra os dados.
 class ArmazenamentoSeguro implements ArmazenamentoSessao {
   ArmazenamentoSeguro([FlutterSecureStorage? armazenamento])
     : _armazenamento = armazenamento ?? const FlutterSecureStorage();

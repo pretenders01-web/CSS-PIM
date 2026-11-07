@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 /// O endereço da Api vem de fora do código, na hora de rodar o app:
-///   flutter run --dart-define=API_URL=http://10.0.2.2:5218
+///   `flutter run --dart-define=API_URL=<endereço da Api>`
+/// A seção 8 de docs/Passo_a_passo_Mobile_PIM_IV.md traz o endereço de cada aparelho.
 ///
 /// Em build de release, só https é aceito. O manifesto do Android não basta para isso:
 /// a política de HTTP do Android vale para conexões nativas, e as conexões do Dart não passam
