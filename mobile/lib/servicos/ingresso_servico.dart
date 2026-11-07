@@ -1,4 +1,5 @@
 import '../modelos/ingresso.dart';
+import '../modelos/ingresso_validado.dart';
 import 'cliente_api.dart';
 import 'erros_api.dart';
 
@@ -30,5 +31,18 @@ class IngressoServico {
       if (ingresso.ingressoId == ingressoId) return ingresso;
     }
     return null;
+  }
+
+  /// Portaria: valida o código e marca o ingresso como utilizado.
+  /// Uma recusa chega como ApiException com o código 400 e o motivo na mensagem.
+  Future<IngressoValidado> validar(String codigoQR) async {
+    final json = await _api.post('/api/vendas/validar', {'codigoQR': codigoQR});
+    try {
+      return IngressoValidado.fromJson(json as Map<String, dynamic>);
+    } on TypeError {
+      throw const ApiException(ClienteApi.respostaInesperada);
+    } on FormatException {
+      throw const ApiException(ClienteApi.respostaInesperada);
+    }
   }
 }

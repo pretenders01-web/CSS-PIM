@@ -11,6 +11,7 @@ import '../widgets/cartao_ingresso.dart';
 import '../widgets/cartao_proximo_jogo.dart';
 import '../widgets/estados_tela.dart';
 import '../widgets/fundo_cartao_hero.dart';
+import 'portaria_tela.dart';
 import 'qr_tela.dart';
 
 /// A tela inicial: o cartão do próximo jogo e, abaixo, os outros ingressos.
@@ -104,9 +105,12 @@ class _InicioTelaState extends State<InicioTela> {
     if (mounted) await _carregar();
   }
 
-  // A tela da Portaria chega na Parte 2E.
-  void _emBreve() {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Disponível em breve.')));
+  /// Ao voltar, recarrega: o administrador pode ter validado um ingresso da própria conta.
+  Future<void> _abrirPortaria() async {
+    await Navigator.of(context).push(
+      MaterialPageRoute<void>(builder: (_) => PortariaTela(ingressos: widget.ingressos)),
+    );
+    if (mounted) await _carregar();
   }
 
   @override
@@ -127,7 +131,7 @@ class _InicioTelaState extends State<InicioTela> {
             IconButton(
               tooltip: 'Portaria',
               icon: const Icon(Icons.qr_code_scanner, color: Cores.amarelo),
-              onPressed: _emBreve,
+              onPressed: _abrirPortaria,
             ),
           IconButton(
             tooltip: 'Sair',

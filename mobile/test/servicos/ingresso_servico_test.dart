@@ -57,4 +57,48 @@ void main() {
       expect(await servico.consultar(99), isNull);
     });
   });
+
+  group('validar', () {
+    test('envia o código e lê a resposta', () async {
+      final servico = servicoCom((pedido) async {
+        expect(pedido.url.path, '/api/vendas/validar');
+        expect(pedido.method, 'POST');
+        expect(pedido.body, '{"codigoQR":"abc-1"}');
+        return respostaJson({
+          'ingressoId': 1,
+          'partida': 'México x Canadá',
+          'dataJogo': '2026-12-14T16:00:00',
+          'nomeSetor': 'Camarote',
+          'numeroAssento': 'C01',
+        });
+      });
+
+      final validado = await servico.validar('abc-1');
+
+      expect(validado.partida, 'México x Canadá');
+      expect(validado.numeroAssento, 'C01');
+    });
+
+    test('recusa vira ApiException 400 com o motivo', () async {
+      final servico = servicoCom((_) async => respostaJson({'erro': 'Este ingresso já foi utilizado.'}, 400));
+
+      await expectLater(
+        servico.validar('abc-1'),
+        throwsA(
+          isA<ApiException>()
+              .having((e) => e.codigo, 'codigo', 400)
+              .having((e) => e.mensagem, 'mensagem', 'Este ingresso já foi utilizado.'),
+        ),
+      );
+    });
+
+    test('resposta fora do formato vira ApiException sem código', () async {
+      final servico = servicoCom((_) async => respostaJson({'ingressoId': 'x'}));
+
+      await expectLater(
+        servico.validar('abc-1'),
+        throwsA(isA<ApiException>().having((e) => e.codigo, 'codigo', isNull)),
+      );
+    });
+  });
 }
