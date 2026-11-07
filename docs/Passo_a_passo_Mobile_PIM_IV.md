@@ -12,7 +12,7 @@ Fora do escopo: cadastro e compra no app (ficam no site), mapa real, funcionamen
 
 Marque cada fase aqui quando todos os passos dela (seção 5) estiverem concluídos.
 
-- [ ] **Fase 1:** backend (dados do cartão, validação do ingresso, datas futuras e contas de teste)
+- [x] **Fase 1:** backend (dados do cartão, validação do ingresso, datas futuras e contas de teste)
 - [ ] **Fase 2:** app completo, executado em sequência, sem parar entre as partes, com um commit por parte
   - [ ] **Parte 2A:** base do app (pacotes, tema, assets e configuração)
   - [ ] **Parte 2B:** camada de dados e login
@@ -125,8 +125,8 @@ Convenção: **[API]** ou **[BANCO]** = já existe e o app respeita; **[PROPOSTA
 |---|---|---|---|
 | `POST /api/auth/login` | público | `email`, `senha` | `token`, `expiraEm`, `usuario` (`id`, `nome`, `email`, `cpf`, `dataCadastro`, `ativo`, `perfil`) |
 | `GET /api/usuarios/me` | logado | | Os mesmos campos de `usuario`. **401 se a conta foi desativada** |
-| `GET /api/vendas/meus-ingressos` | logado | | Lista de `ingressoId`, `vendaId`, `partida`, `dataJogo`, `nomeSetor`, `numeroAssento` (pode ser nulo), `precoPago`, `codigoQR`, `dataExpiracao`, `utilizado`. A Fase 1 acrescenta `timeA`, `timeB`, `estadioNome` e `estadioCidade` |
-| `POST /api/vendas/validar` | `ADMIN` | `codigoQR` | **Nova** (passo 1.6) |
+| `GET /api/vendas/meus-ingressos` | logado | | Lista de `ingressoId`, `vendaId`, `partida`, `timeA`, `timeB`, `dataJogo`, `estadioNome`, `estadioCidade`, `nomeSetor`, `numeroAssento` (pode ser nulo), `precoPago`, `codigoQR`, `dataExpiracao`, `utilizado`. Os campos dos times e do estádio vieram na Fase 1 |
+| `POST /api/vendas/validar` | `ADMIN` | `codigoQR` | `ingressoId`, `partida`, `dataJogo`, `nomeSetor`, `numeroAssento` (pode ser nulo). Recusa: 400 com `erro`. Criada na Fase 1 |
 
 Atenção à grafia: é `codigoQR`, com "QR" maiúsculo. A lista vem ordenada por `Jogo.DataHora`, sem filtro de data nem de situação. O token vale 120 minutos (`ExpiraEmMinutos`) e não pode ser renovado: ao vencer, o usuário entra de novo. O perfil do usuário vai **dentro do token**, então quem é promovido a `ADMIN` só passa a ter acesso depois de um novo login, mesmo com `/me` já dizendo `ADMIN`.
 
@@ -147,7 +147,7 @@ Por isso o tratamento procura `erro`, depois `errors`, e por fim usa um texto pa
 ### 3.3 Datas
 
 - `dataJogo` vem sem fuso (testado em `GET /api/jogos`, com a mesma coluna: `"dataHora":"2026-06-11T16:00:00"`). O Dart lê como hora local, e o app mostra os mesmos dígitos do site, no formato `dd/MM/yyyy às HH:mm` de `Servicos/Formatacao.cs`.
-- `expiraEm` nasce de `DateTime.UtcNow` no `GeradorDeToken`, então deve vir com `Z` (UTC). O passo 1.12 confirma com um login real.
+- `expiraEm` vem em UTC, com `Z` e 7 casas decimais (testado: `2026-11-07T06:00:49.8521744Z`). O `DateTime.parse` do Dart aceita esse formato (testado).
 - A Api aceita 1 minuto de diferença de relógio (`ClockSkew`).
 
 ### 3.4 QR code e dados de teste **[BANCO]**
@@ -221,35 +221,35 @@ A cada passo, o critério "Pronto quando" diz como verificar. Antes de cada part
 
 Autorizada só para o que está aqui, em commit separado. Seguir a arquitetura em camadas do manual e o tom didático dos comentários. Rodar `dotnet build backend/MundialTickets.sln` com a Api e a Web paradas.
 
-- [ ] **1.1** `IngressoCompradoDto`: acrescentar `TimeA`, `TimeB`, `EstadioNome` e `EstadioCidade`, os mesmos nomes do `JogoDto`. `Partida` continua, porque a Web usa. A mudança só acrescenta campos, e a Web segue compilando. Ajustar o comentário da classe, que lista as tabelas consultadas.
-- [ ] **1.2** `VendaRepositorio.ListarIngressosDoUsuario`: preencher os campos novos na projeção, por `q.Ingresso.Jogo` e `q.Ingresso.Jogo.Estadio`. *Pronto quando:* a rota devolve os quatro campos e a página Meus Ingressos da Web continua igual.
-- [ ] **1.3** Criar em `Modelos/Dtos`: `IngressoValidarDto` (entrada: `CodigoQR`, obrigatório, até 255 caracteres, com mensagem em português) e `IngressoValidadoDto` (saída: `IngressoId`, `Partida`, `DataJogo`, `NomeSetor`, `NumeroAssento`).
-- [ ] **1.4** `IVendaRepositorio` e `VendaRepositorio`, que já é a "única classe que conversa com Venda, ItemVenda e QRCode":
+- [x] **1.1** `IngressoCompradoDto`: acrescentar `TimeA`, `TimeB`, `EstadioNome` e `EstadioCidade`, os mesmos nomes do `JogoDto`. `Partida` continua, porque a Web usa. A mudança só acrescenta campos, e a Web segue compilando. Ajustar o comentário da classe, que lista as tabelas consultadas.
+- [x] **1.2** `VendaRepositorio.ListarIngressosDoUsuario`: preencher os campos novos na projeção, por `q.Ingresso.Jogo` e `q.Ingresso.Jogo.Estadio`. *Pronto quando:* a rota devolve os quatro campos e a página Meus Ingressos da Web continua igual.
+- [x] **1.3** Criar em `Modelos/Dtos`: `IngressoValidarDto` (entrada: `CodigoQR`, obrigatório, até 255 caracteres, com mensagem em português) e `IngressoValidadoDto` (saída: `IngressoId`, `Partida`, `DataJogo`, `NomeSetor`, `NumeroAssento`).
+- [x] **1.4** `IVendaRepositorio` e `VendaRepositorio`, que já é a "única classe que conversa com Venda, ItemVenda e QRCode":
   - `ObterQRCodePorCodigo(codigo)`: `AsNoTracking`, com `Ingresso`, `Jogo` e `Setor`;
   - `MarcarQRCodeComoUtilizado(codigo)`: `ExecuteUpdate` com `Where(CodigoQR == codigo && !Utilizado)`, devolvendo se alterou uma linha. Esse `UPDATE` único é a garantia contra dois leitores: o segundo espera a trava da linha, relê a condição e altera zero linhas. A consulta é parametrizada pelo EF.
 
   **Cuidado:** o `ExecuteUpdate` não atualiza entidades já carregadas. Foi o que causou o defeito do `Desativar` (notas da Fase 2 do plano do C#). Por isso a leitura é sem rastreamento e nada lê o objeto de novo depois.
-- [ ] **1.5** `VendaNegocio.ValidarIngresso(codigoQR)`, nesta ordem, com `RegraDeNegocioException` e estas mensagens **[PROPOSTA]**:
+- [x] **1.5** `VendaNegocio.ValidarIngresso(codigoQR)`, nesta ordem, com `RegraDeNegocioException` e estas mensagens **[PROPOSTA]**:
   1. código não existe: "Código não encontrado: este QR não pertence a nenhum ingresso.";
   2. status diferente de `VENDIDO`: "Este ingresso não está vendido.";
   3. `Utilizado` já marcado: "Este ingresso já foi utilizado.";
   4. **`Jogo.DataHora`** menor ou igual a `DateTime.Now`: "O prazo deste ingresso já passou: o jogo já começou." (decisões 4.2 a 4.4);
   5. marca como utilizado. Se nenhuma linha mudou, outro leitor chegou antes: a mesma mensagem do item 3;
   6. devolve o `IngressoValidadoDto`.
-- [ ] **1.6** `VendasController`: `[HttpPost("validar")]` com `[Authorize(Roles = PerfilUsuario.Admin)]`, sem `try/catch`, porque o `RegraDeNegocioFiltro` já devolve 400. Fica aqui, e não em `IngressosController`, porque usa o `VendaNegocio`. Assim **nenhum registro novo** entra nos dois `Program.cs`.
-- [ ] **1.7** Acrescentar ao `MundialTickets.Api.http` as chamadas de validação (liberada, repetida, código inexistente, sem token e com token de `CLIENTE`), com o resultado esperado em cada título, como no resto do arquivo. *Pronto quando:* a rota aparece no Scalar, com o cadeado.
-- [ ] **1.8** `05_Dados_Teste.sql` (decisão 4.5): trocar as datas de `@Jogos`; acrescentar um `UPDATE` de `Jogo.DataHora` para os jogos do seed (por estádio e times); reescrever o cabeçalho, que hoje diz que o arquivo "só insere linhas" e manda rodar em banco limpo. Avisar nele que repetir o script desfaz uma alteração de data feita pelo administrador nesses 6 jogos. `QRCode.DataExpiracao` não é tocada (decisão 4.4).
-- [ ] **1.9** Registrar as decisões, porque o backend é de outro colega:
+- [x] **1.6** `VendasController`: `[HttpPost("validar")]` com `[Authorize(Roles = PerfilUsuario.Admin)]`, sem `try/catch`, porque o `RegraDeNegocioFiltro` já devolve 400. Fica aqui, e não em `IngressosController`, porque usa o `VendaNegocio`. Assim **nenhum registro novo** entra nos dois `Program.cs`.
+- [x] **1.7** Acrescentar ao `MundialTickets.Api.http` as chamadas de validação (liberada, repetida, código inexistente, sem token e com token de `CLIENTE`), com o resultado esperado em cada título, como no resto do arquivo. *Pronto quando:* a rota aparece no Scalar, com o cadeado.
+- [x] **1.8** `05_Dados_Teste.sql` (decisão 4.5): trocar as datas de `@Jogos`; acrescentar um `UPDATE` de `Jogo.DataHora` para os jogos do seed (por estádio e times); reescrever o cabeçalho, que hoje diz que o arquivo "só insere linhas" e manda rodar em banco limpo. Avisar nele que repetir o script desfaz uma alteração de data feita pelo administrador nesses 6 jogos. `QRCode.DataExpiracao` não é tocada (decisão 4.4).
+- [x] **1.9** Registrar as decisões, porque o backend é de outro colega:
   - `docs/Passo_a_passo_CSharp_PIM_IV.md`: uma "Fase 8: apoio ao app mobile", já concluída, com as notas desta fase; a nova rota; a premissa 4.10 atualizada; e o `QRCode` gravado pelo EF;
   - notas locais do projeto: a exceção de `QRCode.Utilizado` na regra de gravação, a rota nova, o plano do app e o motivo do "não filtra por data", que deixa de ser "as datas do seed já passaram";
   - os comentários de `VendaRepositorio` ("não grava nessas tabelas pelo EF") e `JogoNegocio` ("as datas do seed já passaram").
-- [ ] **1.10** Compilar e aplicar no banco local. *Pronto quando:* `dotnet build` passa e, com o seed rodado duas vezes neste banco já povoado, a conferência continua 7/21/175/6/150, com as 6 datas de dezembro e sem jogo duplicado.
-- [ ] **1.11** Contas de teste, **só no banco local**, pela Api:
+- [x] **1.10** Compilar e aplicar no banco local. *Pronto quando:* `dotnet build` passa e, com o seed rodado duas vezes neste banco já povoado, a conferência continua 7/21/175/6/150, com as 6 datas de dezembro e sem jogo duplicado.
+- [x] **1.11** Contas de teste, **só no banco local**, pela Api:
   - um comprador com 3 ingressos comprados com Pix, de jogos diferentes, para a tela inicial e a lista terem conteúdo;
   - uma conta `ADMIN` para a Portaria: cadastro pela Api e depois `UPDATE Usuario SET Perfil = 'ADMIN' WHERE Email = '...'`.
 
   *Pronto quando:* as duas contas entram pela Api, `meus-ingressos` devolve os 3 ingressos e **nenhum e-mail ou senha foi commitado**. Quem precisar delas recria na própria máquina com este mesmo passo.
-- [ ] **1.12** Verificar com a Api real, usando a conta `ADMIN` e um comprador temporário, para os 3 ingressos da conta de teste continuarem válidos:
+- [x] **1.12** Verificar com a Api real, usando a conta `ADMIN` e um comprador temporário, para os 3 ingressos da conta de teste continuarem válidos:
 
   | Caso | Esperado |
   |---|---|
@@ -268,6 +268,14 @@ Autorizada só para o que está aqui, em commit separado. Seguir a arquitetura e
   | OpenAPI e Scalar | A rota aparece, com o cadeado |
 
   *Pronto quando:* a tabela passa e, depois de desfazer o que o teste criou, o banco tem só as contas do passo 1.11 e as vendas delas, com os outros ingressos de volta a `DISPONIVEL`.
+
+**Notas da Fase 1 (decisões tomadas durante a execução):**
+
+- **Banco local depois desta fase:** jogos de 14 a 19/12/2026, 2 contas, 3 vendas e 3 QR codes, nenhum utilizado; 147 ingressos `DISPONIVEL` e 3 `VENDIDO`. O comprador de teste tem Brasil x Sérvia (A01, Arquibancada Inferior), França x Chile (C01, Camarote) e Alemanha x Japão (B01, Arquibancada Superior). O próximo jogo é Brasil x Sérvia, no AT&T Stadium, o que já exercita o `&` do passo 2C.8 e a bandeira convertida da Sérvia. E-mails e senhas não estão no repositório.
+- **`sqlcmd` precisa de `-I`.** Sem ele, o `INSERT` em `Ingresso` falha com o erro 1934 (`QUOTED_IDENTIFIER`), sem gravar nada. O SSMS já usa esse padrão. O seed foi ensaiado em uma cópia com `ROLLBACK` antes de rodar de verdade, porque um erro de codificação nos acentos duplicaria os jogos.
+- **`dotnet run --no-build` exige o caminho do `.csproj`.** Com a pasta do projeto, o SDK 10.0.401 responde "O caminho do arquivo fornecido não existe". Os comandos da seção 8 não usam `--no-build`.
+- **As chamadas do `.http` não foram clicadas no editor.** O roteiro de verificação fez as mesmas requisições por HTTP.
+- **Verificação:** 28 conferências contra o banco real, com o build sem avisos e sem nenhum `fail:` nos logs da Api e da Web. Duas falharam por defeito do roteiro (acentos codificados no HTML da Web e o Scalar devolvendo HTML, não JSON) e foram reconferidas: a Web mostra as partidas, as datas e os selos certos, e o Scalar responde 200. O comprador temporário foi apagado.
 
 ### Fase 2: app completo
 
