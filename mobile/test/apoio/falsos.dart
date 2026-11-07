@@ -10,6 +10,7 @@ import 'package:mobile/modelos/usuario.dart';
 import 'package:mobile/servicos/armazenamento_sessao.dart';
 import 'package:mobile/servicos/autenticacao_servico.dart';
 import 'package:mobile/servicos/cliente_api.dart';
+import 'package:mobile/servicos/ingresso_servico.dart';
 
 const enderecoDeTeste = 'http://api.test';
 
@@ -92,5 +93,5 @@ ServicosDoApp servicosDeTeste(
     api: api,
     armazenamento: armazenamento ?? ArmazenamentoFalso(sessao),
   );
-  return ServicosDoApp(autenticacao: autenticacao);
+  return ServicosDoApp(autenticacao: autenticacao, ingressos: IngressoServico(api: api));
 }

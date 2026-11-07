@@ -9,6 +9,7 @@ import 'modelos/sessao.dart';
 import 'servicos/armazenamento_sessao.dart';
 import 'servicos/autenticacao_servico.dart';
 import 'servicos/cliente_api.dart';
+import 'servicos/ingresso_servico.dart';
 import 'tema/tema_app.dart';
 import 'telas/configuracao_ausente_tela.dart';
 import 'telas/inicio_tela.dart';
@@ -18,16 +19,18 @@ import 'widgets/estados_tela.dart';
 /// Os serviços do app, montados uma vez e passados pelo construtor de cada tela.
 /// Os testes montam este mesmo objeto com versões falsas.
 class ServicosDoApp {
-  ServicosDoApp({required this.autenticacao});
+  ServicosDoApp({required this.autenticacao, required this.ingressos});
 
   factory ServicosDoApp.reais(String enderecoBase) {
     final api = ClienteApi(cliente: http.Client(), enderecoBase: enderecoBase);
     return ServicosDoApp(
       autenticacao: AutenticacaoServico(api: api, armazenamento: ArmazenamentoSeguro()),
+      ingressos: IngressoServico(api: api),
     );
   }
 
   final AutenticacaoServico autenticacao;
+  final IngressoServico ingressos;
 }
 
 class MundialTicketsApp extends StatefulWidget {
@@ -109,7 +112,11 @@ class _MundialTicketsAppState extends State<MundialTicketsApp> {
       valueListenable: autenticacao.sessao,
       builder: (context, sessao, _) {
         if (sessao == null) return LoginTela(autenticacao: autenticacao);
-        return InicioTela(key: ValueKey(sessao.usuario.id), autenticacao: autenticacao);
+        return InicioTela(
+          key: ValueKey(sessao.usuario.id),
+          autenticacao: autenticacao,
+          ingressos: _servicos!.ingressos,
+        );
       },
     );
   }
