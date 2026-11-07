@@ -44,17 +44,19 @@ void main() {
   };
 
   telas.forEach((nome, abrir) {
-    testWidgets('regras de acessibilidade: $nome', (tester) async {
-      final semantica = tester.ensureSemantics();
-      configurarAparelho(tester, celular, densidade: densidadeReal);
+    for (final (orientacao, tamanho) in const [('em pé', celular), ('deitado', Size(844, 390))]) {
+      testWidgets('regras de acessibilidade: $nome, $orientacao', (tester) async {
+        final semantica = tester.ensureSemantics();
+        configurarAparelho(tester, tamanho, densidade: densidadeReal);
 
-      await abrir(tester);
-      await tester.pump(const Duration(milliseconds: 100));
-      await conferirRegras(tester);
+        await abrir(tester);
+        await tester.pump(const Duration(milliseconds: 100));
+        await conferirRegras(tester);
 
-      await tester.pumpWidget(const SizedBox());
-      semantica.dispose();
-    });
+        await tester.pumpWidget(const SizedBox());
+        semantica.dispose();
+      });
+    }
   });
 
   group('o que o leitor de tela lê', () {

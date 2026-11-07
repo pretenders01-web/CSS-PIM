@@ -6,6 +6,7 @@ import '../servicos/autenticacao_servico.dart';
 import '../servicos/erros_api.dart';
 import '../servicos/ingresso_servico.dart';
 import '../util/como_chegar.dart';
+import '../util/layout.dart';
 import '../widgets/cartao_ingresso.dart';
 import '../widgets/cartao_proximo_jogo.dart';
 import '../widgets/estados_tela.dart';
@@ -108,6 +109,7 @@ class _InicioTelaState extends State<InicioTela> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: alturaDaBarra(context),
         title: Image.asset(
           'assets/img/logo.png',
           height: 36,
@@ -152,13 +154,18 @@ class _InicioTelaState extends State<InicioTela> {
     final proximo = separados.proximo;
     final outros = separados.outros;
 
+    // Deitado, os outros ingressos ficam em duas colunas, para aproveitar a largura.
+    final deitado = estaDeitado(context);
+    final porLinha = deitado ? 2 : 1;
+    final linhas = (outros.length / porLinha).ceil();
+
     // ListView.builder: o que está longe na lista não fica montado.
     return RefreshIndicator(
       onRefresh: _carregar,
       child: ListView.builder(
         physics: const AlwaysScrollableScrollPhysics(),
-        padding: const EdgeInsets.all(16),
-        itemCount: 1 + (outros.isEmpty ? 0 : 1 + outros.length),
+        padding: EdgeInsets.symmetric(horizontal: margemLateral(context), vertical: deitado ? 12 : 16),
+        itemCount: 1 + (outros.isEmpty ? 0 : 1 + linhas),
         itemBuilder: (context, indice) {
           if (indice == 0) {
             if (proximo == null) {
@@ -187,13 +194,25 @@ class _InicioTelaState extends State<InicioTela> {
             );
           }
 
-          final ingresso = outros[indice - 2];
+          final daLinha = outros.skip((indice - 2) * porLinha).take(porLinha).toList();
           return Padding(
             padding: const EdgeInsets.only(bottom: 10),
-            child: CartaoIngresso(
-              ingresso: ingresso,
-              situacao: situacaoDoIngresso(ingresso, agora),
-              aoTocar: () => _abrirQr(ingresso),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (var coluna = 0; coluna < porLinha; coluna++) ...[
+                  if (coluna > 0) const SizedBox(width: 10),
+                  Expanded(
+                    child: coluna < daLinha.length
+                        ? CartaoIngresso(
+                            ingresso: daLinha[coluna],
+                            situacao: situacaoDoIngresso(daLinha[coluna], agora),
+                            aoTocar: () => _abrirQr(daLinha[coluna]),
+                          )
+                        : const SizedBox.shrink(),
+                  ),
+                ],
+              ],
             ),
           );
         },

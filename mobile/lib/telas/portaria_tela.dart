@@ -7,6 +7,7 @@ import '../servicos/autenticacao_servico.dart';
 import '../servicos/erros_api.dart';
 import '../servicos/ingresso_servico.dart';
 import '../tema/cores.dart';
+import '../util/layout.dart';
 import '../widgets/historico_validacoes.dart';
 import '../widgets/leitor_camera.dart';
 import '../widgets/resultado_validacao.dart';
@@ -43,6 +44,10 @@ class PortariaTela extends StatefulWidget {
 
 class _PortariaTelaState extends State<PortariaTela> {
   final _campoCodigo = TextEditingController();
+
+  /// Girar o aparelho muda o campo de lugar na árvore de widgets. Com esta chave, o Flutter o reaproveita,
+  /// e o texto, o cursor e o foco continuam os mesmos.
+  final _chaveDoCampo = GlobalKey();
 
   /// O histórico desta sessão, do mais recente ao mais antigo. Só em memória: some ao sair.
   final List<RegistroValidacao> _historico = [];
@@ -163,9 +168,67 @@ class _PortariaTelaState extends State<PortariaTela> {
     }
 
     final validando = _etapa == _Etapa.validando;
+    final deitado = estaDeitado(context);
+    final margem = margemLateral(context);
+
+    final contador = ContadorDeEntradas(liberadas: _entradasLiberadas);
+
+    final leitura = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            minimumSize: Size.fromHeight(deitado ? 72 : 80),
+            textStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.w800),
+          ),
+          onPressed: validando ? null : _abrirCamera,
+          icon: validando
+              ? const SizedBox.square(
+                  dimension: 26,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 3,
+                    semanticsLabel: 'Validando o ingresso',
+                  ),
+                )
+              : const Icon(Icons.qr_code_scanner, size: 32),
+          label: const Text('LER QR CODE'),
+        ),
+        SizedBox(height: deitado ? 12 : 20),
+        const Text('Ou digite ou cole o código', style: TextStyle(fontWeight: FontWeight.w700)),
+        const SizedBox(height: 8),
+        TextField(
+          key: _chaveDoCampo,
+          controller: _campoCodigo,
+          enabled: !validando,
+          autocorrect: false,
+          enableSuggestions: false,
+          textInputAction: TextInputAction.send,
+          decoration: InputDecoration(labelText: 'Código do ingresso', errorText: _erroDoCampo),
+          onSubmitted: (_) => _validarCampo(),
+        ),
+        const SizedBox(height: 12),
+        OutlinedButton(onPressed: validando ? null : _validarCampo, child: const Text('VALIDAR')),
+      ],
+    );
+
+    final historico = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Semantics(
+          header: true,
+          child: const Text(
+            'Validações desta sessão',
+            style: TextStyle(color: Cores.texto, fontSize: 16, fontWeight: FontWeight.w800),
+          ),
+        ),
+        const SizedBox(height: 8),
+        HistoricoValidacoes(registros: _historico),
+      ],
+    );
 
     return Scaffold(
       appBar: AppBar(
+        toolbarHeight: alturaDaBarra(context),
         title: Row(
           children: [
             ConstrainedBox(
@@ -197,57 +260,38 @@ class _PortariaTelaState extends State<PortariaTela> {
         ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ContadorDeEntradas(liberadas: _entradasLiberadas),
-              const SizedBox(height: 16),
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  minimumSize: const Size.fromHeight(80),
-                  textStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.w800),
-                ),
-                onPressed: validando ? null : _abrirCamera,
-                icon: validando
-                    ? const SizedBox.square(
-                        dimension: 26,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          semanticsLabel: 'Validando o ingresso',
-                        ),
-                      )
-                    : const Icon(Icons.qr_code_scanner, size: 32),
-                label: const Text('LER QR CODE'),
-              ),
-              const SizedBox(height: 20),
-              const Text('Ou digite ou cole o código', style: TextStyle(fontWeight: FontWeight.w700)),
-              const SizedBox(height: 8),
-              TextField(
-                controller: _campoCodigo,
-                enabled: !validando,
-                autocorrect: false,
-                enableSuggestions: false,
-                textInputAction: TextInputAction.send,
-                decoration: InputDecoration(labelText: 'Código do ingresso', errorText: _erroDoCampo),
-                onSubmitted: (_) => _validarCampo(),
-              ),
-              const SizedBox(height: 12),
-              OutlinedButton(onPressed: validando ? null : _validarCampo, child: const Text('VALIDAR')),
-              const SizedBox(height: 24),
-              Semantics(
-                header: true,
-                child: const Text(
-                  'Validações desta sessão',
-                  style: TextStyle(color: Cores.texto, fontSize: 16, fontWeight: FontWeight.w800),
+        // Deitado: a leitura à esquerda, e o contador e o histórico à direita, cada lado com a sua rolagem.
+        // O histórico, o contador e o resultado ficam neste State, e girar não os apaga.
+        child: deitado
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    flex: 5,
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.fromLTRB(margem, 12, 8, 12),
+                      child: leitura,
+                    ),
+                  ),
+                  Expanded(
+                    flex: 4,
+                    child: SingleChildScrollView(
+                      padding: EdgeInsets.fromLTRB(8, 12, margem, 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [contador, const SizedBox(height: 12), historico],
+                      ),
+                    ),
+                  ),
+                ],
+              )
+            : SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: margem, vertical: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [contador, const SizedBox(height: 16), leitura, const SizedBox(height: 24), historico],
                 ),
               ),
-              const SizedBox(height: 8),
-              HistoricoValidacoes(registros: _historico),
-            ],
-          ),
-        ),
       ),
     );
   }

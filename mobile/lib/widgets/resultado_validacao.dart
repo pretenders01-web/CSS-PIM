@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../modelos/registro_validacao.dart';
 import '../tema/cores.dart';
 import '../util/formatacao.dart';
+import '../util/layout.dart';
 
 /// O resultado em tela cheia: cor, ícone e texto juntos, para não depender só da cor nem de som.
 /// Volta sozinho para a leitura depois de alguns segundos, ou na hora, pelo botão.
@@ -66,56 +67,73 @@ class _ResultadoValidacaoTelaState extends State<ResultadoValidacaoTela> {
       ResultadoValidacao.naoValidada => (Cores.fundo, Colors.white, Icons.wifi_off, 'NÃO VALIDADO'),
     };
     final naoValidada = registro.resultado == ResultadoValidacao.naoValidada;
+    final deitado = estaDeitado(context);
+    final iconeGrande = Icon(icone, size: deitado ? 80 : 96, color: naoValidada ? Cores.amarelo : corDoTexto);
+    final textos = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          titulo,
+          textAlign: TextAlign.center,
+          style: TextStyle(color: corDoTexto, fontSize: deitado ? 26 : 30, fontWeight: FontWeight.w800),
+        ),
+        SizedBox(height: deitado ? 10 : 20),
+        if (registro.resultado == ResultadoValidacao.liberada) ...[
+          Text(
+            registro.partida ?? '',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: corDoTexto, fontSize: deitado ? 20 : 24, fontWeight: FontWeight.w800),
+          ),
+          SizedBox(height: deitado ? 6 : 12),
+          Text(
+            '${registro.nomeSetor ?? '—'}\n'
+            'Assento ${registro.numeroAssento ?? '—'}\n'
+            '${registro.dataJogo == null ? '' : formatarDataHora(registro.dataJogo!)}',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: corDoTexto, fontSize: deitado ? 16 : 18, fontWeight: FontWeight.w600),
+          ),
+        ] else
+          Text(
+            registro.motivo ?? '',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: corDoTexto, fontSize: deitado ? 18 : 20, fontWeight: FontWeight.w600),
+          ),
+      ],
+    );
 
     return Scaffold(
       backgroundColor: fundo,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, limites) => SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.symmetric(
+              horizontal: margemLateral(context, minima: deitado ? 16 : 24),
+              vertical: deitado ? 16 : 24,
+            ),
             child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: limites.maxHeight - 48),
+              constraints: BoxConstraints(minHeight: limites.maxHeight - (deitado ? 32 : 48)),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // Deitado: o ícone ao lado dos textos, para caber na altura. A contagem da volta
+                  // automática fica neste State, e girar o aparelho não a reinicia.
                   Semantics(
                     liveRegion: true,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Icon(icone, size: 96, color: naoValidada ? Cores.amarelo : corDoTexto),
-                        const SizedBox(height: 16),
-                        Text(
-                          titulo,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: corDoTexto, fontSize: 30, fontWeight: FontWeight.w800),
-                        ),
-                        const SizedBox(height: 20),
-                        if (registro.resultado == ResultadoValidacao.liberada) ...[
-                          Text(
-                            registro.partida ?? '',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: corDoTexto, fontSize: 24, fontWeight: FontWeight.w800),
+                    child: deitado
+                        ? Row(
+                            children: [
+                              iconeGrande,
+                              const SizedBox(width: 24),
+                              Expanded(child: textos),
+                            ],
+                          )
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [iconeGrande, const SizedBox(height: 16), textos],
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            '${registro.nomeSetor ?? '—'}\n'
-                            'Assento ${registro.numeroAssento ?? '—'}\n'
-                            '${registro.dataJogo == null ? '' : formatarDataHora(registro.dataJogo!)}',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: corDoTexto, fontSize: 18, fontWeight: FontWeight.w600),
-                          ),
-                        ] else
-                          Text(
-                            registro.motivo ?? '',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: corDoTexto, fontSize: 20, fontWeight: FontWeight.w600),
-                          ),
-                      ],
-                    ),
                   ),
-                  const SizedBox(height: 32),
+                  SizedBox(height: deitado ? 16 : 32),
                   ElevatedButton(
                     style: naoValidada
                         ? null

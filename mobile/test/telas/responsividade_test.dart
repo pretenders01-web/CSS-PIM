@@ -5,12 +5,17 @@ import 'package:http/http.dart' as http;
 import '../apoio/falsos.dart';
 import '../apoio/telas_de_teste.dart';
 
-/// Do celular pequeno ao grande, em retrato.
+/// Do celular pequeno ao grande, em pé e deitado, e uma janela de navegador, que também cai no layout deitado.
 const aparelhos = {
   '320x568': Size(320, 568),
   '360x640': Size(360, 640),
   '390x844': Size(390, 844),
   '430x932': Size(430, 932),
+  '568x320 deitado': Size(568, 320),
+  '640x360 deitado': Size(640, 360),
+  '844x390 deitado': Size(844, 390),
+  '932x430 deitado': Size(932, 430),
+  '1280x720 janela': Size(1280, 720),
 };
 
 const escalasDeFonte = [1.0, 1.3, 2.0];
@@ -36,7 +41,8 @@ final Map<String, Future<void> Function(WidgetTester)> telas = {
   'Portaria lendo': (tester) => abrirPortaria(tester),
   'Portaria com histórico': (tester) async {
     await abrirPortaria(tester, respostaDaApi: respostaLiberada, voltarParaALeitura: true);
-    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -3000));
+    // Em pé há uma rolagem só. Deitado há duas, e a última é a do histórico.
+    await tester.drag(find.byType(SingleChildScrollView).last, const Offset(0, -3000));
     await tester.pump(const Duration(milliseconds: 100));
   },
   'Portaria com recusa no histórico': (tester) =>

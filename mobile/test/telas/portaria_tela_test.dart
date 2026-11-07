@@ -74,6 +74,10 @@ Future<void> fechar(WidgetTester tester) => tester.pumpWidget(const SizedBox());
 void main() {
   group('cabeçalho e tela de leitura', () {
     testWidgets('mostra o logo, o título, o botão de sair e o botão grande', (tester) async {
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 2.625;
+      addTearDown(tester.view.reset);
+
       await abrir(tester, (_) async => respostaJson({}));
 
       expect(find.bySemanticsLabel('Mundial Tickets'), findsOneWidget);

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../servicos/autenticacao_servico.dart';
 import '../servicos/erros_api.dart';
 import '../tema/cores.dart';
+import '../util/layout.dart';
 import '../util/validadores.dart';
 
 /// Entrada com a conta criada no site. O app não tem cadastro nem compra.
@@ -67,12 +68,27 @@ class _LoginTelaState extends State<LoginTela> {
 
   @override
   Widget build(BuildContext context) {
+    final deitado = estaDeitado(context);
+    final logo = Image.asset(
+      'assets/img/logo.png',
+      height: deitado ? 44 : 84,
+      cacheWidth: 768,
+      semanticLabel: 'Mundial Tickets',
+    );
+    final titulo = Text(
+      'Faça login',
+      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+        fontWeight: FontWeight.w800,
+        color: Cores.verdeForte,
+      ),
+    );
+
     return Scaffold(
       body: SafeArea(
         // Rolável, para o teclado e as fontes grandes não cortarem nada.
         child: Center(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: EdgeInsets.symmetric(horizontal: 24, vertical: deitado ? 12 : 24),
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 420),
               child: AutofillGroup(
@@ -82,21 +98,14 @@ class _LoginTelaState extends State<LoginTela> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Image.asset(
-                        'assets/img/logo.png',
-                        height: 84,
-                        cacheWidth: 768,
-                        semanticLabel: 'Mundial Tickets',
-                      ),
-                      const SizedBox(height: 32),
-                      Text(
-                        'Faça login',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: Cores.verdeForte,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
+                      // Deitado, a altura é pouca: o logo e o título dividem a mesma linha.
+                      deitado
+                          ? Row(children: [logo, const SizedBox(width: 16), Expanded(child: titulo)])
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [logo, const SizedBox(height: 32), titulo],
+                            ),
+                      SizedBox(height: deitado ? 12 : 16),
                       TextFormField(
                         controller: _email,
                         enabled: !_enviando,
@@ -107,7 +116,7 @@ class _LoginTelaState extends State<LoginTela> {
                         decoration: const InputDecoration(labelText: 'E-mail'),
                         validator: validarEmail,
                       ),
-                      const SizedBox(height: 12),
+                      SizedBox(height: deitado ? 8 : 12),
                       TextFormField(
                         controller: _senha,
                         enabled: !_enviando,
@@ -134,7 +143,7 @@ class _LoginTelaState extends State<LoginTela> {
                           child: Text(_erro!, style: const TextStyle(color: Cores.vermelho)),
                         ),
                       ],
-                      const SizedBox(height: 20),
+                      SizedBox(height: deitado ? 12 : 20),
                       ElevatedButton(
                         onPressed: _enviando ? null : _entrar,
                         child: _enviando
@@ -147,7 +156,7 @@ class _LoginTelaState extends State<LoginTela> {
                               )
                             : const Text('ENTRAR'),
                       ),
-                      const SizedBox(height: 24),
+                      SizedBox(height: deitado ? 10 : 24),
                       const Text(
                         'O cadastro e a compra de ingressos são feitos no site Mundial Tickets.',
                         textAlign: TextAlign.center,

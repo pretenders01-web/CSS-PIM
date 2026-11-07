@@ -21,5 +21,17 @@ Evidências da Etapa 9 do manual: "apresentação de telas, protótipos ou captu
 | `14-outros-ingressos.png` | A lista com os três selos |
 | `15-portaria-camera.png` | A câmera, aberta por "Ler QR Code" (a cena virtual do emulador) |
 | `16-portaria-historico.png` | O contador e o histórico da sessão, com entradas liberadas e recusadas |
+| `20-paisagem-login.png` | Deitado: login centralizado, com logo e título na mesma linha |
+| `21-paisagem-inicio.png` | Deitado: o cartão com os dados de um lado, e o mapa e os botões do outro |
+| `22-paisagem-outros-ingressos.png` | Deitado: os outros ingressos em duas colunas, depois de rolar a lista |
+| `23-paisagem-qr-valido.png` | Deitado: o QR à esquerda e os dados à direita |
+| `24-paisagem-qr-utilizado.png` | Deitado: o mesmo ingresso depois de validado, com o selo que mudou sozinho |
+| `25-paisagem-portaria.png` | Deitado: a leitura à esquerda, e o contador e o histórico à direita |
+| `26-paisagem-portaria-liberada.png` | Deitado: entrada liberada, com o ícone ao lado dos textos |
+| `27-paisagem-portaria-recusada.png` | Deitado: entrada recusada, com o motivo |
+| `28-paisagem-portaria-historico.png` | Deitado: o histórico rolado, com o contador e o campo sempre à vista |
+| `29-paisagem-camera.png` | Deitado: a câmera, com a cena virtual do emulador em pé e o aparelho simulado girado |
+| `30-paisagem-estado-vazio.png` | Deitado: sem ingressos |
+| `31-paisagem-estado-erro.png` | Deitado: erro com "Tentar de novo", com a Api parada |
 
-A leitura de um QR real pela câmera ainda não tem captura: ela depende de um aparelho físico (passo 3.8 do plano).
+A leitura de um QR real pela câmera ainda não tem captura, nem em pé nem deitado: ela depende de um aparelho físico (passo 3.8 do plano).

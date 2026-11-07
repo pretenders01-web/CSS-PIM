@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:http/http.dart' as http;
 
@@ -16,6 +17,13 @@ import 'telas/inicio_tela.dart';
 import 'telas/login_tela.dart';
 import 'telas/portaria_tela.dart';
 import 'widgets/estados_tela.dart';
+
+/// Em pé e deitado para os dois lados. De cabeça para baixo fica de fora, como na maioria dos celulares.
+const List<DeviceOrientation> orientacoesDoApp = [
+  DeviceOrientation.portraitUp,
+  DeviceOrientation.landscapeLeft,
+  DeviceOrientation.landscapeRight,
+];
 
 /// Os serviços do app, montados uma vez e passados pelo construtor de cada tela.
 /// Os testes montam este mesmo objeto com versões falsas.

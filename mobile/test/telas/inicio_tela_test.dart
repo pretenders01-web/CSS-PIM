@@ -185,7 +185,11 @@ void main() {
     expect(find.text('Não foi possível abrir o mapa.'), findsOneWidget);
   });
 
-  testWidgets('o cartão tem altura mínima de metade da tela', (tester) async {
+  testWidgets('em pé, o cartão tem altura mínima de metade da tela', (tester) async {
+    tester.view.physicalSize = const Size(1080, 2400);
+    tester.view.devicePixelRatio = 2.625;
+    addTearDown(tester.view.reset);
+
     await abrir(tester, (_) async => respostaJson([jsonDeIngresso()]));
     await esperarCarregar(tester);
 

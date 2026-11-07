@@ -7,8 +7,7 @@ import 'config/configuracao_api.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // O app foi desenhado só para retrato.
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+  await SystemChrome.setPreferredOrientations(orientacoesDoApp);
 
   runApp(MundialTicketsApp(configuracao: ConfiguracaoApi.doAmbiente()));
 }

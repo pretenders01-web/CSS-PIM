@@ -10,10 +10,15 @@ import '../servicos/erros_api.dart';
 import '../servicos/ingresso_servico.dart';
 import '../tema/cores.dart';
 import '../util/formatacao.dart';
+import '../util/layout.dart';
 import '../widgets/bandeira_time.dart';
 import '../widgets/cartao_proximo_jogo.dart';
 import '../widgets/fundo_cartao_hero.dart';
 import '../widgets/selo_ingresso.dart';
+
+/// O lado do QR nunca fica abaixo do mínimo, para a câmera da portaria conseguir ler.
+const double ladoMinimoDoQr = 220;
+const double ladoMaximoDoQr = 320;
 
 /// O QR Code do ingresso, para mostrar na portaria.
 /// Com esta tela aberta, o app consulta a situação a cada poucos segundos, para o selo mudar
@@ -125,110 +130,217 @@ class _QrTelaState extends State<QrTela> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final situacao = _situacao;
-    final assento = _ingresso.numeroAssento ?? '—';
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Ingresso')),
+      appBar: AppBar(toolbarHeight: alturaDaBarra(context), title: const Text('Ingresso')),
       body: SafeArea(
+        // A consulta periódica e o ingresso aberto ficam neste State, acima do layout: girar o
+        // aparelho só troca a arrumação da tela, sem reiniciar nada.
         child: LayoutBuilder(
-          builder: (context, limites) {
-            const margem = 12.0;
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(margem),
-              child: ConstrainedBox(
-                // O cartão preenche a tela e, com fonte grande, cresce e rola.
-                constraints: BoxConstraints(minHeight: limites.maxHeight - margem * 2),
-                child: Stack(
-                  children: [
-                    Positioned.fill(child: FundoCartaoHero(ingressoId: _ingresso.ingressoId)),
-                    Padding(
-                      padding: const EdgeInsets.all(16),
+          builder: (context, limites) => estaDeitado(context) ? _emPaisagem(limites) : _emRetrato(limites),
+        ),
+      ),
+    );
+  }
+
+  /// Em pé: tudo em uma coluna. O cartão preenche a tela e, com fonte grande, cresce e rola.
+  Widget _emRetrato(BoxConstraints limites) {
+    const margem = 12.0;
+    const interno = 16.0;
+    final lado = (limites.maxWidth - (margem + interno) * 2).clamp(ladoMinimoDoQr, ladoMaximoDoQr);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(margem),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: limites.maxHeight - margem * 2),
+        child: Stack(
+          children: [
+            Positioned.fill(child: FundoCartaoHero(ingressoId: _ingresso.ingressoId)),
+            Padding(
+              padding: const EdgeInsets.all(interno),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _cabecalho(),
+                  const SizedBox(height: 16),
+                  Center(child: _QuadroDoQr(codigo: _ingresso.codigoQR, lado: lado)),
+                  const SizedBox(height: 10),
+                  _textoDaSituacao(TextAlign.center),
+                  if (_semRede) ...[const SizedBox(height: 8), _avisoSemRede(TextAlign.center)],
+                  const SizedBox(height: 16),
+                  _dados(),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Deitado: o QR à esquerda, com a maior altura disponível, e os dados à direita. Se a fonte for
+  /// grande, só os dados rolam, e o QR continua inteiro na tela.
+  Widget _emPaisagem(BoxConstraints limites) {
+    const margem = 8.0;
+    const interno = 12.0;
+    final margemDosLados = margemLateral(context, minima: margem);
+    final larguraUtil = limites.maxWidth - (margemDosLados + interno) * 2;
+    final alturaUtil = limites.maxHeight - (margem + interno) * 2;
+    final lado = math.min(alturaUtil, larguraUtil / 2).clamp(ladoMinimoDoQr, ladoMaximoDoQr);
+
+    // Em uma tela baixa demais para o mínimo do QR, a página inteira rola, em vez de encolher o QR.
+    final alturaDoCartao = math.max(limites.maxHeight - margem * 2, lado + interno * 2);
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: margemDosLados, vertical: margem),
+      child: SizedBox(
+        height: alturaDoCartao,
+        child: Stack(
+          children: [
+            Positioned.fill(child: FundoCartaoHero(ingressoId: _ingresso.ingressoId)),
+            Padding(
+              padding: const EdgeInsets.all(interno),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _QuadroDoQr(codigo: _ingresso.codigoQR, lado: lado),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              BandeiraTime(time: _ingresso.timeA, largura: 42, altura: 28),
+                              BandeiraTime(time: _ingresso.timeA, largura: 36, altura: 24),
+                              const SizedBox(width: 6),
+                              BandeiraTime(time: _ingresso.timeB, largura: 36, altura: 24),
                               const SizedBox(width: 10),
-                              BandeiraTime(time: _ingresso.timeB, largura: 42, altura: 28),
+                              Expanded(
+                                child: Text(
+                                  _ingresso.partida,
+                                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: 8),
-                          Text(
-                            _ingresso.partida,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+                          // Wrap: o que não couber na linha desce para a seguinte, sem estourar.
+                          Wrap(
+                            spacing: 12,
+                            runSpacing: 6,
+                            crossAxisAlignment: WrapCrossAlignment.center,
+                            children: [_selo(), _textoDaSituacao(TextAlign.start)],
                           ),
+                          if (_semRede) ...[const SizedBox(height: 6), _avisoSemRede(TextAlign.start)],
                           const SizedBox(height: 10),
-                          Semantics(
-                            liveRegion: true,
-                            label: 'Situação do ingresso: ${SeloIngresso.textoDe(situacao)}',
-                            child: ExcludeSemantics(
-                              child: Center(
-                                child: AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 300),
-                                  child: SeloIngresso(
-                                    key: ValueKey(situacao),
-                                    situacao: situacao,
-                                    grande: true,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          _QuadroDoQr(codigo: _ingresso.codigoQR),
-                          const SizedBox(height: 10),
-                          Text(
-                            switch (situacao) {
-                              SituacaoIngresso.valido => 'Apresente este QR Code na portaria.',
-                              SituacaoIngresso.utilizado => 'Este ingresso já foi utilizado.',
-                              SituacaoIngresso.expirado => 'O jogo deste ingresso já começou.',
-                            },
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(color: Cores.textoSuave),
-                          ),
-                          if (_semRede) ...[
-                            const SizedBox(height: 8),
-                            Semantics(
-                              liveRegion: true,
-                              child: const Text(
-                                'Sem conexão: a situação pode estar desatualizada.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(color: Cores.amarelo),
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Wrap(
+                            spacing: 20,
+                            runSpacing: 8,
                             children: [
-                              Expanded(child: CampoIngresso(rotulo: 'Setor', valor: _ingresso.nomeSetor)),
-                              const SizedBox(width: 12),
-                              CampoIngresso(rotulo: 'Assento', valor: assento),
+                              CampoIngresso(rotulo: 'Setor', valor: _ingresso.nomeSetor),
+                              CampoIngresso(rotulo: 'Assento', valor: _ingresso.numeroAssento ?? '—'),
+                              CampoIngresso(rotulo: 'Data e hora', valor: formatarDataHora(_ingresso.dataJogo)),
+                              CampoIngresso(
+                                rotulo: 'Estádio',
+                                valor: '${_ingresso.estadioNome}, ${_ingresso.estadioCidade}',
+                              ),
                             ],
                           ),
                           const SizedBox(height: 10),
-                          CampoIngresso(rotulo: 'Data e hora', valor: formatarDataHora(_ingresso.dataJogo)),
-                          const SizedBox(height: 10),
-                          CampoIngresso(
-                            rotulo: 'Estádio',
-                            valor: '${_ingresso.estadioNome}, ${_ingresso.estadioCidade}',
-                          ),
-                          const SizedBox(height: 14),
                           _TextoDoCodigo(codigo: _ingresso.codigoQR),
                         ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            );
-          },
+            ),
+          ],
         ),
       ),
+    );
+  }
+
+  Widget _cabecalho() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            BandeiraTime(time: _ingresso.timeA, largura: 42, altura: 28),
+            const SizedBox(width: 10),
+            BandeiraTime(time: _ingresso.timeB, largura: 42, altura: 28),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          _ingresso.partida,
+          textAlign: TextAlign.center,
+          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+        ),
+        const SizedBox(height: 10),
+        Center(child: _selo()),
+      ],
+    );
+  }
+
+  Widget _selo() {
+    final situacao = _situacao;
+    return Semantics(
+      liveRegion: true,
+      label: 'Situação do ingresso: ${SeloIngresso.textoDe(situacao)}',
+      child: ExcludeSemantics(
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 300),
+          child: SeloIngresso(key: ValueKey(situacao), situacao: situacao, grande: true),
+        ),
+      ),
+    );
+  }
+
+  Widget _textoDaSituacao(TextAlign alinhamento) {
+    return Text(
+      switch (_situacao) {
+        SituacaoIngresso.valido => 'Apresente este QR Code na portaria.',
+        SituacaoIngresso.utilizado => 'Este ingresso já foi utilizado.',
+        SituacaoIngresso.expirado => 'O jogo deste ingresso já começou.',
+      },
+      textAlign: alinhamento,
+      style: const TextStyle(color: Cores.textoSuave),
+    );
+  }
+
+  Widget _avisoSemRede(TextAlign alinhamento) {
+    return Semantics(
+      liveRegion: true,
+      child: Text(
+        'Sem conexão: a situação pode estar desatualizada.',
+        textAlign: alinhamento,
+        style: const TextStyle(color: Cores.amarelo),
+      ),
+    );
+  }
+
+  Widget _dados() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: CampoIngresso(rotulo: 'Setor', valor: _ingresso.nomeSetor)),
+            const SizedBox(width: 12),
+            CampoIngresso(rotulo: 'Assento', valor: _ingresso.numeroAssento ?? '—'),
+          ],
+        ),
+        const SizedBox(height: 10),
+        CampoIngresso(rotulo: 'Data e hora', valor: formatarDataHora(_ingresso.dataJogo)),
+        const SizedBox(height: 10),
+        CampoIngresso(rotulo: 'Estádio', valor: '${_ingresso.estadioNome}, ${_ingresso.estadioCidade}'),
+        const SizedBox(height: 14),
+        _TextoDoCodigo(codigo: _ingresso.codigoQR),
+      ],
     );
   }
 }
@@ -236,30 +348,24 @@ class _QrTelaState extends State<QrTela> with WidgetsBindingObserver {
 /// O QR fica sobre um quadro branco opaco, com módulos escuros: o vidro escuro do tema
 /// atrapalharia a leitura da câmera.
 class _QuadroDoQr extends StatelessWidget {
-  const _QuadroDoQr({required this.codigo});
+  const _QuadroDoQr({required this.codigo, required this.lado});
 
   final String codigo;
+  final double lado;
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, limites) {
-        final lado = math.min(limites.maxWidth, 320.0).clamp(220.0, 320.0);
-        return Center(
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: QrImageView(
-              data: codigo,
-              size: lado,
-              errorCorrectionLevel: QrErrorCorrectLevel.M,
-              backgroundColor: Colors.white,
-              // A margem de silêncio: cerca de 4 módulos em volta do desenho.
-              padding: EdgeInsets.all(lado * 0.11),
-              semanticsLabel: 'QR Code do ingresso',
-            ),
-          ),
-        );
-      },
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: QrImageView(
+        data: codigo,
+        size: lado,
+        errorCorrectionLevel: QrErrorCorrectLevel.M,
+        backgroundColor: Colors.white,
+        // A margem de silêncio: cerca de 4 módulos em volta do desenho.
+        padding: EdgeInsets.all(lado * 0.11),
+        semanticsLabel: 'QR Code do ingresso',
+      ),
     );
   }
 }

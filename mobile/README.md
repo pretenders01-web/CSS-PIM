@@ -65,7 +65,7 @@ flutter test test/telas/qr_tela_test.dart   # um único arquivo
 flutter test --coverage                     # gera coverage/lcov.info
 ```
 
-Os testes não precisam de banco, Api nem aparelho: o cliente HTTP é falso (`MockClient`). Eles cobrem modelos, serviços, telas, responsividade (4 tamanhos de tela e 3 escalas de fonte) e acessibilidade (área de toque, rótulos e contraste).
+Os testes não precisam de banco, Api nem aparelho: o cliente HTTP é falso (`MockClient`). Eles cobrem modelos, serviços, telas, responsividade (9 tamanhos de tela, em pé e deitado, e 3 escalas de fonte), o giro do aparelho e acessibilidade (área de toque, rótulos e contraste).
 
 ## Como o app se liga ao sistema
 

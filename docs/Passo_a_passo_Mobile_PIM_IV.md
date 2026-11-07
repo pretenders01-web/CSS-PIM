@@ -210,7 +210,8 @@ Respondidas em 07/11/2026. Não há dúvida em aberto. As referências "decisão
 | 4.12 | LIBRAS (Etapa 8) | **O app não traz conteúdo em LIBRAS.** `Semantics` atende leitores de tela, não LIBRAS. O documento registra que as respostas são visuais (cor, ícone e texto, sem depender de som), e a proposta em si fica com quem responde pela Etapa 8 | Passo 3.6 |
 | 4.13 | Personas e wireframes (Etapa 6) | **Ficam com quem responde pela Etapa 6.** Este plano entrega os fluxos, as capturas e as melhorias encontradas | Passo 3.6 |
 | 4.14 | Nome e ícone do app | **Corrigida em 07/11/2026: o ícone é só o troféu do logo**, centralizado e com margem, sobre o fundo escuro do tema, porque o logo inteiro ficava ilegível nesse tamanho. É gerado com `flutter_launcher_icons`, só como `dev_dependency`. O rótulo é "Mundial Tickets". O `applicationId` `com.example.mobile` continua, porque o app não será publicado | Passo 2A.6 |
-| 4.16 | Tamanho do cartão | **Fica como está:** cerca de 57% da tela, com altura mínima de 50% | Passo 2C.4 |
+| 4.16 | Tamanho do cartão | **Fica como está:** cerca de 57% da tela, com altura mínima de 50%. Só em pé: deitado, o cartão fica compacto (decisão 4.17) | Passo 2C.4 |
+| 4.17 | Orientação da tela | **Mudou em 07/11/2026: em pé e deitado.** O manual cobra a adaptação do layout a diferentes dispositivos. A trava em retrato saiu, e todas as telas têm layout deitado. De cabeça para baixo continua de fora. Girar não perde o estado nem reinicia a consulta periódica | Seção 5, "Mudança depois da Fase 3: celular deitado" |
 | 4.15 | Texto do aviso no login | **"O cadastro e a compra de ingressos são feitos no site Mundial Tickets."** Sem link, porque o site só tem endereço local | Passo 2B.6 |
 
 ---
@@ -308,7 +309,7 @@ Nada aqui chama a Api.
   - `fonts/`: Poppins Regular, Medium, SemiBold, Bold e ExtraBold (cerca de 160 KB cada) e o `OFL.txt` da licença, do repositório `google/fonts`, pasta `ofl/poppins`.
 
   *Pronto quando:* um teste confere que as 12 bandeiras carregam e que nenhuma contém `<style`, o que protege contra alguém copiar os originais de novo; as três bandeiras convertidas têm as cores certas na tela.
-- [x] **2A.4** Tema: `tema/cores.dart` com os valores da seção 3.5, `tema/tema_app.dart` com o `ThemeData` (Poppins, fundo, botões e campos) e os widgets `CartaoVidro` e `SeloIngresso` (Válido, Utilizado e Expirado), sem `BackdropFilter`. `MaterialApp` em pt-BR (`flutter_localizations`), sem a faixa de debug e travado em retrato. *Pronto quando:* uma tela de exemplo mostra cartão, botão e os três selos no visual do site.
+- [x] **2A.4** Tema: `tema/cores.dart` com os valores da seção 3.5, `tema/tema_app.dart` com o `ThemeData` (Poppins, fundo, botões e campos) e os widgets `CartaoVidro` e `SeloIngresso` (Válido, Utilizado e Expirado), sem `BackdropFilter`. `MaterialApp` em pt-BR (`flutter_localizations`), sem a faixa de debug. A trava em retrato, criada aqui, saiu depois (decisão 4.17). *Pronto quando:* uma tela de exemplo mostra cartão, botão e os três selos no visual do site.
 - [x] **2A.5** Configuração: `config/configuracao_api.dart` lê `String.fromEnvironment('API_URL')`, sem valor padrão e sem IP no código. Vazio mostra uma tela explicando o `--dart-define`. Em build de release, um endereço que não seja `https://` é recusado (ver passo 2A.6). *Pronto quando:* há teste dos três casos e `grep -rE "10\.0\.2\.2|192\.168|localhost" mobile/lib` não encontra nada.
 - [x] **2A.6** Android:
   - no manifesto principal: `INTERNET`, `android:label="Mundial Tickets"`, `android:allowBackup="false"` (o README do `flutter_secure_storage` avisa que o backup causa `InvalidKeyException`) e um `<queries>` para `https`, que o `canLaunchUrl` exige a partir do Android 11;
@@ -410,7 +411,7 @@ Esta foi a primeira versão. A tela foi refeita depois: ver "Mudança depois da 
 
 ### Fase 3: acabamento (responsividade, acessibilidade, testes, capturas e README)
 
-- [x] **3.1** Responsividade: testes de widget das telas principais em 320×568, 360×640, 390×844 e 430×932 (`tester.view.physicalSize`), com escala de fonte 1,0, 1,3 e 2,0 e a Poppins de verdade. Um estouro de layout faz o teste falhar. `SafeArea` em todas. Em retrato, como pedido.
+- [x] **3.1** Responsividade: testes de widget das telas principais em 320×568, 360×640, 390×844 e 430×932 (`tester.view.physicalSize`), com escala de fonte 1,0, 1,3 e 2,0 e a Poppins de verdade. Um estouro de layout faz o teste falhar. `SafeArea` em todas. Em retrato, como pedido nesta fase. A paisagem entrou depois (decisão 4.17), e a matriz cresceu para 9 tamanhos.
 - [x] **3.2** Acessibilidade: `Semantics` no cartão (frase completa do jogo), no mapa (imagem com rótulo), no QR, nos selos, nos botões e na câmera. Bandeira ao lado do nome fica fora da leitura, como o `alt=""` da Web. Texto respeita o tamanho do sistema. Contraste segundo a seção 3.5. *Pronto quando:* passam `androidTapTargetGuideline`, `labeledTapTargetGuideline` e `textContrastGuideline`, e o TalkBack funciona no app. O percurso completo por gestos fica no passo 3.8.
 - [x] **3.3** Desempenho, no que dá para conferir sem aparelho: revisar `const`, `dispose` de controllers e timers, e `RepaintBoundary`, e testar que a animação do mapa para fora da tela. Logo com `cacheWidth`. *Pronto quando:* os testes passam. A medição no DevTools precisa de aparelho físico, porque o modo profile não roda em emulador, e fica no passo 3.8.
 - [x] **3.4** Testes: conferir que modelos, serviços e telas principais estão cobertos e que não restou código do contador. *Pronto quando:* `flutter analyze` não tem avisos e `flutter test` passa, com o resultado copiado para as notas.
@@ -451,7 +452,7 @@ Para o dia em que o celular estiver disponível. Preparação, uma vez:
 
 Depois, marque cada item:
 
-- [ ] **A. Câmera lendo um QR real.** No celular, entre como `ADMIN`, toque em "Ler QR Code" e aceite a câmera. No PC, F5 em "App (Edge, profile)", entre como comprador e abra o QR. Aponte o celular para a tela: deve ficar verde, e o selo do Edge deve mudar para Utilizado. Toque em "Ler QR Code" e leia de novo: deve ficar vermelho. Devolva o ingresso com o `UPDATE` do passo 3.7. Tire uma foto para o documento.
+- [ ] **A. Câmera lendo um QR real.** No celular, entre como `ADMIN`, toque em "Ler QR Code" e aceite a câmera. No PC, F5 em "App (Edge, profile)", entre como comprador e abra o QR. Aponte o celular para a tela: deve ficar verde, e o selo do Edge deve mudar para Utilizado. Toque em "Ler QR Code" e leia de novo: deve ficar vermelho. Devolva o ingresso com o `UPDATE` do passo 3.7. Repita a leitura com o celular deitado, para os dois lados: a imagem deve ficar em pé, e o QR deve ser lido. Tire uma foto para o documento.
 - [ ] **B. Desempenho.** Pare o app e rode em modo profile:
 
   ```bash
@@ -505,6 +506,40 @@ Pedida em 07/11/2026 (decisão 4.7). O `ADMIN` deixa de passar pela tela do torc
 - **Testes:** 368 passando, `flutter analyze` sem avisos e 94,8% das linhas cobertas (987 de 1041). A responsividade passou a cobrir 16 estados de tela, somando 192 combinações, sem nenhum estouro, e as regras de acessibilidade passam em 13 telas.
 - **O horário do histórico nas capturas está em UTC,** porque esse é o fuso do emulador. Em um aparelho real, é o horário local.
 
+### Mudança depois da Fase 3: celular deitado
+
+Pedida em 07/11/2026 (decisão 4.17), porque o manual cobra a adaptação do layout a diferentes dispositivos.
+
+Antes de mudar, conferi onde a orientação estava travada. O único lugar era o `SystemChrome.setPreferredOrientations` do `main.dart`, criado na Parte 2A. O `AndroidManifest` não tem `screenOrientation`, e o `configChanges` já cobre o giro sem recriar a Activity. O `Info.plist` já permitia paisagem, e o `MaterialApp` não trava nada. O `web/manifest.json` tinha `portrait-primary`, que só vale para o app instalado pelo navegador, e passou a `any`.
+
+- [x] **P.1** `app.dart`: `orientacoesDoApp`, em pé e deitado para os dois lados, usada pelo `main.dart`.
+- [x] **P.2** `util/layout.dart`: `estaDeitado`, `alturaDaBarra` (48 deitado) e `margemLateral` (o conteúdo não passa de 1000 de largura).
+- [x] **P.3** Login: formulário centralizado, com largura máxima de 420, logo e título na mesma linha, rolando com o teclado aberto.
+- [x] **P.4** Início: cartão com os dados de um lado, e o mapa e os botões do outro. Os outros ingressos ficam em duas colunas, na mesma lista rolável.
+- [x] **P.5** QR: o QR à esquerda, com lado entre 220 e 320, e os dados à direita. Com fonte grande, só os dados rolam, e o QR continua inteiro.
+- [x] **P.6** Portaria: a leitura à esquerda, e o contador e o histórico à direita, cada lado com a sua rolagem. O resultado mostra o ícone ao lado dos textos. A câmera ocupa a tela, com a dica por cima.
+- [x] **P.7** Testes, capturas, `mobile/README.md` e notas locais do projeto. *Pronto quando:* `flutter analyze` não tem avisos, os testes passam e o giro no emulador não perde o estado.
+
+**Notas da mudança (decisões tomadas durante a execução):**
+
+- **O layout é escolhido por `MediaQuery.orientationOf`, e não pelo espaço que sobra.** O teclado aberto encolhe a área útil, e um `LayoutBuilder` trocaria o layout no meio da digitação. O `LayoutBuilder` ficou só para calcular o lado do QR.
+- **Girar não perde o estado porque ele já ficava nos `State`,** acima do layout: o ingresso aberto, a consulta periódica, o histórico, o contador e a contagem da volta. Girar só troca a arrumação da tela. Foram precisos dois cuidados: uma `GlobalKey` no campo da Portaria, que muda de lugar na árvore de widgets, e a mesma árvore em pé e deitado na tela da câmera, para ela não reiniciar.
+- **O que recomeça ao girar, por não ser estado do usuário:** a rolagem da Portaria e a animação do mapa, que mudam de lugar na árvore.
+- **Deitado, o contador foi para a coluna do histórico.** Na coluna da leitura, ele empurrava o botão VALIDAR para fora da tela no emulador.
+- **Deitado, o cartão é compacto,** com bandeiras e mapa menores, para os dois botões caberem sem rolar. A altura mínima de 50% só vale em pé.
+- **Em pé, a dica da câmera também passou a ficar sobre a imagem,** com fundo escuro, porque a árvore é a mesma nas duas posições.
+- **De cabeça para baixo fica de fora [PROPOSTA],** como na maioria dos celulares.
+- **Uma janela larga, como a do Edge, também cai no layout deitado.** Ela tem teste de widget em 1280×720, mas não foi aberta no Edge nesta mudança.
+- **Verificação no emulador, contra a Api local,** com compradores temporários, já apagados:
+  - **Login:** centralizado e sem rolar. Com o teclado aberto, o campo continua visível. O erro de conexão aparece sem estouro.
+  - **QR:** em 4 giros com a tela aberta, as consultas seguiram a cada 4,9 a 5,2 segundos, no mesmo processo e com o mesmo ingresso. Validado pela Api, o selo mudou sozinho, deitado. O QR ficou com 247 dp de lado.
+  - **Portaria:** com o teclado aberto, girar manteve o texto, o foco e o teclado. No verde, girar no meio não reiniciou a contagem, que seguiu de 4 para 2 segundos. O vermelho, o código inexistente e o "Não validado", com a Api parada, funcionaram. O histórico e o contador continuaram depois de girar.
+  - **Câmera:** em 3 giros e em uma volta completa do aparelho simulado (`adb emu rotate`), o serviço de câmera do Android registrou só a conexão inicial. Com o aparelho simulado deitado, a prévia ficou em pé para os dois lados.
+  - **Início:** a lista rola em duas colunas, COMO CHEGAR abre o Google Maps, e os estados vazio e de erro aparecem. "Tentar de novo" trouxe os ingressos quando a Api voltou. Em pé, as telas continuam como antes.
+- **Testes:** 650 passando, `flutter analyze` sem avisos e 95,4% das linhas cobertas (1114 de 1168). A responsividade passou a cobrir 16 estados de tela em 9 tamanhos e 3 escalas de fonte, somando 432 combinações, sem nenhum estouro. As regras de acessibilidade passam em 13 telas, em pé e deitado. O `test/telas/paisagem_test.dart` gira a tela no meio do teste e confere, no tamanho real do emulador, que o principal cabe sem rolar.
+- **Os testes de giro percebem a perda de estado:** tirei a `GlobalKey`, fiz a consulta reiniciar ao girar e fiz o leitor remontar, um de cada vez. Em cada caso, o teste correspondente falhou.
+- **Ainda não foi visto em aparelho físico:** a leitura de um QR real com o celular deitado e os gestos do TalkBack deitado. A leitura entrou no item A do checklist.
+
 ---
 
 ## 6. Ordem de commits
@@ -527,6 +562,7 @@ Na branch `feature/mobile-app`, no padrão do histórico, com um commit por part
 | 12 | Fase 3 | `Att: responsividade e acessibilidade do app, com testes` |
 | 13 | Fase 3 | `Doc: capturas do app e Fase 3 do plano mobile` |
 | 14 | Mudança | `Att: Portaria com tela própria para o perfil ADMIN` |
+| 15 | Mudança | `Att: app em pé e deitado` |
 
 ## 7. Riscos já identificados
 

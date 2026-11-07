@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../tema/cores.dart';
+import '../util/layout.dart';
 
 /// Monta o leitor de QR. Os testes passam um falso, porque a câmera não existe no teste.
 typedef ConstrutorDoLeitor = Widget Function(BuildContext context, void Function(String codigo) aoLer);
@@ -29,18 +29,27 @@ class _LeitorQrTelaState extends State<LeitorQrTela> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Ler QR Code')),
+      appBar: AppBar(toolbarHeight: alturaDaBarra(context), title: const Text('Ler QR Code')),
       body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        // A mesma árvore em pé e deitado: girar não remonta o leitor, e a câmera não reinicia.
+        child: Stack(
+          fit: StackFit.expand,
           children: [
-            Expanded(child: widget.construirLeitor(context, _aoLer)),
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'Aponte a câmera para o QR Code do ingresso.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Cores.textoSuave),
+            widget.construirLeitor(context, _aoLer),
+            const Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: ColoredBox(
+                color: Color(0xB3000000),
+                child: Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Text(
+                    'Aponte a câmera para o QR Code do ingresso.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
               ),
             ),
           ],
