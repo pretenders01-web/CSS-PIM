@@ -28,13 +28,16 @@ void main() {
   final telas = <String, Future<void> Function(WidgetTester)>{
     'login': (tester) => abrirLogin(tester),
     'início com o cartão': (tester) =>
-        abrirInicio(tester, (_) async => respostaJson([jsonDeIngresso()]), perfil: 'ADMIN'),
+        abrirInicio(tester, (_) async => respostaJson([jsonDeIngresso()])),
     'início vazio': (tester) => abrirInicio(tester, (_) async => respostaJson(<Object>[])),
     'início com erro': (tester) => abrirInicio(tester, (_) async => throw http.ClientException('sem rede')),
     'QR válido': (tester) => abrirQr(tester),
     'QR utilizado': (tester) => abrirQr(tester, utilizado: true),
     'QR expirado': (tester) => abrirQr(tester, dataJogo: '2026-12-01T16:00:00'),
     'Portaria lendo': (tester) => abrirPortaria(tester),
+    'Portaria com histórico': (tester) =>
+        abrirPortaria(tester, respostaDaApi: respostaLiberada, voltarParaALeitura: true),
+    'câmera da Portaria': abrirCameraDaPortaria,
     'Portaria liberada': (tester) => abrirPortaria(tester, respostaDaApi: respostaLiberada),
     'Portaria recusada': (tester) => abrirPortaria(tester, respostaDaApi: respostaRecusada),
     'Portaria sem validar': (tester) => abrirPortaria(tester, respostaDaApi: respostaSemPermissao),
@@ -108,6 +111,25 @@ void main() {
       expect(resultado, findsOneWidget);
       expect(tester.getSemantics(resultado), isSemantics(isLiveRegion: true));
       expect(find.byIcon(Icons.cancel), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox());
+      semantica.dispose();
+    });
+
+    testWidgets('Portaria: o cabeçalho, o contador e o histórico têm rótulo', (tester) async {
+      final semantica = tester.ensureSemantics();
+      configurarAparelho(tester, const Size(390, 1400));
+      await abrirPortaria(tester, respostaDaApi: respostaLiberada, voltarParaALeitura: true);
+
+      expect(find.bySemanticsLabel('Mundial Tickets'), findsOneWidget);
+      expect(find.bySemanticsLabel('Portaria'), findsOneWidget);
+      expect(find.byTooltip('Sair'), findsOneWidget);
+      expect(find.bySemanticsLabel(RegExp(r'LER QR CODE')), findsOneWidget);
+      expect(find.bySemanticsLabel('Entradas liberadas nesta sessão: 1'), findsOneWidget);
+      expect(
+        find.bySemanticsLabel(RegExp(r'^12:00:00, partida Estados Unidos x Uruguai, assento B10\. Liberada\.$')),
+        findsOneWidget,
+      );
 
       await tester.pumpWidget(const SizedBox());
       semantica.dispose();

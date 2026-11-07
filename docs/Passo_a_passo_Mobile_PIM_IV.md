@@ -73,7 +73,7 @@ As respostas às dúvidas de produto estão na seção 4.
 | Mapa | Ilustrado e animado, com `CustomPainter` e `AnimationController`: uma rota se desenha até uma bandeira. Sem mapa real e sem chave de API. O botão "Como chegar" abre o Google Maps com o estádio e a cidade |
 | Validar ingresso | O botão expande o cartão com Hero até a tela do QR Code, desenhado a partir do `CodigoQR`, com o selo Válido, Utilizado ou Expirado |
 | Consulta periódica | Só com a tela do QR aberta, a cada poucos segundos, para o selo mudar quando a portaria validar |
-| Modo Portaria | Só para `ADMIN`. Lê o QR pela câmera ou recebe o código digitado ou colado, e chama a Api. Resposta grande em verde (entrada liberada, com partida, setor e assento) ou vermelho (com o motivo) |
+| Modo Portaria | Tela própria, só para `ADMIN`, que abre direto nela e não vê a tela do torcedor (decisão 4.7). Lê o QR pela câmera ou recebe o código digitado ou colado, e chama a Api. Resultado em tela cheia, em verde (entrada liberada, com partida, setor, assento e data) ou vermelho (com o motivo), que volta sozinho para a leitura. Histórico e contador da sessão, só em memória |
 | Backend | Fase própria, com commit separado, antes do app. `backend/` e `5.database/` só mudam para o que a Fase 1 descreve |
 | Contas de teste | Um comprador com 3 ingressos e um `ADMIN`, criados pela Api só no banco local. **Nada de e-mail ou senha entra no repositório** |
 | Ordem das fases | Fase 1 primeiro. A Fase 2 roda de uma vez, com um commit por parte, e a Fase 3 fecha |
@@ -106,7 +106,7 @@ mobile/lib/
   tema/                 cores e ThemeData
   modelos/              Usuario, Sessao, Ingresso, IngressoValidado (cada um com fromJson)
   servicos/             ClienteApi, AutenticacaoServico, IngressoServico, ArmazenamentoSessao, erros
-  telas/                login, início, QR e Portaria
+  telas/                login, início, QR, Portaria e câmera
   widgets/              cartão de vidro, selo, bandeira, cartão do jogo, mapa, carregando/vazio/erro
   util/                 bandeiras, formatação de data, validação de campos
 mobile/test/            a mesma divisão: modelos, servicos, telas, util
@@ -202,7 +202,7 @@ Respondidas em 07/11/2026. Não há dúvida em aberto. As referências "decisão
 | 4.4 | Data do jogo alterada depois da venda | **Valida pela data atual do jogo (`Jogo.DataHora`), não por `QRCode.DataExpiracao`.** Uma mudança de data vale na hora, sem sincronizar nada. O próximo jogo e o selo Expirado do app também usam a data do jogo | Passos 1.5, 1.8 e 2C.2 |
 | 4.5 | Novas datas do seed | **De 14 a 19/12/2026, às 16:00**, um jogo por dia, na ordem atual: México x Canadá (14), Estados Unidos x Uruguai (15), Brasil x Sérvia (16), Argentina x Dinamarca (17), França x Chile (18) e Alemanha x Japão (19) | Passo 1.8 |
 | 4.6 | Rota da consulta periódica | **Reusa `GET /api/vendas/meus-ingressos`** e filtra por `ingressoId`, a cada 5 segundos. Trocar depois afeta só um método do serviço | Passo 2D.4 |
-| 4.7 | Onde fica a Portaria para o `ADMIN` | **Na mesma tela inicial**, com um botão "Portaria" na barra superior, porque ele também pode ter ingressos | Passos 2C.3 e 2E.1 |
+| 4.7 | Onde fica a Portaria para o `ADMIN` | **Mudou em 07/11/2026: a Portaria tem tela própria.** Quem tem o perfil `ADMIN` abre direto nela, depois do login e também com a sessão salva, e não vê a tela do torcedor nem a área de ingressos. O ícone saiu da tela do torcedor, e `CLIENTE` continua como estava. Antes, era um botão na barra da tela inicial. As notas estão em "Mudança depois da Fase 3" | Seção 5, "Mudança depois da Fase 3" |
 | 4.8 | Lista de outros ingressos | **Todos menos o do cartão**, inclusive usados e passados, na ordem da Api. Tocar em um deles abre o QR dele | Passo 2C.7 |
 | 4.9 | Aparelhos de teste | **Corrigida em 07/11/2026: o emulador Android é o aparelho principal**, porque o celular do responsável é um iPhone e a máquina é Windows. O Edge é o plano B. O Android de um colega fica para as capturas e a apresentação. A câmera do emulador não serve para ler um QR real, então os testes usam o campo de código (decisão 4.10) | Passos 2A.1, 2E.7 e 3.8, seção 8 |
 | 4.10 | Digitar o código na Portaria | **Entra:** um campo para digitar ou colar o código, como alternativa à câmera, passando pela mesma validação | Passo 2E.3 |
@@ -344,7 +344,7 @@ Nada aqui chama a Api.
   - `separarIngressos(lista, agora)`: o próximo é o de menor `dataJogo` entre os Válidos, desempatando por `ingressoId`. Os demais são os outros.
 
   *Pronto quando:* há testes com lista vazia, tudo usado, tudo passado, jogo em andamento, usado de jogo passado (fica Utilizado) e dois ingressos do mesmo jogo.
-- [x] **2C.3** `telas/inicio_tela.dart`, com `RefreshIndicator`, porque a compra acontece no site e o app precisa enxergá-la sem reiniciar. Estados: carregando; vazio ("Você ainda não tem ingressos", indicando o site); erro com "Tentar de novo"; tem ingressos, mas nenhum próximo jogo (mensagem no lugar do cartão, lista abaixo). Barra superior com o logo, "Sair" e, só para `ADMIN`, "Portaria" (decisão 4.7).
+- [x] **2C.3** `telas/inicio_tela.dart`, com `RefreshIndicator`, porque a compra acontece no site e o app precisa enxergá-la sem reiniciar. Estados: carregando; vazio ("Você ainda não tem ingressos", indicando o site); erro com "Tentar de novo"; tem ingressos, mas nenhum próximo jogo (mensagem no lugar do cartão, lista abaixo). Barra superior com o logo e "Sair". O botão "Portaria" que existia aqui saiu (decisão 4.7).
 - [x] **2C.4** `widgets/cartao_proximo_jogo.dart`: **altura mínima** de 50% da tela, nunca altura fixa, para fonte grande não estourar. Bandeiras e nomes, setor, assento (ou "—", como a Web), data e hora, estádio e cidade, selo, mapa e os botões "Como chegar" e "Validar ingresso".
 - [x] **2C.5** `util/bandeiras.dart`: a tabela de `Bandeiras.cs` e a retirada de acentos à mão, sem pacote. Time desconhecido mostra o ⚽. *Pronto quando:* há teste dos 12 nomes do seed com acento, de `EUA` e de um time desconhecido, e cada arquivo devolvido existe nos assets.
 - [x] **2C.6** `widgets/mapa_rota.dart`: `CustomPainter` com `Path` e `PathMetric.extractPath`, para desenhar a rota aos poucos, até uma bandeira pintada no destino, em repetição com pausa. Usa `repaint: controller`, para não reconstruir widgets a cada quadro, e `RepaintBoundary`. Um rótulo deixa claro que o mapa é ilustrativo. A animação fica parada fora da tela, sem pacote extra:
@@ -355,7 +355,7 @@ Nada aqui chama a Api.
   Com `MediaQuery.disableAnimations`, mostra o desenho pronto, sem animar.
 - [x] **2C.7** Lista dos outros ingressos (decisão 4.8), com cartões compactos e o selo de cada um, inclusive Expirado.
 - [x] **2C.8** "Como chegar": `Uri.https('www.google.com', '/maps/search/', {'api': '1', 'query': '$estadio, $cidade'})` e `launchUrl` com `externalApplication`. **Montar pelo `Uri`, e não concatenando texto:** "AT&T Stadium" está no seed, e o `&` quebraria o endereço. Falha mostra um aviso. *Pronto quando:* há teste de que o `&` sai como `%26`, e o botão abre o estádio certo no emulador.
-- [x] **2C.9** Testes de widget: os quatro estados, "Tentar de novo", campos do cartão e "Portaria" só para `ADMIN`. **Usar `pump(duração)`, e não `pumpAndSettle`,** que nunca termina com uma animação em repetição. *Pronto quando:* a tela mostra os dados reais da conta de teste.
+- [x] **2C.9** Testes de widget: os quatro estados, "Tentar de novo", campos do cartão e a ausência do botão "Portaria" (decisão 4.7). **Usar `pump(duração)`, e não `pumpAndSettle`,** que nunca termina com uma animação em repetição. *Pronto quando:* a tela mostra os dados reais da conta de teste.
 
 #### Parte 2D: tela do QR Code
 
@@ -368,6 +368,8 @@ Nada aqui chama a Api.
 - [x] **2D.7** *Pronto quando:* com o QR aberto, a chamada de validação do `.http` muda o selo em até 5 segundos, e a contagem de chamadas no log da Api mostra que as consultas param ao fechar a tela.
 
 #### Parte 2E: modo Portaria
+
+Esta foi a primeira versão. A tela foi refeita depois: ver "Mudança depois da Fase 3". As regras de validação e os testes abaixo continuam valendo.
 
 - [x] **2E.1** `telas/portaria_tela.dart`, aberta pelo botão da tela inicial. A verificação no app só decide o que mostrar; quem protege é a Api. Se a Api responder 403, avisa e sugere entrar de novo (seção 3.1).
 - [x] **2E.2** `MobileScanner` com o controller criado só nesta tela e descartado no `dispose`, para o pedido de câmera aparecer apenas aqui. Permissão negada (`MobileScannerErrorCode.permissionDenied`) mostra uma explicação no lugar da câmera, e o campo do passo 2E.3 continua funcionando. Em segundo plano, a câmera para: sem receber um controller, o `MobileScanner` cuida disso sozinho, e por isso o formato QR é filtrado no Dart.
@@ -413,7 +415,7 @@ Nada aqui chama a Api.
 - [x] **3.3** Desempenho, no que dá para conferir sem aparelho: revisar `const`, `dispose` de controllers e timers, e `RepaintBoundary`, e testar que a animação do mapa para fora da tela. Logo com `cacheWidth`. *Pronto quando:* os testes passam. A medição no DevTools precisa de aparelho físico, porque o modo profile não roda em emulador, e fica no passo 3.8.
 - [x] **3.4** Testes: conferir que modelos, serviços e telas principais estão cobertos e que não restou código do contador. *Pronto quando:* `flutter analyze` não tem avisos e `flutter test` passa, com o resultado copiado para as notas.
 - [x] **3.5** Documentação: reescrever o `mobile/README.md`, explicando o que é o app, **como rodar** (pelo F5 e pelo terminal) e como testar. Criar o `.vscode/launch.json` e o `.vscode/tasks.json`, com as configurações do app no emulador, do app no Edge em profile, da Api no perfil http e a composta "Api + App (emulador)". Atualizar a parte "Mobile" e os comandos das notas locais do projeto, e indicar o desenho do app no passo 7.2 do plano do C#.
-- [x] **3.6** Evidências para o documento, em `docs/capturas-mobile/`, com um índice no `README.md` da pasta: login, tela inicial, QR Válido, QR Utilizado, QR Expirado, leitura da Portaria, Portaria verde, Portaria vermelha, ingressos vazios, erro com "Tentar de novo", a tela inicial em aparelho pequeno e grande, e com fonte grande, a lista com os três selos e o desenho do fluxo de navegação.
+- [x] **3.6** Evidências para o documento, em `docs/capturas-mobile/`, com um índice no `README.md` da pasta: login, tela inicial, QR Válido, QR Utilizado, QR Expirado, Portaria, câmera, Portaria verde, Portaria vermelha, histórico da Portaria, ingressos vazios, erro com "Tentar de novo", a tela inicial em aparelho pequeno e grande, e com fonte grande, a lista com os três selos e o desenho do fluxo de navegação.
 
   | Etapa do manual | O que ela pede | O que este plano entrega |
   |---|---|---|
@@ -424,9 +426,9 @@ Nada aqui chama a Api.
 
   1. Banco com o seed e as contas do passo 1.11. No VS Code, F5 em "Api + App (emulador)". Depois, escolha "App (Edge, profile)" e F5 de novo.
   2. **Edge:** entre como comprador e toque em "Validar ingresso". O QR e o selo Válido aparecem.
-  3. **Emulador:** entre como `ADMIN`, toque em Portaria, digite o código que o Edge mostra e valide. A tela fica verde, com partida, setor, assento e data.
+  3. **Emulador:** entre como `ADMIN`. O app abre direto na Portaria. Digite o código que o Edge mostra e valide. A tela fica verde, com partida, setor, assento e data.
   4. **Edge:** em até uns 5 segundos, o selo muda sozinho para Utilizado.
-  5. **Emulador:** "Ler próximo" e o mesmo código de novo. A tela fica vermelha, com "Este ingresso já foi utilizado.".
+  5. **Emulador:** espere a volta automática, ou toque em "Ler próximo", e digite o mesmo código. A tela fica vermelha, com "Este ingresso já foi utilizado.". O histórico e o contador mostram as duas validações.
   6. A demonstração gasta um ingresso. Para devolvê-lo: `UPDATE QRCode SET Utilizado = 0 WHERE IngressoID = <id>`.
 - [ ] **3.8** Android de um colega (decisão 4.9): cumprir o checklist abaixo. *Pronto quando:* os quatro itens estão marcados, com os números nas notas da fase.
 
@@ -449,7 +451,7 @@ Para o dia em que o celular estiver disponível. Preparação, uma vez:
 
 Depois, marque cada item:
 
-- [ ] **A. Câmera lendo um QR real.** No celular, entre como `ADMIN`, abra a Portaria e aceite a câmera. No PC, F5 em "App (Edge, profile)", entre como comprador e abra o QR. Aponte o celular para a tela: deve ficar verde, e o selo do Edge deve mudar para Utilizado. Toque em "Ler próximo" e leia de novo: deve ficar vermelho. Devolva o ingresso com o `UPDATE` do passo 3.7. Tire uma foto para o documento.
+- [ ] **A. Câmera lendo um QR real.** No celular, entre como `ADMIN`, toque em "Ler QR Code" e aceite a câmera. No PC, F5 em "App (Edge, profile)", entre como comprador e abra o QR. Aponte o celular para a tela: deve ficar verde, e o selo do Edge deve mudar para Utilizado. Toque em "Ler QR Code" e leia de novo: deve ficar vermelho. Devolva o ingresso com o `UPDATE` do passo 3.7. Tire uma foto para o documento.
 - [ ] **B. Desempenho.** Pare o app e rode em modo profile:
 
   ```bash
@@ -476,6 +478,33 @@ Depois, marque cada item:
 - **Roteiro:** rodou com o comprador no Edge e a Portaria no emulador, e o selo mudou no Edge. O comprador temporário foi apagado, e os 3 ingressos da conta de teste continuam válidos.
 - **Fluxo de navegação:** a imagem está em `docs/capturas-mobile/00-fluxo-de-navegacao.png`, para a Etapa 6.
 
+### Mudança depois da Fase 3: tela própria da Portaria
+
+Pedida em 07/11/2026 (decisão 4.7). O `ADMIN` deixa de passar pela tela do torcedor.
+
+- [x] **M.1** `app.dart`: `ADMIN` abre na `PortariaTela`, e `CLIENTE` na `InicioTela`, depois do login e com a sessão salva. O ícone saiu da `InicioTela`.
+- [x] **M.2** `telas/portaria_tela.dart`: cabeçalho com o logo, o título "Portaria" e "Sair"; contador de entradas liberadas; botão grande "Ler QR Code"; campo para digitar ou colar o código; histórico da sessão.
+- [x] **M.3** `telas/leitor_qr_tela.dart`: a câmera em tela própria, aberta pelo botão. A primeira leitura fecha a tela e devolve o código.
+- [x] **M.4** `widgets/resultado_validacao.dart`: o resultado em tela cheia, que volta sozinho depois de 5 segundos, com a contagem na tela e um botão para voltar na hora.
+- [x] **M.5** `modelos/registro_validacao.dart` e `widgets/historico_validacoes.dart`: horário, partida, assento e resultado, só em memória.
+- [x] **M.6** Testes, capturas, fluxo de navegação, `mobile/README.md` e notas locais do projeto. *Pronto quando:* `flutter analyze` não tem avisos, os testes passam e o fluxo roda no emulador com as duas contas.
+
+**Notas da mudança (decisões tomadas durante a execução):**
+
+- **A volta automática leva à tela de leitura, e não reabre a câmera.** O mesmo QR ainda pode estar na frente dela, e uma segunda leitura trocaria o verde por um vermelho de "já utilizado". Para o próximo ingresso, basta tocar em "Ler QR Code".
+- **O tempo é de 5 segundos [PROPOSTA]**, em um único parâmetro (`esperaDoResultado`), para "alguns segundos" do pedido.
+- **Com leitor de tela, o resultado não volta sozinho:** a volta cortaria a leitura do resultado. Só o botão volta. O app percebe isso por `MediaQuery.accessibleNavigationOf`.
+- **O Android só pede a câmera ao tocar em "Ler QR Code",** e não mais ao abrir a Portaria.
+- **A recusa não traz a partida,** porque a Api só devolve o motivo. O histórico mostra "—", a menos que o mesmo código já tenha sido liberado na sessão, e aí reaproveita a partida e o assento. Não mexi no backend.
+- **"Não validado" também entra no histórico,** para o registro ficar fiel, mas só as entradas liberadas contam no contador. O código continua no campo, inclusive o lido pela câmera, para tentar de novo.
+- **O perfil continua o do login,** o mesmo que está no token. Se um `ADMIN` perder o perfil, ele continua na Portaria até entrar de novo, e a Api responde 403, mostrado como "Não validado".
+- **Verificação no emulador, contra a Api local:**
+  - **`portaria@`:** o login cai direto na Portaria, e fechar e abrir o app também. "Ler QR Code" pede a câmera só nessa hora, e a câmera virtual abre. Pelo campo, o código válido ficou verde, o repetido e o inexistente ficaram vermelhos com o motivo, a volta automática funcionou, e o contador e o histórico mostraram as validações. Ao reabrir o app, o histórico estava vazio.
+  - **`comprador@`:** só leitura, sem validar nada. O login cai na tela do torcedor, sem o ícone da Portaria, e os 3 ingressos continuam válidos.
+  - **Comprador temporário:** os ingressos validados na Portaria aparecem como Utilizado. Um segundo comprador temporário, sem ingressos, serviu para as capturas de vazio e de erro. Os dois foram apagados.
+- **Testes:** 368 passando, `flutter analyze` sem avisos e 94,8% das linhas cobertas (987 de 1041). A responsividade passou a cobrir 16 estados de tela, somando 192 combinações, sem nenhum estouro, e as regras de acessibilidade passam em 13 telas.
+- **O horário do histórico nas capturas está em UTC,** porque esse é o fuso do emulador. Em um aparelho real, é o horário local.
+
 ---
 
 ## 6. Ordem de commits
@@ -497,6 +526,7 @@ Na branch `feature/mobile-app`, no padrão do histórico, com um commit por part
 | 11 | Fase 3 | `Add: configurações do F5 no VS Code e README do app` |
 | 12 | Fase 3 | `Att: responsividade e acessibilidade do app, com testes` |
 | 13 | Fase 3 | `Doc: capturas do app e Fase 3 do plano mobile` |
+| 14 | Mudança | `Att: Portaria com tela própria para o perfil ADMIN` |
 
 ## 7. Riscos já identificados
 
@@ -511,7 +541,10 @@ Na branch `feature/mobile-app`, no padrão do histórico, com um commit por part
 - **Token no Edge:** o README do `flutter_secure_storage` chama a versão web de experimental, com os dados no `localStorage`, e só funciona em HTTPS ou `localhost`. O Edge serve para desenvolver e mostrar o QR, não como uso real.
 - **`qr_flutter` sem atualização desde 2023.** Funcionou com o Flutter 3.47.9. Plano B: o pacote `qr`, que ele já usa, com um `CustomPainter`.
 - **Relógios diferentes:** o app escolhe o próximo jogo pelo relógio do aparelho, e a Portaria decide pelo do servidor. Podem discordar perto do início do jogo. O emulador usa o fuso UTC, então fica 3 horas à frente do PC.
-- **Pedido de câmera repetido:** com a permissão negada, cada volta à leitura pede de novo, até o Android parar de perguntar. Com a permissão aceita, não pede mais.
+- **Pedido de câmera repetido:** com a permissão negada, cada toque em "Ler QR Code" pede de novo, até o Android parar de perguntar. Com a permissão aceita, não pede mais.
+- **`ADMIN` não vê os próprios ingressos no app** (decisão 4.7). Quem é administrador e também comprou ingressos só os vê no site.
+- **O histórico da Portaria some** ao sair, ao fechar o app e quando a sessão vence, porque fica só em memória. É um registro de apoio para quem opera a portaria: a validação em si fica gravada no banco.
+- **A recusa não traz a partida.** A Api devolve só o motivo, então o histórico mostra "—" em partida e assento, a menos que o mesmo código já tenha sido liberado na sessão. Trazer esses dados em toda recusa exigiria mudar o backend.
 - **Tamanho do app:** o `mobile_scanner` acrescenta de 3 a 10 MB (README). A versão que baixa pelo Google Play Services reduz isso, mas exige o serviço no aparelho. O APK de debug do teste teve 178 MB, o que não representa o de release.
 
 ---

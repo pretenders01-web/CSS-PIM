@@ -34,7 +34,7 @@ class LeitorCamera extends StatelessWidget {
   }
 }
 
-/// Aparece no lugar da câmera. O campo de digitar o código continua funcionando.
+/// Aparece no lugar da câmera. O campo de digitar o código, na tela anterior, continua funcionando.
 class ErroDaCamera extends StatelessWidget {
   const ErroDaCamera({super.key, required this.codigo});
 
@@ -43,8 +43,8 @@ class ErroDaCamera extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mensagem = codigo == MobileScannerErrorCode.permissionDenied
-        ? 'Sem permissão para usar a câmera. Libere nas configurações do aparelho ou digite o código abaixo.'
-        : 'Não foi possível abrir a câmera. Digite o código abaixo.';
+        ? 'Sem permissão para usar a câmera. Libere nas configurações do aparelho, ou volte e digite o código.'
+        : 'Não foi possível abrir a câmera. Volte e digite o código.';
 
     return ColoredBox(
       color: Cores.painelOpaco,

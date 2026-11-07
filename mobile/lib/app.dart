@@ -14,6 +14,7 @@ import 'tema/tema_app.dart';
 import 'telas/configuracao_ausente_tela.dart';
 import 'telas/inicio_tela.dart';
 import 'telas/login_tela.dart';
+import 'telas/portaria_tela.dart';
 import 'widgets/estados_tela.dart';
 
 /// Os serviços do app, montados uma vez e passados pelo construtor de cada tela.
@@ -112,6 +113,16 @@ class _MundialTicketsAppState extends State<MundialTicketsApp> {
       valueListenable: autenticacao.sessao,
       builder: (context, sessao, _) {
         if (sessao == null) return LoginTela(autenticacao: autenticacao);
+
+        // A mesma regra vale depois do login e ao abrir o app com a sessão salva.
+        if (sessao.usuario.ehAdmin) {
+          return PortariaTela(
+            key: ValueKey(sessao.usuario.id),
+            autenticacao: autenticacao,
+            ingressos: _servicos!.ingressos,
+          );
+        }
+
         return InicioTela(
           key: ValueKey(sessao.usuario.id),
           autenticacao: autenticacao,

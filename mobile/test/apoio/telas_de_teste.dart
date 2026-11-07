@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:mobile/telas/inicio_tela.dart';
+import 'package:mobile/telas/leitor_qr_tela.dart';
 import 'package:mobile/telas/login_tela.dart';
 import 'package:mobile/telas/portaria_tela.dart';
 import 'package:mobile/telas/qr_tela.dart';
@@ -51,10 +52,9 @@ Future<void> abrirLogin(WidgetTester tester, {bool comErros = false}) async {
 
 Future<void> abrirInicio(
   WidgetTester tester,
-  Future<http.Response> Function(http.Request) responder, {
-  String perfil = 'CLIENTE',
-}) async {
-  final servicos = servicosDeTeste(responder, sessao: sessaoDeTeste(perfil: perfil));
+  Future<http.Response> Function(http.Request) responder,
+) async {
+  final servicos = servicosDeTeste(responder, sessao: sessaoDeTeste());
   await servicos.autenticacao.restaurar();
   await tester.pumpWidget(
     comTema(
@@ -83,31 +83,48 @@ Future<void> abrirQr(WidgetTester tester, {bool utilizado = false, String dataJo
   );
 }
 
-/// Abre a Portaria com um leitor falso. Com [respostaDaApi], lê um código e mostra o resultado.
-Future<void> abrirPortaria(WidgetTester tester, {http.Response Function()? respostaDaApi}) async {
+/// Abre a Portaria com um leitor falso. Com [respostaDaApi], valida um código e mostra o resultado.
+/// Com [voltarParaALeitura], fecha o resultado, para mostrar o contador e o histórico.
+Future<void> abrirPortaria(
+  WidgetTester tester, {
+  http.Response Function()? respostaDaApi,
+  bool voltarParaALeitura = false,
+}) async {
   final servicos = servicosDeTeste(
     (_) async => respostaDaApi?.call() ?? respostaJson({}),
     sessao: sessaoDeTeste(perfil: 'ADMIN'),
   );
   await servicos.autenticacao.restaurar();
-  late void Function(String) lerCodigo;
   await tester.pumpWidget(
     comTema(
       PortariaTela(
+        autenticacao: servicos.autenticacao,
         ingressos: servicos.ingressos,
-        construirLeitor: (context, aoLer) {
-          lerCodigo = aoLer;
-          return const SizedBox.expand();
-        },
+        relogio: () => agoraFixo,
+        construirLeitor: (context, aoLer) => const SizedBox.expand(),
       ),
     ),
   );
   if (respostaDaApi != null) {
-    lerCodigo('codigo-51');
+    await tester.enterText(find.byType(TextField), 'codigo-51');
+    await tester.ensureVisible(find.text('VALIDAR'));
+    await tester.pump();
+    await tester.tap(find.text('VALIDAR'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
   }
+  if (voltarParaALeitura) {
+    await tester.ensureVisible(find.text('LER PRÓXIMO'));
+    await tester.pump();
+    await tester.tap(find.text('LER PRÓXIMO'));
+    await tester.pump();
+  }
 }
+
+/// A tela da câmera, com um leitor falso.
+Future<void> abrirCameraDaPortaria(WidgetTester tester) => tester.pumpWidget(
+  comTema(LeitorQrTela(construirLeitor: (context, aoLer) => const SizedBox.expand())),
+);
 
 http.Response respostaLiberada() => respostaJson({
   'ingressoId': 1,

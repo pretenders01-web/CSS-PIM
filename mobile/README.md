@@ -3,7 +3,7 @@
 O app mostra os ingressos comprados no site e valida a entrada na portaria. Ele não tem cadastro nem compra, e só conversa com o sistema pela Api (`backend/MundialTickets.Api`).
 
 - **Comprador:** entra com a conta do site e vê o cartão do próximo jogo, com bandeiras, setor, assento, data, estádio e um mapa ilustrado. O botão "Como chegar" abre o Google Maps, e "Validar ingresso" abre o QR Code, com o selo Válido, Utilizado ou Expirado.
-- **Portaria (perfil `ADMIN`):** lê o QR pela câmera ou recebe o código digitado, e mostra a entrada liberada em verde ou recusada em vermelho, com o motivo.
+- **Portaria (perfil `ADMIN`):** tem tela própria. Quem tem esse perfil abre direto nela, depois do login e com a sessão salva, e não vê a tela do torcedor. O botão "Ler QR Code" abre a câmera, e há um campo para digitar ou colar o código. O resultado aparece em tela cheia, em verde (entrada liberada, com partida, setor, assento e data) ou vermelho (com o motivo), e volta sozinho para a leitura em 5 segundos, ou na hora, pelo botão. A tela mostra o contador de entradas liberadas e o histórico da sessão, que fica só em memória e some ao sair.
 
 As telas estão em [`docs/capturas-mobile`](../docs/capturas-mobile), e o plano com as decisões está em [`docs/Passo_a_passo_Mobile_PIM_IV.md`](../docs/Passo_a_passo_Mobile_PIM_IV.md).
 
@@ -79,10 +79,10 @@ mobile/lib/
   main.dart, app.dart   início do app, tema e decisão entre login e tela inicial
   config/               endereço da Api vindo do --dart-define
   tema/                 cores e ThemeData
-  modelos/              Usuario, Sessao, Ingresso, IngressoValidado e a situação do ingresso
+  modelos/              Usuario, Sessao, Ingresso, IngressoValidado, RegistroValidacao e a situação do ingresso
   servicos/             ClienteApi (o único que faz HTTP), autenticação, ingressos e armazenamento
-  telas/                login, início, QR e Portaria
-  widgets/              cartão de vidro, selo, bandeira, cartões, mapa, leitor e estados
+  telas/                login, início, QR, Portaria e câmera
+  widgets/              cartão de vidro, selo, bandeira, cartões, mapa, leitor, resultado, histórico e estados
   util/                 bandeiras, formatação de data, validação e "como chegar"
 ```
 

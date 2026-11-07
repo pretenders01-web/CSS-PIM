@@ -140,7 +140,7 @@ void main() {
     expect(find.textContaining('Não foi possível falar com o servidor'), findsOneWidget);
   });
 
-  testWidgets('o botão Portaria só aparece para ADMIN', (tester) async {
+  testWidgets('a tela do torcedor não tem a Portaria, mesmo que o perfil seja ADMIN', (tester) async {
     await abrir(tester, (_) async => respostaJson([jsonDeIngresso()]));
     await esperarCarregar(tester);
     expect(find.byTooltip('Portaria'), findsNothing);
@@ -148,7 +148,8 @@ void main() {
 
     await abrir(tester, (_) async => respostaJson([jsonDeIngresso()]), perfil: 'ADMIN');
     await esperarCarregar(tester);
-    expect(find.byTooltip('Portaria'), findsOneWidget);
+    expect(find.byTooltip('Portaria'), findsNothing);
+    expect(find.byIcon(Icons.qr_code_scanner), findsNothing);
   });
 
   testWidgets('"Como chegar" abre o estádio e a cidade do cartão', (tester) async {

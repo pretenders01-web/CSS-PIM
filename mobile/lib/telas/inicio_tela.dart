@@ -5,16 +5,15 @@ import '../modelos/situacao_ingresso.dart';
 import '../servicos/autenticacao_servico.dart';
 import '../servicos/erros_api.dart';
 import '../servicos/ingresso_servico.dart';
-import '../tema/cores.dart';
 import '../util/como_chegar.dart';
 import '../widgets/cartao_ingresso.dart';
 import '../widgets/cartao_proximo_jogo.dart';
 import '../widgets/estados_tela.dart';
 import '../widgets/fundo_cartao_hero.dart';
-import 'portaria_tela.dart';
 import 'qr_tela.dart';
 
-/// A tela inicial: o cartão do próximo jogo e, abaixo, os outros ingressos.
+/// A tela do torcedor: o cartão do próximo jogo e, abaixo, os outros ingressos.
+/// Quem tem o perfil ADMIN não passa por aqui: o app.dart abre direto a Portaria.
 class InicioTela extends StatefulWidget {
   const InicioTela({
     super.key,
@@ -105,18 +104,8 @@ class _InicioTelaState extends State<InicioTela> {
     if (mounted) await _carregar();
   }
 
-  /// Ao voltar, recarrega: o administrador pode ter validado um ingresso da própria conta.
-  Future<void> _abrirPortaria() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute<void>(builder: (_) => PortariaTela(ingressos: widget.ingressos)),
-    );
-    if (mounted) await _carregar();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final ehAdmin = widget.autenticacao.sessao.value?.usuario.ehAdmin ?? false;
-
     return Scaffold(
       appBar: AppBar(
         title: Image.asset(
@@ -126,13 +115,6 @@ class _InicioTelaState extends State<InicioTela> {
           semanticLabel: 'Mundial Tickets',
         ),
         actions: [
-          // A Api é quem protege a validação. Aqui, o perfil só decide o que aparece.
-          if (ehAdmin)
-            IconButton(
-              tooltip: 'Portaria',
-              icon: const Icon(Icons.qr_code_scanner, color: Cores.amarelo),
-              onPressed: _abrirPortaria,
-            ),
           IconButton(
             tooltip: 'Sair',
             icon: const Icon(Icons.logout),

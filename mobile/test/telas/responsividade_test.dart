@@ -21,7 +21,7 @@ final Map<String, Future<void> Function(WidgetTester)> telas = {
   'login': (tester) => abrirLogin(tester),
   'login com erros nos campos': (tester) => abrirLogin(tester, comErros: true),
   'início com o cartão e a lista': (tester) async {
-    await abrirInicio(tester, (_) async => respostaJson(ingressosVariados()), perfil: 'ADMIN');
+    await abrirInicio(tester, (_) async => respostaJson(ingressosVariados()));
     // Rola até o fim, para montar também os itens que estavam fora da tela.
     await tester.drag(find.byType(ListView), const Offset(0, -3000));
     await tester.pump(const Duration(milliseconds: 100));
@@ -34,6 +34,14 @@ final Map<String, Future<void> Function(WidgetTester)> telas = {
   'QR utilizado': (tester) => abrirQr(tester, utilizado: true),
   'QR expirado': (tester) => abrirQr(tester, dataJogo: '2026-12-01T16:00:00'),
   'Portaria lendo': (tester) => abrirPortaria(tester),
+  'Portaria com histórico': (tester) async {
+    await abrirPortaria(tester, respostaDaApi: respostaLiberada, voltarParaALeitura: true);
+    await tester.drag(find.byType(SingleChildScrollView), const Offset(0, -3000));
+    await tester.pump(const Duration(milliseconds: 100));
+  },
+  'Portaria com recusa no histórico': (tester) =>
+      abrirPortaria(tester, respostaDaApi: respostaRecusada, voltarParaALeitura: true),
+  'câmera da Portaria': abrirCameraDaPortaria,
   'Portaria liberada': (tester) => abrirPortaria(tester, respostaDaApi: respostaLiberada),
   'Portaria recusada': (tester) => abrirPortaria(tester, respostaDaApi: respostaRecusada),
   'Portaria sem validar': (tester) => abrirPortaria(tester, respostaDaApi: respostaSemPermissao),

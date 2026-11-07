@@ -1,32 +1,41 @@
-import 'dart:math' as math;
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../modelos/ingresso_validado.dart';
+import '../modelos/registro_validacao.dart';
+import '../servicos/autenticacao_servico.dart';
 import '../servicos/erros_api.dart';
 import '../servicos/ingresso_servico.dart';
 import '../tema/cores.dart';
-import '../util/formatacao.dart';
+import '../widgets/historico_validacoes.dart';
 import '../widgets/leitor_camera.dart';
-
-/// Monta o leitor de QR. Os testes passam um falso, porque a câmera não existe no teste.
-typedef ConstrutorDoLeitor = Widget Function(BuildContext context, void Function(String codigo) aoLer);
+import '../widgets/resultado_validacao.dart';
+import 'leitor_qr_tela.dart';
 
 Widget _leitorReal(BuildContext context, void Function(String codigo) aoLer) => LeitorCamera(aoLer: aoLer);
 
-/// As três etapas da tela. Só se lê um código novo na etapa "lendo".
+/// As etapas da tela. Só se valida um código novo na etapa "lendo".
 enum _Etapa { lendo, validando, resultado }
 
-enum _TipoDoResultado { liberado, recusado, indefinido }
-
-/// Modo Portaria: valida o ingresso pela câmera ou pelo código digitado ou colado.
-/// A verificação do perfil no app só decide se o botão aparece: quem protege a rota é a Api.
+/// A tela de quem tem o perfil ADMIN: é onde ele cai depois do login, sem passar pela tela do torcedor.
+/// O perfil só decide o que aparece: quem protege a validação é a Api.
 class PortariaTela extends StatefulWidget {
-  const PortariaTela({super.key, required this.ingressos, this.construirLeitor = _leitorReal});
+  const PortariaTela({
+    super.key,
+    required this.autenticacao,
+    required this.ingressos,
+    this.construirLeitor = _leitorReal,
+    this.relogio = DateTime.now,
+    this.esperaDoResultado = const Duration(seconds: 5),
+  });
 
+  final AutenticacaoServico autenticacao;
   final IngressoServico ingressos;
+
+  /// Parâmetros para os testes trocarem a câmera e controlarem o tempo.
   final ConstrutorDoLeitor construirLeitor;
+  final DateTime Function() relogio;
+  final Duration esperaDoResultado;
 
   @override
   State<PortariaTela> createState() => _PortariaTelaState();
@@ -35,16 +44,26 @@ class PortariaTela extends StatefulWidget {
 class _PortariaTelaState extends State<PortariaTela> {
   final _campoCodigo = TextEditingController();
 
+  /// O histórico desta sessão, do mais recente ao mais antigo. Só em memória: some ao sair.
+  final List<RegistroValidacao> _historico = [];
+
   _Etapa _etapa = _Etapa.lendo;
-  _TipoDoResultado? _tipo;
-  IngressoValidado? _validado;
-  String? _mensagem;
+  RegistroValidacao? _resultado;
   String? _erroDoCampo;
+
+  int get _entradasLiberadas => _historico.where((r) => r.resultado == ResultadoValidacao.liberada).length;
 
   @override
   void dispose() {
     _campoCodigo.dispose();
     super.dispose();
+  }
+
+  Future<void> _abrirCamera() async {
+    final codigo = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (_) => LeitorQrTela(construirLeitor: widget.construirLeitor)),
+    );
+    if (codigo != null && mounted) await _validar(codigo);
   }
 
   void _validarCampo() {
@@ -57,8 +76,6 @@ class _PortariaTelaState extends State<PortariaTela> {
   }
 
   /// A câmera e o campo chegam aqui, na mesma validação.
-  /// Fora de "lendo", ignora: a câmera detecta o mesmo QR repetidamente, e sem esta trava a segunda
-  /// leitura trocaria o verde por um vermelho de "já utilizado".
   Future<void> _validar(String codigoLido) async {
     if (_etapa != _Etapa.lendo) return;
 
@@ -73,89 +90,139 @@ class _PortariaTelaState extends State<PortariaTela> {
     try {
       final validado = await widget.ingressos.validar(codigo);
       HapticFeedback.mediumImpact();
-      _mostrarResultado(_TipoDoResultado.liberado, validado: validado);
+      _registrarLiberada(codigo, validado);
     } on SessaoExpiradaException {
       // O app.dart já está levando de volta ao login.
     } on SemConexaoException {
       // Falha de rede não é recusa: o ingresso não foi recusado por ninguém.
-      _mostrarResultado(_TipoDoResultado.indefinido, mensagem: 'Não foi possível validar. Tente de novo.');
+      _registrarFalha(codigo, ResultadoValidacao.naoValidada, 'Não foi possível validar. Tente de novo.');
     } on ApiException catch (erro) {
       if (erro.codigo == 400) {
         HapticFeedback.heavyImpact();
-        _mostrarResultado(_TipoDoResultado.recusado, mensagem: erro.mensagem);
+        _registrarFalha(codigo, ResultadoValidacao.recusada, erro.mensagem);
       } else {
-        _mostrarResultado(_TipoDoResultado.indefinido, mensagem: erro.mensagem);
+        _registrarFalha(codigo, ResultadoValidacao.naoValidada, erro.mensagem);
       }
     }
   }
 
-  void _mostrarResultado(_TipoDoResultado tipo, {IngressoValidado? validado, String? mensagem}) {
+  void _registrarLiberada(String codigo, IngressoValidado validado) {
+    _mostrar(RegistroValidacao.liberada(codigo, widget.relogio(), validado));
+  }
+
+  /// A recusa da Api traz só o motivo. Se o mesmo código já passou por aqui, o histórico sabe a partida.
+  void _registrarFalha(String codigo, ResultadoValidacao resultado, String motivo) {
+    final conhecido = _historico.where((r) => r.codigo == codigo && r.partida != null).firstOrNull;
+    _mostrar(
+      RegistroValidacao(
+        horario: widget.relogio(),
+        codigo: codigo,
+        resultado: resultado,
+        motivo: motivo,
+        partida: conhecido?.partida,
+        nomeSetor: conhecido?.nomeSetor,
+        numeroAssento: conhecido?.numeroAssento,
+        dataJogo: conhecido?.dataJogo,
+      ),
+    );
+  }
+
+  void _mostrar(RegistroValidacao registro) {
     if (!mounted) return;
     setState(() {
+      _historico.insert(0, registro);
+      _resultado = registro;
       _etapa = _Etapa.resultado;
-      _tipo = tipo;
-      _validado = validado;
-      _mensagem = mensagem;
+      // Sem resposta da Api, o código fica no campo, para tentar de novo. Vale também para o da câmera.
+      if (registro.resultado == ResultadoValidacao.naoValidada) {
+        _campoCodigo.text = registro.codigo;
+      } else {
+        _campoCodigo.clear();
+      }
     });
   }
 
-  void _voltarAoInicio() {
+  /// Volta à tela de leitura, e não à câmera: o mesmo QR ainda pode estar na frente dela, e uma
+  /// segunda leitura trocaria o verde por um vermelho de "já utilizado".
+  void _voltarALeitura() {
+    if (!mounted) return;
     setState(() {
-      // No resultado indefinido, o código continua no campo para tentar de novo.
-      if (_tipo != _TipoDoResultado.indefinido) _campoCodigo.clear();
       _etapa = _Etapa.lendo;
-      _tipo = null;
-      _validado = null;
-      _mensagem = null;
+      _resultado = null;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     if (_etapa == _Etapa.resultado) {
-      return _TelaDeResultado(
-        tipo: _tipo!,
-        validado: _validado,
-        mensagem: _mensagem,
-        aoContinuar: _voltarAoInicio,
+      return ResultadoValidacaoTela(
+        registro: _resultado!,
+        espera: widget.esperaDoResultado,
+        aoVoltar: _voltarALeitura,
       );
     }
 
     final validando = _etapa == _Etapa.validando;
-    final alturaDaCamera = math.min(MediaQuery.sizeOf(context).height * 0.4, 360.0);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Portaria')),
+      appBar: AppBar(
+        title: Row(
+          children: [
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 110),
+              child: Image.asset(
+                'assets/img/logo.png',
+                height: 32,
+                cacheWidth: 330,
+                semanticLabel: 'Mundial Tickets',
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Encolhe em tela estreita com fonte grande, em vez de estourar a barra.
+            const Expanded(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                alignment: Alignment.centerLeft,
+                child: Text('Portaria', style: TextStyle(fontWeight: FontWeight.w700)),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Sair',
+            icon: const Icon(Icons.logout),
+            onPressed: widget.autenticacao.sair,
+          ),
+        ],
+      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(18),
-                child: SizedBox(
-                  height: alturaDaCamera,
-                  // A câmera só fica montada na etapa de leitura.
-                  child: validando
-                      ? const ColoredBox(
-                          color: Cores.painelOpaco,
-                          child: Center(child: CircularProgressIndicator(semanticsLabel: 'Validando o ingresso')),
-                        )
-                      : widget.construirLeitor(context, _validar),
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Aponte a câmera para o QR Code do ingresso.',
-                textAlign: TextAlign.center,
-                style: TextStyle(color: Cores.textoSuave),
-              ),
+              ContadorDeEntradas(liberadas: _entradasLiberadas),
               const SizedBox(height: 16),
-              const Text(
-                'Ou digite o código',
-                style: TextStyle(fontWeight: FontWeight.w700),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size.fromHeight(80),
+                  textStyle: const TextStyle(fontFamily: 'Poppins', fontSize: 20, fontWeight: FontWeight.w800),
+                ),
+                onPressed: validando ? null : _abrirCamera,
+                icon: validando
+                    ? const SizedBox.square(
+                        dimension: 26,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 3,
+                          semanticsLabel: 'Validando o ingresso',
+                        ),
+                      )
+                    : const Icon(Icons.qr_code_scanner, size: 32),
+                label: const Text('LER QR CODE'),
               ),
+              const SizedBox(height: 20),
+              const Text('Ou digite ou cole o código', style: TextStyle(fontWeight: FontWeight.w700)),
               const SizedBox(height: 8),
               TextField(
                 controller: _campoCodigo,
@@ -167,109 +234,18 @@ class _PortariaTelaState extends State<PortariaTela> {
                 onSubmitted: (_) => _validarCampo(),
               ),
               const SizedBox(height: 12),
-              ElevatedButton(onPressed: validando ? null : _validarCampo, child: const Text('VALIDAR')),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-/// A resposta grande: cor, ícone e texto juntos, para não depender só da cor nem de som.
-class _TelaDeResultado extends StatelessWidget {
-  const _TelaDeResultado({
-    required this.tipo,
-    required this.validado,
-    required this.mensagem,
-    required this.aoContinuar,
-  });
-
-  final _TipoDoResultado tipo;
-  final IngressoValidado? validado;
-  final String? mensagem;
-  final VoidCallback aoContinuar;
-
-  @override
-  Widget build(BuildContext context) {
-    // Branco sobre o vermelho do site reprova no contraste (3,27). Por isso o texto é escuro (5,94).
-    final (fundo, corDoTexto, icone, titulo) = switch (tipo) {
-      _TipoDoResultado.liberado => (Cores.verde, Colors.white, Icons.check_circle, 'ENTRADA LIBERADA'),
-      _TipoDoResultado.recusado => (Cores.vermelho, Cores.fundo, Icons.cancel, 'ENTRADA RECUSADA'),
-      _TipoDoResultado.indefinido => (Cores.fundo, Colors.white, Icons.wifi_off, 'NÃO VALIDADO'),
-    };
-
-    final dados = validado;
-    final assento = dados?.numeroAssento ?? '—';
-
-    return Scaffold(
-      backgroundColor: fundo,
-      appBar: AppBar(
-        backgroundColor: fundo,
-        foregroundColor: corDoTexto,
-        elevation: 0,
-        title: const Text('Portaria'),
-      ),
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, limites) => SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: ConstrainedBox(
-              constraints: BoxConstraints(minHeight: limites.maxHeight - 48),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Semantics(
-                    liveRegion: true,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Icon(
-                          icone,
-                          size: 96,
-                          color: tipo == _TipoDoResultado.indefinido ? Cores.amarelo : corDoTexto,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          titulo,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(color: corDoTexto, fontSize: 30, fontWeight: FontWeight.w800),
-                        ),
-                        const SizedBox(height: 20),
-                        if (mensagem != null)
-                          Text(
-                            mensagem!,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: corDoTexto, fontSize: 20, fontWeight: FontWeight.w600),
-                          ),
-                        if (dados != null) ...[
-                          Text(
-                            dados.partida,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: corDoTexto, fontSize: 24, fontWeight: FontWeight.w800),
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            '${dados.nomeSetor}\nAssento $assento\n${formatarDataHora(dados.dataJogo)}',
-                            textAlign: TextAlign.center,
-                            style: TextStyle(color: corDoTexto, fontSize: 18, fontWeight: FontWeight.w600),
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  ElevatedButton(
-                    style: tipo == _TipoDoResultado.indefinido
-                        ? null
-                        : ElevatedButton.styleFrom(backgroundColor: Cores.fundo, foregroundColor: Colors.white),
-                    onPressed: aoContinuar,
-                    child: Text(tipo == _TipoDoResultado.indefinido ? 'TENTAR DE NOVO' : 'LER PRÓXIMO'),
-                  ),
-                ],
+              OutlinedButton(onPressed: validando ? null : _validarCampo, child: const Text('VALIDAR')),
+              const SizedBox(height: 24),
+              Semantics(
+                header: true,
+                child: const Text(
+                  'Validações desta sessão',
+                  style: TextStyle(color: Cores.texto, fontSize: 16, fontWeight: FontWeight.w800),
+                ),
               ),
-            ),
+              const SizedBox(height: 8),
+              HistoricoValidacoes(registros: _historico),
+            ],
           ),
         ),
       ),
