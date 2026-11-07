@@ -10,6 +10,8 @@ import '../util/como_chegar.dart';
 import '../widgets/cartao_ingresso.dart';
 import '../widgets/cartao_proximo_jogo.dart';
 import '../widgets/estados_tela.dart';
+import '../widgets/fundo_cartao_hero.dart';
+import 'qr_tela.dart';
 
 /// A tela inicial: o cartão do próximo jogo e, abaixo, os outros ingressos.
 class InicioTela extends StatefulWidget {
@@ -92,7 +94,17 @@ class _InicioTelaState extends State<InicioTela> {
     }
   }
 
-  // A tela do QR chega na Parte 2D, e a da Portaria, na Parte 2E.
+  /// Ao voltar, recarrega: o ingresso pode ter sido validado com a tela do QR aberta.
+  Future<void> _abrirQr(Ingresso ingresso) async {
+    await Navigator.of(context).push(
+      rotaDoCartao<void>(
+        (_) => QrTela(ingresso: ingresso, ingressos: widget.ingressos, relogio: widget.relogio),
+      ),
+    );
+    if (mounted) await _carregar();
+  }
+
+  // A tela da Portaria chega na Parte 2E.
   void _emBreve() {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Disponível em breve.')));
   }
@@ -171,7 +183,7 @@ class _InicioTelaState extends State<InicioTela> {
             }
             return CartaoProximoJogo(
               ingresso: proximo,
-              aoValidar: _emBreve,
+              aoValidar: () => _abrirQr(proximo),
               aoComoChegar: () => _comoChegar(proximo),
             );
           }
@@ -195,7 +207,7 @@ class _InicioTelaState extends State<InicioTela> {
             child: CartaoIngresso(
               ingresso: ingresso,
               situacao: situacaoDoIngresso(ingresso, agora),
-              aoTocar: _emBreve,
+              aoTocar: () => _abrirQr(ingresso),
             ),
           );
         },

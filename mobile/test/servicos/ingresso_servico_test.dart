@@ -38,4 +38,23 @@ void main() {
       await expectLater(servico.listarMeusIngressos(), throwsA(isA<ApiException>()));
     });
   });
+
+  group('consultar', () {
+    test('encontra o ingresso na lista', () async {
+      final servico = servicoCom(
+        (_) async => respostaJson([jsonDeIngresso(ingressoId: 1), jsonDeIngresso(ingressoId: 2, utilizado: true)]),
+      );
+
+      final ingresso = await servico.consultar(2);
+
+      expect(ingresso?.ingressoId, 2);
+      expect(ingresso?.utilizado, isTrue);
+    });
+
+    test('devolve null se o ingresso não estiver na lista', () async {
+      final servico = servicoCom((_) async => respostaJson([jsonDeIngresso(ingressoId: 1)]));
+
+      expect(await servico.consultar(99), isNull);
+    });
+  });
 }

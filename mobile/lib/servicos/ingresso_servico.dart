@@ -20,4 +20,15 @@ class IngressoServico {
       throw const ApiException(ClienteApi.respostaInesperada);
     }
   }
+
+  /// A situação atual de um ingresso, para a consulta periódica da tela do QR.
+  /// A Api não tem rota de um único ingresso, então lê a lista e procura. Trocar por uma rota
+  /// própria, se ela existir um dia, afeta só este método.
+  Future<Ingresso?> consultar(int ingressoId) async {
+    final lista = await listarMeusIngressos();
+    for (final ingresso in lista) {
+      if (ingresso.ingressoId == ingressoId) return ingresso;
+    }
+    return null;
+  }
 }
