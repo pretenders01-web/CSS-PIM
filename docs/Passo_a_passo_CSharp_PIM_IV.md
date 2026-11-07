@@ -20,6 +20,7 @@ Marque cada fase aqui quando todos os passos dela (seção 5) estiverem concluí
 - [x] **Fase 5:** Api
 - [x] **Fase 6:** Web
 - [ ] **Fase 7:** fechamento e evidências do manual
+- [x] **Fase 8:** apoio ao app mobile (validação do ingresso, dados do cartão e datas futuras)
 
 ---
 
@@ -127,7 +128,7 @@ Nenhuma bloqueia a Fase 1. Cada linha diz a partir de qual passo precisa de resp
 | 4.7 | **Valores do script de dados.** Capacidades, preços, fase e horário dos jogos não existem no HTML (só as datas) | Passo 0.2 | Valores **fictícios e pequenos**, avisados nos comentários do script |
 | 4.8 | **Tela de login social** (ícones de E-mail, Facebook e Outlook, que só mostram um aviso) | Passo 6.2 | Não levar para o sistema novo |
 | 4.11 | **Bandeiras dos times.** Hoje são arquivos em `4.flags/` ligados aos jogos por classes CSS, e o banco não guarda nada de bandeira | Passo 6.3 | **Decidido:** uma tabela de correspondência na Web (nome do time para o arquivo `.svg`), sem alterar o banco. Time sem bandeira cadastrada mostra um ícone genérico |
-| 4.10 | **Datas dos jogos.** As do HTML (junho de 2026) já passaram em relação à data atual, então um filtro por jogos futuros esconderia todos | Passos 2.5, 3.2 e 5.5 | O sistema **não filtra por data**: lista e vende todos os jogos, ordenados por data. Para o seed ficar no futuro, as datas de `@Jogos` em `05_Dados_Teste.sql` podem ser trocadas |
+| 4.10 | **Datas dos jogos.** As do HTML (junho de 2026) já passaram em relação à data atual, então um filtro por jogos futuros esconderia todos | Passos 2.5, 3.2 e 5.5 | O sistema **não filtra por data**: lista e vende todos os jogos, ordenados por data. **Atualizado na Fase 8:** o seed agora traz os jogos de 14 a 19/12/2026 e acerta as datas em um banco já povoado. A decisão de não filtrar continua |
 | 4.9 | **Versões dos pacotes NuGet** (JwtBearer e outros) | Passos 5.2 e 6.1 | Instalar a versão 9.x e confirmar com `dotnet build` |
 
 ---
@@ -254,6 +255,7 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
   | `GET /api/jogos/{id}/setores/{setorId}/assentos` | público | assentos disponíveis |
   | `POST /api/vendas` | logado | comprar |
   | `GET /api/vendas/meus-ingressos` | logado | ingressos comprados, com o QR |
+  | `POST /api/vendas/validar` | **`ADMIN`** | validar o ingresso na portaria (acrescentada na Fase 8) |
   | `GET`, `POST`, `PUT`, `DELETE /api/estadios`, `/setores`, `/assentos`, `/jogos`, `/ingressos` | **`ADMIN`** | CRUD de administração (e, em `/assentos` e `/ingressos`, a criação em lote e o cancelamento) |
 
 - [x] **5.6** Configurar **CORS** para o app Flutter.
@@ -281,7 +283,7 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
 
 - [x] **6.1** Criar **ViewModels** para as telas (o manual recomenda). Os controllers só recebem, chamam o Negócio e devolvem a view. Configurar a autenticação por cookie no `Program.cs` da Web, com o `Perfil` como *claim* de papel (já faz parte do ASP.NET Core), e a sessão para o carrinho.
 - [x] **6.2** Telas de **Login** e **Cadastro**, substituindo `1.html/LOGIN.html` e `cadastro.html`. Não levar os defeitos dos HTMLs: o cadastro tem **dois campos com o mesmo `name="Senha"`** (precisam de nomes diferentes, por exemplo `Senha` e `ConfirmarSenha`) e o login aponta para `CADASTRO.html` em maiúsculas, enquanto o arquivo é `cadastro.html`. Os ícones de login social não vão (premissa 4.8), e o texto "Brazil Tickets" do `alt` do logo no login deve ser "Mundial Tickets".
-- [x] **6.3** Migrar o visual: `2.css/*.css` para `wwwroot/css`, e de `4.flags/` as bandeiras (`argentina`, `brazil`, `canada`, `chile`, `denmark`, `france`, `germany`, `japan`, `mexico`, `serbia`, `uruguay`, `usa`, todas `.svg`), `jogo.jpeg`, `futebol.jpeg`, `imagem_trofeu_copa.webp` e o logo (`logo 3 - Editado.png`). **Não** copiar o `Claude Setup.exe`, que está na mesma pasta. As bandeiras hoje são escolhidas por uma **classe CSS por jogo** (`.mexico-canada` etc.); com os jogos vindos do banco, o nome do time (`TimeA`/`TimeB`) é ligado ao arquivo da bandeira por uma **tabela de correspondência na Web** (premissa 4.11), sem coluna nova no banco.
+- [x] **6.3** Migrar o visual: `2.css/*.css` para `wwwroot/css`, e de `4.flags/` as bandeiras (`argentina`, `brazil`, `canada`, `chile`, `denmark`, `france`, `germany`, `japan`, `mexico`, `serbia`, `uruguay`, `usa`, todas `.svg`), `jogo.jpeg`, `futebol.jpeg`, `imagem_trofeu_copa.webp` e o logo (`logo 3 - Editado.png`). **Não** copiar o instalador `.exe` que estava na mesma pasta. As bandeiras hoje são escolhidas por uma **classe CSS por jogo** (`.mexico-canada` etc.); com os jogos vindos do banco, o nome do time (`TimeA`/`TimeB`) é ligado ao arquivo da bandeira por uma **tabela de correspondência na Web** (premissa 4.11), sem coluna nova no banco.
 - [x] **6.4** Migrar o cabeçalho e o rodapé dos HTMLs para o `_Layout.cshtml` e usar partial views para o que se repete (card de jogo). O menu mostra o item **Administração** só para quem tem o papel `ADMIN`.
 - [x] **6.5** **Home** e **Ingressos**: lista de jogos, com o carrossel e os cards (de `index.html` e `INGRESSOS.html`), lendo do banco.
 - [x] **6.6** **Escolha do ingresso**: página de um jogo com seus setores (nome, preço e vagas) e, ao escolher um setor, os **assentos disponíveis** para marcar. Os assentos marcados vão para o **carrinho**.
@@ -319,7 +321,7 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
 - **Autenticação da Web:** cookie com o `Perfil` como *claim* de papel. A cada requisição, o `OnValidatePrincipal` consulta o usuário no banco e derruba o cookie se a conta foi **desativada** ou se o **perfil mudou** (testado: conta desativada deixa de entrar na hora; quem é promovido a `ADMIN` precisa entrar de novo). Sem login social (premissa 4.8).
 - **Carrinho na sessão** guarda só os ids dos ingressos; preço e disponibilidade são relidos do banco a cada tela (`CarrinhoMontador`). O formulário de pagamento só aceita o método (`[Bind("MetodoPagamento")]`): total e usuário vêm do servidor. Boleto continua recusado pelo Negócio (premissa de pagamento simulado). Sair da conta esvazia o carrinho.
 - **Para a Web chegar aos ingressos escolhidos** foi acrescentado `IngressoNegocio.ListarPorIds` (usa o `ObterPorIds` que o repositório já tinha).
-- **Um único CSS** (`wwwroot/css/mundial.css`) no lugar dos vários `.css` do modelo antigo, mais o Bootstrap da pasta `lib`. As bandeiras vêm da tabela `Bandeiras` (nome do time → arquivo `.svg`), sem coluna nova no banco; time desconhecido aparece sem bandeira. Os arquivos de imagem foram copiados; o `Claude Setup.exe` não.
+- **Um único CSS** (`wwwroot/css/mundial.css`) no lugar dos vários `.css` do modelo antigo, mais o Bootstrap da pasta `lib`. As bandeiras vêm da tabela `Bandeiras` (nome do time → arquivo `.svg`), sem coluna nova no banco; time desconhecido aparece sem bandeira. Os arquivos de imagem foram copiados; o instalador `.exe` da mesma pasta não.
 - **Cultura:** a requisição usa a cultura invariante (decimais com ponto e datas ISO nos campos `number` e `datetime-local`); a **exibição** é em pt-BR pela classe `Formatacao`.
 - **Área `Admin`** (`Areas/Admin`): controladores herdam de `AdminControllerBase` (`[Authorize(Roles = ADMIN)]`). Uma página por entidade (Estádios, Setores, Assentos, Jogos, Ingressos) com tabela, formulário na mesma página (`?editar=id`), `Salvar` e `Excluir` por POST; erros de regra aparecem na própria página. Assentos tem a seção "criar vários" e Ingressos tem "gerar para um jogo", "criar individual", alterar preço (só se `DISPONIVEL`), cancelar e excluir (nunca `VENDIDO`).
 - **Todo POST tem token antifalsificação**; sem token a resposta é 400 (testado). Após o login, só volta para endereços do próprio site (`Url.IsLocalUrl`).
@@ -330,15 +332,35 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
 ### Fase 7: fechamento e evidências do manual (Etapa 4)
 
 - [ ] **7.1** Reescrever o `backend/README.md`: ele ainda descreve o `Cliente`, o banco por migrations e `NomeDoSistema`.
-- [ ] **7.2** Reunir as evidências que o manual exige: captura da solution no Visual Studio mostrando os cinco projetos; diagrama da arquitetura (camadas, banco e app Flutter); trechos comentados de ao menos um repositório, uma classe de negócio, um controller MVC e um controller da API; trecho da chamada da stored procedure; e a descrição da POO aplicada.
+- [ ] **7.2** Reunir as evidências que o manual exige: captura da solution no Visual Studio mostrando os cinco projetos; diagrama da arquitetura (camadas, banco e app Flutter; o lado do app está no `mobile/README.md` e em `docs/capturas-mobile/00-fluxo-de-navegacao.png`); trechos comentados de ao menos um repositório, uma classe de negócio, um controller MVC e um controller da API; trecho da chamada da stored procedure; e a descrição da POO aplicada.
 - [ ] **7.3** Conferir as regras de dependência do manual: Web e Api não acessam o banco nem o Repositório diretamente; nenhuma regra em controller ou view; Modelos não referencia ninguém; connection string só no `appsettings.json`; consultas parametrizadas.
 - [ ] **7.4** *Pronto quando:* a lista acima está atendida e o `git status` mostra só o que deve ser commitado.
+
+### Fase 8: apoio ao app mobile
+
+Feita depois da Fase 6, a pedido do grupo, para o app Flutter. O plano do app (`docs/Passo_a_passo_Mobile_PIM_IV.md`, Fase 1 e seção 4) traz o motivo de cada decisão.
+
+- [x] **8.1** `IngressoCompradoDto` (`GET /api/vendas/meus-ingressos`) ganhou `TimeA`, `TimeB`, `EstadioNome` e `EstadioCidade`, os mesmos nomes do `JogoDto`. `Partida` continua, porque a Web usa.
+- [x] **8.2** `POST /api/vendas/validar`, só `ADMIN`: recebe o `CodigoQR`, confere as regras e marca o ingresso como utilizado. Caminho: `VendasController`, `VendaNegocio.ValidarIngresso` e `VendaRepositorio`, com os DTOs `IngressoValidarDto` e `IngressoValidadoDto`. Recusas viram 400 com `{ "erro": "..." }`, pelo `RegraDeNegocioFiltro`.
+- [x] **8.3** `05_Dados_Teste.sql`: jogos de 14 a 19/12/2026, com um `UPDATE` que acerta as datas em um banco já povoado.
+- [x] **8.4** `MundialTickets.Api.http`: seção nova com as chamadas da Portaria.
+
+**Notas da Fase 8 (decisões tomadas durante a execução):**
+
+- **Ordem das conferências:** o código existe, o ingresso está `VENDIDO`, ainda não foi utilizado e o jogo não começou. Só então o ingresso é marcado.
+- **A validade vem de `Jogo.DataHora`, e não de `QRCode.DataExpiracao`.** A trigger copia a data do jogo para `DataExpiracao` no momento da venda, e o `JogoNegocio.Atualizar` não mexe nessa cópia. Com a data atual do jogo, uma mudança de data vale na hora, sem sincronizar nada. A coluna e o campo do DTO continuam existindo.
+- **Primeira gravação em `QRCode` pelo EF.** A regra "só a procedure e as triggers gravam" passa a ter uma exceção: o campo `Utilizado`, marcado por `ExecuteUpdate`. A tabela `QRCode` não tem trigger, então não precisa de `HasTrigger`.
+- **Dois leitores ao mesmo tempo:** o `UPDATE` único leva a condição `Utilizado = 0`. O segundo leitor espera o primeiro, altera zero linhas e recebe "Este ingresso já foi utilizado.". A leitura anterior é sem rastreamento, porque o `ExecuteUpdate` não atualiza objetos já carregados (o mesmo cuidado das notas da Fase 2).
+- **Limites aceitos:** não há tolerância depois do início do jogo, e a validação aceita qualquer jogo futuro, porque não sabe qual jogo está acontecendo. Por isso a resposta traz `DataJogo`, para quem está na portaria conferir o dia. O banco não guarda a hora da validação.
+- **Nenhum registro novo na injeção de dependência:** a rota usa o `VendaNegocio`, e o `VendaRepositorio` continua sendo a única classe que fala com `QRCode`. Os dois blocos do `Program.cs` não mudaram.
+- **Seed:** o `INSERT` de `Jogo` ignora jogos que já existem, e por isso o script ganhou um `UPDATE`. Repetir o script devolve os 6 jogos às datas do arquivo, o que desfaz uma mudança de data feita pelo administrador neles. Pelo `sqlcmd`, use a opção `-I`: sem ela, o `INSERT` em `Ingresso` falha com o erro 1934 (`QUOTED_IDENTIFIER`), sem gravar nada. O SSMS já usa esse padrão.
+- **Verificação:** a Api e a Web foram iniciadas e exercitadas por HTTP contra o banco real, em 28 conferências. Cobriram sem token (401), token de `CLIENTE` (403), código inexistente, código em branco, código válido, código repetido, status alterado, jogo no passado, `DataExpiracao` no passado com o jogo no futuro (200), três rodadas de dois leitores simultâneos (sempre um 200 e um 400), a Web com os selos certos, o OpenAPI com o cadeado e o Scalar. Duas falhas foram do próprio roteiro (acentos codificados no HTML e o Scalar devolvendo HTML) e foram reconferidas. O comprador temporário do teste foi apagado.
 
 ---
 
 ## 6. Ordem de commits sugerida
 
-Um commit por fase concluída (Fases 0 a 7), com mensagens no padrão do histórico (`Add: ...`), para que cada etapa possa ser revertida sozinha. A coluna `Perfil` nos scripts `01` e `02` pode ir em um commit próprio, antes da Fase 1.
+Um commit por fase concluída (Fases 0 a 8), com mensagens no padrão do histórico (`Add: ...`), para que cada etapa possa ser revertida sozinha. A coluna `Perfil` nos scripts `01` e `02` pode ir em um commit próprio, antes da Fase 1.
 
 ## 7. Riscos já identificados
 

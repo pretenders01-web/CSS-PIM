@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            // Roda antes da configuração "Api (perfil http)" do launch.json.
+            // Se a Api já estiver rodando, pare-a antes: o processo bloqueia os arquivos.
+            "label": "Compilar a Api",
+            "type": "process",
+            "command": "dotnet",
+            "args": ["build", "${workspaceFolder}/backend/MundialTickets.Api/MundialTickets.Api.csproj"],
+            "problemMatcher": "$msCompile",
+            "presentation": { "reveal": "silent", "panel": "shared" }
+        }
+    ]
+}

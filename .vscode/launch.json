@@ -1,0 +1,53 @@
+{
+    // Rodar e depurar pelo F5 (o passo a passo está em mobile/README.md).
+    // Escolha a configuração na lista da aba "Executar e Depurar". Precisa das extensões
+    // Flutter e C#. O emulador precisa estar aberto.
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // 10.0.2.2 é o localhost do PC visto de dentro do emulador.
+            "name": "App (emulador)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "mobile",
+            "program": "lib/main.dart",
+            "flutterMode": "debug",
+            "deviceId": "emulator-5554",
+            "toolArgs": ["--dart-define=API_URL=http://10.0.2.2:5218"]
+        },
+        {
+            // No navegador, a Api é o localhost mesmo. Em modo profile, porque o release recusa http://.
+            "name": "App (Edge, profile)",
+            "type": "dart",
+            "request": "launch",
+            "cwd": "mobile",
+            "program": "lib/main.dart",
+            "flutterMode": "profile",
+            "deviceId": "edge",
+            "toolArgs": ["--dart-define=API_URL=http://localhost:5218"]
+        },
+        {
+            // O perfil http de Properties/launchSettings.json: http://localhost:5218.
+            "name": "Api (perfil http)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Compilar a Api",
+            "program": "${workspaceFolder}/backend/MundialTickets.Api/bin/Debug/net9.0/MundialTickets.Api.dll",
+            "cwd": "${workspaceFolder}/backend/MundialTickets.Api",
+            "launchSettingsProfile": "http",
+            // Sem isto, o depurador pausa em toda RegraDeNegocioException, que o RegraDeNegocioFiltro
+            // transforma em 400: cada recusa da Portaria deixaria a Api congelada. Testado.
+            "justMyCode": false,
+            "console": "internalConsole",
+            "stopAtEntry": false
+        }
+    ],
+    "compounds": [
+        {
+            // Sobe a Api e o app juntos. Parar um encerra o outro.
+            "name": "Api + App (emulador)",
+            "configurations": ["Api (perfil http)", "App (emulador)"],
+            "stopAll": true
+        }
+    ]
+}

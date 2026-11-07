@@ -4,4 +4,7 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- HTTP sem criptografia só em debug, para falar com a Api local. Em release, quem
+         recusa é a classe ConfiguracaoApi. -->
+    <application android:usesCleartextTraffic="true"/>
 </manifest>

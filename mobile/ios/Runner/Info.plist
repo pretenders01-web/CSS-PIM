@@ -6,6 +6,8 @@
 	<true/>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>NSCameraUsageDescription</key>
+	<string>A câmera lê o QR Code do ingresso na Portaria.</string>
 	<key>CFBundleDisplayName</key>
 	<string>Mobile</string>
 	<key>CFBundleExecutable</key>

@@ -16,7 +16,8 @@ public class QRCode
     [Required, StringLength(255)]
     public string CodigoQR { get; set; } = string.Empty;
 
-    // O banco preenche com a data e hora do jogo.
+    // O banco preenche com a data e hora do jogo, no momento da venda. Essa cópia não
+    // acompanha uma mudança de data do jogo: a validação do ingresso usa Jogo.DataHora.
     public DateTime DataExpiracao { get; set; }
 
     // Marca se o código já foi usado na entrada.

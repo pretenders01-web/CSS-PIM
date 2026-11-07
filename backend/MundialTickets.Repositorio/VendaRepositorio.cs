@@ -3,6 +3,7 @@ using Dapper;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using MundialTickets.Modelos;
 using MundialTickets.Modelos.Dtos;
 using MundialTickets.Repositorio.Contexto;
 using MundialTickets.Repositorio.Interfaces;
@@ -14,7 +15,8 @@ namespace MundialTickets.Repositorio;
 //   - Dapper para a stored procedure sp_RealizarCompra
 //   - Entity Framework Core para as consultas
 // A Venda, os itens, a troca do ingresso para VENDIDO e o QR code nascem dentro do banco
-// (procedure e triggers); esta classe não grava nessas tabelas pelo EF.
+// (procedure e triggers); esta classe não cria nada nessas tabelas pelo EF. A única gravação
+// pelo EF é marcar o QR code como utilizado, na validação do ingresso.
 public class VendaRepositorio : IVendaRepositorio
 {
     private readonly AppDbContext _contexto;
@@ -95,7 +97,11 @@ public class VendaRepositorio : IVendaRepositorio
                 IngressoId = q.IngressoID,
                 VendaId = q.VendaID,
                 Partida = q.Ingresso!.Jogo!.TimeA + " x " + q.Ingresso.Jogo.TimeB,
+                TimeA = q.Ingresso.Jogo.TimeA,
+                TimeB = q.Ingresso.Jogo.TimeB,
                 DataJogo = q.Ingresso.Jogo.DataHora,
+                EstadioNome = q.Ingresso.Jogo.Estadio!.Nome,
+                EstadioCidade = q.Ingresso.Jogo.Estadio.Cidade,
                 NomeSetor = q.Ingresso.Setor!.NomeSetor,
                 NumeroAssento = q.Ingresso.NumeroAssento,
                 PrecoPago = q.Venda!.Itens
@@ -107,4 +113,20 @@ public class VendaRepositorio : IVendaRepositorio
                 Utilizado = q.Utilizado
             })
             .ToList();
+
+    // Sem rastreamento, porque a marcação abaixo é um UPDATE direto, que não atualiza
+    // objetos já carregados: o Negócio só lê este objeto para conferir as regras.
+    public QRCode? ObterQRCodePorCodigo(string codigoQR) =>
+        _contexto.QRCodes.AsNoTracking()
+            .Include(q => q.Ingresso!).ThenInclude(i => i.Jogo)
+            .Include(q => q.Ingresso!).ThenInclude(i => i.Setor)
+            .FirstOrDefault(q => q.CodigoQR == codigoQR);
+
+    // Um único UPDATE, com a condição "ainda não utilizado" dentro dele: é o que impede dois
+    // leitores de validarem o mesmo ingresso. O banco faz o segundo esperar o primeiro terminar;
+    // aí a condição já não vale, nenhuma linha muda e o método devolve false.
+    public bool MarcarQRCodeComoUtilizado(string codigoQR) =>
+        _contexto.QRCodes
+            .Where(q => q.CodigoQR == codigoQR && !q.Utilizado)
+            .ExecuteUpdate(s => s.SetProperty(q => q.Utilizado, true)) == 1;
 }

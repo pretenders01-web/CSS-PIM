@@ -1,7 +1,12 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- O app só conversa com o sistema pela Api. Sem esta linha, o build final fica sem rede. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- A permissão de câmera vem do pacote mobile_scanner, com required=false. No Android ela vale
+         para o app inteiro; o pedido ao usuário só aparece ao abrir a tela da Portaria. -->
     <application
-        android:label="mobile"
+        android:label="Mundial Tickets"
         android:name="${applicationName}"
+        android:allowBackup="false"
         android:icon="@mipmap/ic_launcher">
         <activity
             android:name=".MainActivity"
@@ -40,6 +45,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- O botão "Como chegar" abre um endereço https fora do app (url_launcher). -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>
