@@ -35,8 +35,8 @@ Retrato de 07/11/2026, antes da Fase 1. O que a Fase 1 mudar fica nas notas dela
 | Manifesto principal do Android | **Sem permissão de internet** (ela só existe nos manifestos de `debug` e `profile`), `android:label="mobile"`, sem `allowBackup` e sem `usesCleartextTraffic`. O `<queries>` só cobre `PROCESS_TEXT` |
 | iOS | `Info.plist` sem `NSCameraUsageDescription` |
 | Build Android | Nunca tinha sido feito (`mobile/build` não tem saída Android). O build de teste abaixo só passou depois de repetido e baixou no SDK o NDK 28.2.13676358 (2,2 GB), o CMake 3.22.1 e as plataformas 35 e 36. A primeira tentativa falhou com "sdkmanager did not install NDK". Cada máquina do grupo fará esse download no primeiro build |
-| Emulador | Há 2 AVDs (`Pixel_10` e `Medium_Phone_API_37.0`, x86_64), mas **eles não iniciam nesta máquina**. O `emulator -accel-check` informa "hypervisor driver is not installed", e o Windows informa virtualização desligada no firmware. É só uma alternativa (decisão 4.9) |
-| Celular físico e Edge | Nenhum celular estava conectado na conferência; o teste será em um Android por USB (decisão 4.9). O `flutter devices` lista o Edge |
+| Emulador | `sdk gphone64 x86 64` (`emulator-5554`, Android 17, API 37) **é o aparelho principal** (decisão 4.9). Só passou a iniciar depois de o dono da máquina ligar a virtualização (SVM) e a Plataforma do Hipervisor do Windows. O app padrão foi compilado e rodou nele |
+| Edge e Android de um colega | O `flutter devices` lista o Edge, que é o plano B. O Android de um colega fica para as capturas, a apresentação e a leitura pela câmera (passo 3.8) |
 | Banco `CopaDoMundoVendas` | 7 estádios, 21 setores, 175 assentos, 6 jogos, 150 ingressos e **0 usuários, 0 vendas e 0 QR codes**. Os 6 jogos eram de 11 a 18/06/2026, todos no passado |
 | Api | Sobe no .NET 10 pelo `RollForward` (a máquina tem os SDKs 8 e 10). Tem 21 caminhos no OpenAPI, nenhum para renovar o token nem para consultar um único ingresso do comprador |
 | Manual | Sem data de entrega no documento (ele fala em "datas publicadas") |
@@ -53,8 +53,9 @@ Retrato de 07/11/2026, antes da Fase 1. O que a Fase 1 mudar fica nas notas dela
 | As 12 bandeiras com `flutter_svg` | 9 corretas. **México, Sérvia e Uruguai saem com as cores erradas** (seção 3.6), e a conversão do passo 2A.3 corrigiu as três |
 | `qr_flutter` com um código de 40 caracteres | Válido, versão 3, 29 módulos |
 | `flutter_launcher_icons` como `dev_dependency` | Resolve na versão 0.14.4 |
+| App com `usesCleartextTraffic="false"` chamando a Api por HTTP, no emulador | Respondeu 200 por `10.0.2.2` e por `localhost` com `adb reverse`. **Confirma que o manifesto não bloqueia o HTTP do Dart** (passo 2A.6) |
 
-**Não testado** (o passo indicado confere): acesso pelo celular, pelo emulador e pelo `adb reverse`, e firewall do Windows (passo 2B.8); bloqueio de HTTP em build de release (passo 2A.6); leitura pela câmera (passo 2E.7). Hero, mapa, consulta periódica e telas não foram prototipados.
+**Não testado** (o passo indicado confere): bloqueio de HTTP em build de release (passo 2A.6); leitura pela câmera e acesso a partir de um celular de verdade, com o firewall do Windows (passo 3.8). Hero, mapa, consulta periódica e telas não foram prototipados.
 
 ---
 
@@ -203,7 +204,7 @@ Respondidas em 07/11/2026. Não há dúvida em aberto. As referências "decisão
 | 4.6 | Rota da consulta periódica | **Reusa `GET /api/vendas/meus-ingressos`** e filtra por `ingressoId`, a cada 5 segundos. Trocar depois afeta só um método do serviço | Passo 2D.4 |
 | 4.7 | Onde fica a Portaria para o `ADMIN` | **Na mesma tela inicial**, com um botão "Portaria" na barra superior, porque ele também pode ter ingressos | Passos 2C.3 e 2E.1 |
 | 4.8 | Lista de outros ingressos | **Todos menos o do cartão**, inclusive usados e passados, na ordem da Api. Tocar em um deles abre o QR dele | Passo 2C.7 |
-| 4.9 | Aparelhos de teste | **Celular Android por USB.** Emulador e Edge ficam como alternativa. O Edge também serve para mostrar o QR do comprador enquanto o celular lê | Passos 2A.1 e 2E.7, seção 8 |
+| 4.9 | Aparelhos de teste | **Corrigida em 07/11/2026: o emulador Android é o aparelho principal**, porque o celular do responsável é um iPhone e a máquina é Windows. O Edge é o plano B. O Android de um colega fica para as capturas e a apresentação. A câmera do emulador não serve para ler um QR real, então os testes usam o campo de código (decisão 4.10) | Passos 2A.1, 2E.7 e 3.8, seção 8 |
 | 4.10 | Digitar o código na Portaria | **Entra:** um campo para digitar ou colar o código, como alternativa à câmera, passando pela mesma validação | Passo 2E.3 |
 | 4.11 | Sem rede ou com o token vencido na portaria | **O QR já aberto continua visível sem rede**, com um aviso. O 401 leva ao login, e o QR some junto. Sem modo offline | Passo 2D.4 |
 | 4.12 | LIBRAS (Etapa 8) | **O app não traz conteúdo em LIBRAS.** `Semantics` atende leitores de tela, não LIBRAS. O documento registra que as respostas são visuais (cor, ícone e texto, sem depender de som), e a proposta em si fica com quem responde pela Etapa 8 | Passo 3.6 |
@@ -285,7 +286,7 @@ Executada em sequência, sem parar entre as partes, com um commit por parte.
 
 Nada aqui chama a Api.
 
-- [ ] **2A.1** Preparar o celular com a depuração por USB ligada (decisão 4.9). *Pronto quando:* `flutter devices` lista o Android e o Edge.
+- [ ] **2A.1** Conferir o emulador (decisão 4.9). *Pronto quando:* `flutter devices` lista o emulador e o Edge, e o app padrão roda no emulador.
 - [ ] **2A.2** No `pubspec.yaml`: a descrição do projeto, os pacotes da seção 2 (sem `cupertino_icons`), os assets e a família Poppins. O `flutter pub get` altera os registrantes gerados de `linux`, `macos` e `windows`, que estão no Git, e eles entram no commit. *Pronto quando:* `flutter pub get` passa.
 - [ ] **2A.3** Copiar os assets para `mobile/assets`, sem alterar os originais da Web:
   - `img/logo.png`, reduzido para 768×512;
@@ -315,7 +316,7 @@ Nada aqui chama a Api.
   - ícone (decisão 4.14): `assets/img/icone_app.png`, quadrado, com o logo centralizado sobre `#0d0d0d`, e `dart run flutter_launcher_icons` com `adaptive_icon_background` e `adaptive_icon_foreground`. As imagens geradas entram no commit;
   - iOS: `NSCameraUsageDescription` no `Info.plist`, sem teste.
 
-  *Pronto quando:* o manifesto final (`build/app/intermediates/merged_manifest/`) tem `usesCleartextTraffic` em debug e não em release, e tem `INTERNET` nos dois; o ícone e o rótulo aparecem no celular; e um build de release apontando para `http://` mostra a recusa.
+  *Pronto quando:* o manifesto final (`build/app/intermediates/merged_manifest/`) tem `usesCleartextTraffic` em debug e não em release, e tem `INTERNET` nos dois; o ícone e o rótulo aparecem no emulador; e um APK de release apontando para `http://` mostra a recusa.
 - [ ] **2A.7** Limpeza: trocar o `main.dart` e o teste do contador, ativar em `analysis_options.yaml` as regras `prefer_const_constructors`, `prefer_const_literals_to_create_immutables` e `prefer_const_declarations` (o `flutter_lints` 6 não as liga), e atualizar o comando de teste único nas notas locais do projeto. *Pronto quando:* `flutter analyze` e `flutter test` passam e `flutter build apk --debug` gera o APK.
 
 #### Parte 2B: camada de dados e login
@@ -332,7 +333,7 @@ Nada aqui chama a Api.
   - qualquer 401 fora do login zera o `ValueNotifier`, e o `app.dart` volta ao login, com "Sua sessão expirou".
 - [ ] **2B.6** `telas/login_tela.dart`: logo, `Form` com e-mail e senha, as mesmas mensagens do `LoginDto` ("Informe o e-mail.", "E-mail inválido.", "Informe a senha."), `autofillHints`, botão de mostrar a senha, botão desativado com indicador durante o envio, área de erro e o aviso da decisão 4.15. Rolável, para o teclado e fontes grandes não cortarem nada. Controllers descartados no `dispose`.
 - [ ] **2B.7** Testes com `MockClient`: login certo, 401 de login, 401 de outra rota derrubando a sessão, 400 com `erro`, 400 com `errors`, 500, tempo esgotado, falha de conexão, token vencido sem requisição e cabeçalho `Authorization`. Testes de widget do login: campos vazios, e-mail inválido e erro da Api.
-- [ ] **2B.8** *Pronto quando:* com a Api rodando (seção 8), o login real funciona no celular e no Edge; senha errada mostra a mensagem da Api; fechar e abrir o app mantém a sessão; e `grep -rnE "SharedPreferences|print\(" mobile/lib` não encontra nada.
+- [ ] **2B.8** *Pronto quando:* com a Api rodando (seção 8), o login real funciona no emulador e no Edge; senha errada mostra a mensagem da Api; fechar e abrir o app mantém a sessão; e `grep -rnE "SharedPreferences|print\(" mobile/lib` não encontra nada.
 
 #### Parte 2C: tela inicial com o cartão e o mapa
 
@@ -352,7 +353,7 @@ Nada aqui chama a Api.
 
   Com `MediaQuery.disableAnimations`, mostra o desenho pronto, sem animar.
 - [ ] **2C.7** Lista dos outros ingressos (decisão 4.8), com cartões compactos e o selo de cada um, inclusive Expirado.
-- [ ] **2C.8** "Como chegar": `Uri.https('www.google.com', '/maps/search/', {'api': '1', 'query': '$estadio, $cidade'})` e `launchUrl` com `externalApplication`. **Montar pelo `Uri`, e não concatenando texto:** "AT&T Stadium" está no seed, e o `&` quebraria o endereço. Falha mostra um aviso. *Pronto quando:* há teste de que o `&` sai como `%26`, e o botão abre o estádio certo no celular.
+- [ ] **2C.8** "Como chegar": `Uri.https('www.google.com', '/maps/search/', {'api': '1', 'query': '$estadio, $cidade'})` e `launchUrl` com `externalApplication`. **Montar pelo `Uri`, e não concatenando texto:** "AT&T Stadium" está no seed, e o `&` quebraria o endereço. Falha mostra um aviso. *Pronto quando:* há teste de que o `&` sai como `%26`, e o botão abre o estádio certo no emulador.
 - [ ] **2C.9** Testes de widget: os quatro estados, "Tentar de novo", campos do cartão e "Portaria" só para `ADMIN`. **Usar `pump(duração)`, e não `pumpAndSettle`,** que nunca termina com uma animação em repetição. *Pronto quando:* a tela mostra os dados reais da conta de teste.
 
 #### Parte 2D: tela do QR Code
@@ -378,13 +379,13 @@ Nada aqui chama a Api.
 
   Vibração com `HapticFeedback`, que já vem no Flutter.
 - [ ] **2E.6** Testes de widget, com o leitor trocado por um falso (a câmera não existe no teste): liberado, recusado com motivo, falha de rede, duas detecções seguidas gerando **uma** chamada, código digitado passando pela mesma chamada, campo vazio sem chamada, e "Ler próximo".
-- [ ] **2E.7** *Pronto quando:* no celular por USB (decisão 4.9), o `ADMIN` lê o QR que o comprador mostra no Edge; o verde aparece; o selo do comprador muda; a segunda leitura fica vermelha, com o motivo; o código colado no campo dá o mesmo resultado; e um `CLIENTE` não vê o botão.
+- [ ] **2E.7** *Pronto quando:* no emulador (decisão 4.9), o `ADMIN` valida pelo campo de código o ingresso de um comprador; o verde aparece; a segunda tentativa fica vermelha, com o motivo; o selo do comprador vira Utilizado; e um `CLIENTE` não vê o botão. A leitura pela câmera fica para o passo 3.8.
 
 ### Fase 3: acabamento (responsividade, acessibilidade, testes, capturas e README)
 
 - [ ] **3.1** Responsividade: testes de widget das telas principais em 320×568, 360×640, 390×844 e 430×932 (`tester.view.physicalSize`), com escala de fonte 1,0, 1,3 e 2,0. Um estouro de layout faz o teste falhar. `SafeArea` em todas. Em retrato, como pedido.
-- [ ] **3.2** Acessibilidade: `Semantics` no cartão (frase completa do jogo), no mapa (imagem com rótulo), no QR, nos selos, nos botões e na câmera. Bandeira ao lado do nome fica fora da leitura, como o `alt=""` da Web. Texto respeita o tamanho do sistema. Contraste segundo a seção 3.5. *Pronto quando:* passam `androidTapTargetGuideline`, `labeledTapTargetGuideline` e `textContrastGuideline`, e um percurso com TalkBack no celular chega do login ao QR.
-- [ ] **3.3** Desempenho: revisar `const`, `dispose` de controllers e timers, e `RepaintBoundary`. Medir no DevTools, em `--profile` e em celular real: abertura da tela com bandeiras, mapa e Hero. Se o `mexico.svg` causar engasgo, pré-compilar com o transformador do `vector_graphics_compiler`. Logo com `cacheWidth`. *Pronto quando:* os números e a conclusão estão nas notas da fase.
+- [ ] **3.2** Acessibilidade: `Semantics` no cartão (frase completa do jogo), no mapa (imagem com rótulo), no QR, nos selos, nos botões e na câmera. Bandeira ao lado do nome fica fora da leitura, como o `alt=""` da Web. Texto respeita o tamanho do sistema. Contraste segundo a seção 3.5. *Pronto quando:* passam `androidTapTargetGuideline`, `labeledTapTargetGuideline` e `textContrastGuideline`, e um percurso com TalkBack chega do login ao QR.
+- [ ] **3.3** Desempenho: revisar `const`, `dispose` de controllers e timers, e `RepaintBoundary`. Medir no DevTools, em `--profile` e no Android do colega (o modo profile não roda em emulador): abertura da tela com bandeiras, mapa e Hero. Se o `mexico.svg` causar engasgo, pré-compilar com o transformador do `vector_graphics_compiler`. Logo com `cacheWidth`. *Pronto quando:* os números e a conclusão estão nas notas da fase.
 - [ ] **3.4** Testes: conferir que modelos, serviços e telas principais estão cobertos e que não restou código do contador. *Pronto quando:* `flutter analyze` não tem avisos e `flutter test` passa, com o resultado copiado para as notas.
 - [ ] **3.5** Documentação: reescrever o `mobile/README.md`, explicando o que é o app, **como rodar** (o conteúdo da seção 8) e como testar. Atualizar a parte "Mobile" e os comandos das notas locais do projeto, e passar o desenho do app para o diagrama do passo 7.2 do plano do C#.
 - [ ] **3.6** Evidências para o documento, em `docs/capturas_mobile/`: login, tela inicial, ingressos vazios, erro com "Tentar de novo", QR Válido, QR Utilizado, QR Expirado, Portaria verde, Portaria vermelha, a tela inicial em aparelho pequeno e grande, e com fonte grande. Mais o desenho do fluxo de navegação.
@@ -394,7 +395,8 @@ Nada aqui chama a Api.
   | 6 (UX e UI) | Personas, fluxos de navegação, wireframes ou protótipos e análise de usabilidade | Fluxo, capturas e melhorias encontradas (decisão 4.13) |
   | 8 (LIBRAS) | Proposta de acessibilidade com princípios de LIBRAS | Registro do passo 3.2 e das respostas visuais (decisão 4.12) |
   | 9 (Mobile) | Telas responsivas, adaptação a dispositivos, integração com o back-end e capturas | Fases 2 e 3 |
-- [ ] **3.7** Roteiro de demonstração, testado do início ao fim, com as contas do passo 1.11: entrar como comprador no Edge; entrar como `ADMIN` no celular; validar; ver o selo mudar; ler de novo e ver a recusa. *Pronto quando:* o roteiro roda sem ajuste manual fora do que está escrito.
+- [ ] **3.7** Roteiro de demonstração, testado do início ao fim, com as contas do passo 1.11: entrar como comprador no Edge; entrar como `ADMIN` no emulador ou no Android do colega; validar; ver o selo mudar; tentar de novo e ver a recusa. *Pronto quando:* o roteiro roda sem ajuste manual fora do que está escrito.
+- [ ] **3.8** Android de um colega (decisão 4.9): instalar o app e acessar a Api pela seção 8. *Pronto quando:* a câmera lê o QR mostrado no Edge, a Portaria fica verde e, na segunda leitura, vermelha; e as capturas da apresentação estão feitas.
 
 ---
 
@@ -416,10 +418,10 @@ Na branch `feature/mobile-app`, no padrão do histórico, com um commit por part
 
 ## 7. Riscos já identificados
 
-- **O teste real depende de um único celular.** O emulador não inicia nesta máquina (decisão 4.9). Sem o celular, o campo de digitar o código permite exercitar a Portaria no Edge, mas não a câmera.
-- **Senha e token trafegam sem criptografia na demonstração.** O HTTP só é aceito em debug. Pelo `adb reverse` isso fica no cabo USB, mas pelo IP do PC passa pelo Wi-Fi. Usar só contas de teste.
+- **A câmera só será testada no fim.** O emulador não serve para ler um QR real, então a leitura depende do Android de um colega (passo 3.8). Até lá, o campo de código exercita a mesma validação.
+- **Senha e token trafegam sem criptografia na demonstração.** O HTTP só é aceito em debug. No emulador e pelo `adb reverse` isso fica dentro do PC ou no cabo USB, mas pelo IP do PC passa pelo Wi-Fi. Usar só contas de teste.
 - **`0.0.0.0` expõe a Api em modo Development à rede local,** inclusive o Scalar. Quando usar esse caminho, a regra de firewall (seção 8) fica restrita ao perfil de rede privada, e a Api deve ser encerrada depois.
-- **A demonstração roda em debug,** porque o build de release recusa `http://` e a Api local não tem certificado confiável para o celular. O app em debug é mais lento que em release.
+- **A demonstração roda em debug,** porque o build de release recusa `http://` e a Api local não tem certificado confiável para um aparelho. O app em debug é mais lento que em release.
 - **Resposta perdida na Portaria.** Se a validação for gravada e a resposta se perder por tempo esgotado, a nova leitura diz "já utilizado". A aparência neutra do passo 2E.5 evita concluir errado, mas quem está na portaria precisa saber disso.
 - **Captura de tela do QR:** vale a primeira validação. O código não muda, e o banco não guarda a hora em que foi usado.
 - **Selos diferentes no site e no app.** Um ingresso passado e não usado aparece como "Válido" na Web e "Expirado" no app (decisão 4.1).
@@ -433,18 +435,18 @@ Na branch `feature/mobile-app`, no padrão do histórico, com um commit por part
 
 ## 8. Como rodar contra a Api local
 
-A partir da raiz, com o banco no ar. **Use o perfil `http`.** O perfil `https` também abre a porta 7077, o que dá ao `UseHttpsRedirection` para onde redirecionar, e o celular não confia no certificado de desenvolvimento (não testado).
+A partir da raiz, com o banco no ar. **Use o perfil `http`.** O perfil `https` também abre a porta 7077, o que dá ao `UseHttpsRedirection` para onde redirecionar, e um aparelho não confia no certificado de desenvolvimento (não testado).
 
 | Alvo | Api | App (a partir de `mobile/`) | Situação |
 |---|---|---|---|
-| **Celular por USB, com `adb reverse`** (principal) | `dotnet run --project backend/MundialTickets.Api --launch-profile http` | `adb reverse tcp:5218 tcp:5218` e `flutter run -d <celular> --dart-define=API_URL=http://localhost:5218` | Não precisa de IP, Wi-Fi nem firewall. **Falta testar no celular.** Repetir o `adb reverse` ao reconectar o cabo |
-| Celular pelo IP do PC | `dotnet run --project backend/MundialTickets.Api --launch-profile http -- --urls http://0.0.0.0:5218` | `flutter run -d <celular> --dart-define=API_URL=http://<IP-do-PC>:5218` | A Api respondeu pelo IP, chamada do próprio PC. **Falta testar a partir do celular** |
-| Edge (alternativa, e para mostrar o QR do comprador) | `dotnet run --project backend/MundialTickets.Api --launch-profile http` | `flutter run -d edge --dart-define=API_URL=http://localhost:5218` | CORS conferido. A leitura pela câmera não foi testada |
-| Emulador Android (alternativa) | `dotnet run --project backend/MundialTickets.Api --launch-profile http` | `flutter run -d <emulador> --dart-define=API_URL=http://10.0.2.2:5218` | Não iniciou nesta máquina: exige ligar a virtualização no firmware e instalar o driver. `10.0.2.2` é o `localhost` do PC visto de dentro do emulador |
+| **Emulador Android** (principal) | `dotnet run --project backend/MundialTickets.Api --launch-profile http` | `flutter run -d emulator-5554 --dart-define=API_URL=http://10.0.2.2:5218` | **Testado.** `10.0.2.2` é o `localhost` do PC visto de dentro do emulador |
+| Edge (plano B, e para mostrar o QR do comprador) | Igual ao emulador | `flutter run -d edge --dart-define=API_URL=http://localhost:5218` | CORS conferido. A leitura pela câmera não foi testada |
+| Android de um colega, por USB | Igual ao emulador | `adb reverse tcp:5218 tcp:5218` e `flutter run -d <celular> --dart-define=API_URL=http://localhost:5218` | O `adb reverse` foi testado no emulador, mas **falta testar no aparelho**. Repetir ao reconectar o cabo |
+| Android de um colega, pelo IP do PC | `dotnet run --project backend/MundialTickets.Api --launch-profile http -- --urls http://0.0.0.0:5218` | `flutter run -d <celular> --dart-define=API_URL=http://<IP-do-PC>:5218` | A Api respondeu pelo IP, chamada do próprio PC. **Falta testar a partir do aparelho** |
 
-O `adb` fica em `platform-tools`, dentro do SDK do Android (`%LOCALAPPDATA%\Android\sdk\platform-tools`).
+**No emulador, `10.0.2.2` ganhou do `adb reverse`:** os dois responderam 200 no teste, mas o `10.0.2.2` não pede nenhum passo extra, enquanto o `adb reverse` se perde quando o emulador reinicia. O emulador precisa da virtualização ligada na máquina. O `adb` fica em `platform-tools`, dentro do SDK do Android (`%LOCALAPPDATA%\Android\sdk\platform-tools`).
 
-No caminho pelo IP, o celular precisa estar na mesma rede, e o Windows precisa liberar a porta. Em um PowerShell de administrador, uma vez só (comando ainda não executado):
+No caminho pelo IP, o aparelho precisa estar na mesma rede, e o Windows precisa liberar a porta. Em um PowerShell de administrador, uma vez só (comando ainda não executado):
 
 ```powershell
 New-NetFirewallRule -DisplayName "Mundial Tickets Api" -Direction Inbound -Protocol TCP -LocalPort 5218 -Action Allow -Profile Private
