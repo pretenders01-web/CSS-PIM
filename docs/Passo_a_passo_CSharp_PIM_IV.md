@@ -332,7 +332,7 @@ Uma classe por área, no molde de `EstadioNegocio`, lançando `RegraDeNegocioExc
 ### Fase 7: fechamento e evidências do manual (Etapa 4)
 
 - [ ] **7.1** Reescrever o `backend/README.md`: ele ainda descreve o `Cliente`, o banco por migrations e `NomeDoSistema`.
-- [ ] **7.2** Reunir as evidências que o manual exige: captura da solution no Visual Studio mostrando os cinco projetos; diagrama da arquitetura (camadas, banco e app Flutter); trechos comentados de ao menos um repositório, uma classe de negócio, um controller MVC e um controller da API; trecho da chamada da stored procedure; e a descrição da POO aplicada.
+- [ ] **7.2** Reunir as evidências que o manual exige: captura da solution no Visual Studio mostrando os cinco projetos; diagrama da arquitetura (camadas, banco e app Flutter; o lado do app está no `mobile/README.md` e em `docs/capturas-mobile/00-fluxo-de-navegacao.png`); trechos comentados de ao menos um repositório, uma classe de negócio, um controller MVC e um controller da API; trecho da chamada da stored procedure; e a descrição da POO aplicada.
 - [ ] **7.3** Conferir as regras de dependência do manual: Web e Api não acessam o banco nem o Repositório diretamente; nenhuma regra em controller ou view; Modelos não referencia ninguém; connection string só no `appsettings.json`; consultas parametrizadas.
 - [ ] **7.4** *Pronto quando:* a lista acima está atendida e o `git status` mostra só o que deve ser commitado.
 

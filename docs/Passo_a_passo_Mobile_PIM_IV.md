@@ -19,7 +19,7 @@ Marque cada fase aqui quando todos os passos dela (seção 5) estiverem concluí
   - [x] **Parte 2C:** tela inicial com o cartão e o mapa
   - [x] **Parte 2D:** tela do QR Code
   - [x] **Parte 2E:** modo Portaria
-- [ ] **Fase 3:** acabamento (responsividade, acessibilidade, testes, capturas e README)
+- [ ] **Fase 3:** acabamento (responsividade, acessibilidade, testes, capturas e README). **Falta só o checklist do aparelho físico** (passo 3.8)
 
 ---
 
@@ -55,7 +55,7 @@ Retrato de 07/11/2026, antes da Fase 1. O que a Fase 1 mudar fica nas notas dela
 | `flutter_launcher_icons` como `dev_dependency` | Resolve na versão 0.14.4 |
 | App com `usesCleartextTraffic="false"` chamando a Api por HTTP, no emulador | Respondeu 200 por `10.0.2.2` e por `localhost` com `adb reverse`. **Confirma que o manifesto não bloqueia o HTTP do Dart** (passo 2A.6) |
 
-**Não testado** (o passo indicado confere): leitura pela câmera e acesso a partir de um celular de verdade, com o firewall do Windows (passo 3.8). O resto foi conferido na Fase 2 (ver as notas dela).
+**Não testado** (o passo 3.8 confere, com um aparelho físico): leitura de um QR real pela câmera, medição de desempenho, percurso por gestos no TalkBack, e acesso a partir de um celular de verdade, com o firewall do Windows. O resto foi conferido nas Fases 2 e 3 (ver as notas delas).
 
 ---
 
@@ -77,7 +77,7 @@ As respostas às dúvidas de produto estão na seção 4.
 | Backend | Fase própria, com commit separado, antes do app. `backend/` e `5.database/` só mudam para o que a Fase 1 descreve |
 | Contas de teste | Um comprador com 3 ingressos e um `ADMIN`, criados pela Api só no banco local. **Nada de e-mail ou senha entra no repositório** |
 | Ordem das fases | Fase 1 primeiro. A Fase 2 roda de uma vez, com um commit por parte, e a Fase 3 fecha |
-| Visual | Igual ao site (seção 3.5), com logo e bandeiras copiados para `mobile/assets` e Poppins empacotada, sem download em tempo de execução. O logo também é o ícone do app |
+| Visual | Igual ao site (seção 3.5), com logo e bandeiras copiados para `mobile/assets` e Poppins empacotada, sem download em tempo de execução. O troféu do logo é o ícone do app (decisão 4.14) |
 | Segurança | Token em armazenamento seguro; senha nunca guardada nem em log; expiração respeitada; 401 volta ao login; endereço da Api por `--dart-define`; internet no manifesto principal; HTTP sem criptografia só em debug; câmera só na Portaria |
 
 ### Pacotes
@@ -186,7 +186,7 @@ Contraste calculado pela fórmula da WCAG (mínimo AA: 4,5 para texto comum e 3 
 - `Servicos/Bandeiras.cs` tem 13 chaves (nome sem acento e em minúsculas, incluindo `eua`) para 12 arquivos. Sem bandeira, a Web mostra um ⚽ (`Views/Shared/_Time.cshtml`). O app copia essa tabela e esse comportamento.
 - **`mexico.svg`, `serbia.svg` e `uruguay.svg` definem as cores em um bloco `<style>` com classes, e o `flutter_svg` ignora esse bloco** (o log diz `unhandled element <style/>`). O teste mostrou o escudo da Sérvia, o sol do Uruguai e a águia do México em preto. Os três países estão nos jogos do seed.
 - `mexico.svg` é o arquivo pesado (159 KB, 67 ms para interpretar no teste, no PC). As outras 11 somam cerca de 46 KB.
-- `logo.png` tem 1536×1024 e 241 KB, bem mais do que o app precisa. A proporção 3:2 pede um recorte quadrado para o ícone (passo 2A.6).
+- `logo.png` tem 1536×1024 e 241 KB, bem mais do que o app precisa. Ele é largo demais para o ícone, que usa só o troféu (decisão 4.14).
 
 ---
 
@@ -209,7 +209,8 @@ Respondidas em 07/11/2026. Não há dúvida em aberto. As referências "decisão
 | 4.11 | Sem rede ou com o token vencido na portaria | **O QR já aberto continua visível sem rede**, com um aviso. O 401 leva ao login, e o QR some junto. Sem modo offline | Passo 2D.4 |
 | 4.12 | LIBRAS (Etapa 8) | **O app não traz conteúdo em LIBRAS.** `Semantics` atende leitores de tela, não LIBRAS. O documento registra que as respostas são visuais (cor, ícone e texto, sem depender de som), e a proposta em si fica com quem responde pela Etapa 8 | Passo 3.6 |
 | 4.13 | Personas e wireframes (Etapa 6) | **Ficam com quem responde pela Etapa 6.** Este plano entrega os fluxos, as capturas e as melhorias encontradas | Passo 3.6 |
-| 4.14 | Nome e ícone do app | **O logo do site é o ícone**, gerado com `flutter_launcher_icons` só como `dev_dependency`, e o rótulo é "Mundial Tickets". O `applicationId` `com.example.mobile` continua, porque o app não será publicado | Passo 2A.6 |
+| 4.14 | Nome e ícone do app | **Corrigida em 07/11/2026: o ícone é só o troféu do logo**, centralizado e com margem, sobre o fundo escuro do tema, porque o logo inteiro ficava ilegível nesse tamanho. É gerado com `flutter_launcher_icons`, só como `dev_dependency`. O rótulo é "Mundial Tickets". O `applicationId` `com.example.mobile` continua, porque o app não será publicado | Passo 2A.6 |
+| 4.16 | Tamanho do cartão | **Fica como está:** cerca de 57% da tela, com altura mínima de 50% | Passo 2C.4 |
 | 4.15 | Texto do aviso no login | **"O cadastro e a compra de ingressos são feitos no site Mundial Tickets."** Sem link, porque o site só tem endereço local | Passo 2B.6 |
 
 ---
@@ -313,7 +314,7 @@ Nada aqui chama a Api.
   - no manifesto principal: `INTERNET`, `android:label="Mundial Tickets"`, `android:allowBackup="false"` (o README do `flutter_secure_storage` avisa que o backup causa `InvalidKeyException`) e um `<queries>` para `https`, que o `canLaunchUrl` exige a partir do Android 11;
   - em `src/debug/AndroidManifest.xml`: `android:usesCleartextTraffic="true"`. **Isso não basta:** segundo a documentação do Flutter, a política do Android vale para sockets nativos, e sockets do Dart não são bloqueados. A barreira real é a recusa do passo 2A.5;
   - câmera: **uma permissão de Android vale para o app inteiro, não para uma tela.** O `mobile_scanner` já a declara, com `required=false`. O que este plano garante é que o pedido ao usuário só aparece ao abrir a Portaria (passo 2E.2);
-  - ícone (decisão 4.14): `assets/icone/icone_app.png`, quadrado, com o logo centralizado sobre `#0d0d0d`, `assets/icone/icone_app_frente.png`, só com o logo, e `dart run flutter_launcher_icons` com `adaptive_icon_background` e `adaptive_icon_foreground`. As imagens geradas entram no commit;
+  - ícone (decisão 4.14): `assets/icone/icone_app.png`, quadrado, com o troféu do logo centralizado sobre `#0d0d0d`, `assets/icone/icone_app_frente.png`, só com o troféu, e `dart run flutter_launcher_icons` com `adaptive_icon_background` e `adaptive_icon_foreground`. As imagens geradas entram no commit;
   - iOS: `NSCameraUsageDescription` no `Info.plist`, sem teste.
 
   *Pronto quando:* o manifesto final (`build/app/intermediates/merged_manifest/`) tem `usesCleartextTraffic` em debug e não em release, e tem `INTERNET` nos dois; o ícone e o rótulo aparecem no emulador; e um APK de release apontando para `http://` mostra a recusa.
@@ -400,27 +401,80 @@ Nada aqui chama a Api.
   - com um controller próprio, o `MobileScanner` não para a câmera em segundo plano. Passou a usar o controller interno dele.
 - **O voo do Hero** começa opaco, para cobrir o conteúdo que fica para trás, e termina transparente, para mostrar a tela nova. A rota é um fade de 450 ms (`rotaDoCartao`), e não uma `MaterialPageRoute`.
 - **Terceira aparência da Portaria:** "NÃO VALIDADO", em fundo escuro e ícone amarelo, para falha de rede, 403 e erro do servidor. O botão é "Tentar de novo", e o código continua no campo.
-- **O cartão ocupa cerca de 57% da tela** no aparelho de 2424 px. É altura mínima de 50%, e os dois botões empilhados pesam mais que o previsto.
-- **O logo é largo e fica pequeno no ícone do app.** Ele aparece certo, mas o texto não se lê nesse tamanho. Só o troféu ficaria mais legível, se o grupo preferir.
+- **O cartão ocupa cerca de 57% da tela** no aparelho de 2424 px, com altura mínima de 50%. Ficou assim por decisão (4.16).
+- **O logo inteiro ficava pequeno no ícone do app**, e o ícone passou a ser só o troféu (decisão 4.14, aplicada na Fase 3).
 - **O `provider` não entrou:** o `ValueNotifier` da sessão bastou. Os serviços são passados por construtor.
 - **Limite:** a leitura de um QR real pela câmera continua sem teste (passo 3.8), e o TalkBack fica para o passo 3.2.
 
 ### Fase 3: acabamento (responsividade, acessibilidade, testes, capturas e README)
 
-- [ ] **3.1** Responsividade: testes de widget das telas principais em 320×568, 360×640, 390×844 e 430×932 (`tester.view.physicalSize`), com escala de fonte 1,0, 1,3 e 2,0. Um estouro de layout faz o teste falhar. `SafeArea` em todas. Em retrato, como pedido.
-- [ ] **3.2** Acessibilidade: `Semantics` no cartão (frase completa do jogo), no mapa (imagem com rótulo), no QR, nos selos, nos botões e na câmera. Bandeira ao lado do nome fica fora da leitura, como o `alt=""` da Web. Texto respeita o tamanho do sistema. Contraste segundo a seção 3.5. *Pronto quando:* passam `androidTapTargetGuideline`, `labeledTapTargetGuideline` e `textContrastGuideline`, e um percurso com TalkBack chega do login ao QR.
-- [ ] **3.3** Desempenho: revisar `const`, `dispose` de controllers e timers, e `RepaintBoundary`. Medir no DevTools, em `--profile` e no Android do colega (o modo profile não roda em emulador): abertura da tela com bandeiras, mapa e Hero. Se o `mexico.svg` causar engasgo, pré-compilar com o transformador do `vector_graphics_compiler`. Logo com `cacheWidth`. *Pronto quando:* os números e a conclusão estão nas notas da fase.
-- [ ] **3.4** Testes: conferir que modelos, serviços e telas principais estão cobertos e que não restou código do contador. *Pronto quando:* `flutter analyze` não tem avisos e `flutter test` passa, com o resultado copiado para as notas.
-- [ ] **3.5** Documentação: reescrever o `mobile/README.md`, explicando o que é o app, **como rodar** (o conteúdo da seção 8) e como testar. Atualizar a parte "Mobile" e os comandos das notas locais do projeto, e passar o desenho do app para o diagrama do passo 7.2 do plano do C#.
-- [ ] **3.6** Evidências para o documento, em `docs/capturas_mobile/`: login, tela inicial, ingressos vazios, erro com "Tentar de novo", QR Válido, QR Utilizado, QR Expirado, Portaria verde, Portaria vermelha, a tela inicial em aparelho pequeno e grande, e com fonte grande. Mais o desenho do fluxo de navegação.
+- [x] **3.1** Responsividade: testes de widget das telas principais em 320×568, 360×640, 390×844 e 430×932 (`tester.view.physicalSize`), com escala de fonte 1,0, 1,3 e 2,0 e a Poppins de verdade. Um estouro de layout faz o teste falhar. `SafeArea` em todas. Em retrato, como pedido.
+- [x] **3.2** Acessibilidade: `Semantics` no cartão (frase completa do jogo), no mapa (imagem com rótulo), no QR, nos selos, nos botões e na câmera. Bandeira ao lado do nome fica fora da leitura, como o `alt=""` da Web. Texto respeita o tamanho do sistema. Contraste segundo a seção 3.5. *Pronto quando:* passam `androidTapTargetGuideline`, `labeledTapTargetGuideline` e `textContrastGuideline`, e o TalkBack funciona no app. O percurso completo por gestos fica no passo 3.8.
+- [x] **3.3** Desempenho, no que dá para conferir sem aparelho: revisar `const`, `dispose` de controllers e timers, e `RepaintBoundary`, e testar que a animação do mapa para fora da tela. Logo com `cacheWidth`. *Pronto quando:* os testes passam. A medição no DevTools precisa de aparelho físico, porque o modo profile não roda em emulador, e fica no passo 3.8.
+- [x] **3.4** Testes: conferir que modelos, serviços e telas principais estão cobertos e que não restou código do contador. *Pronto quando:* `flutter analyze` não tem avisos e `flutter test` passa, com o resultado copiado para as notas.
+- [x] **3.5** Documentação: reescrever o `mobile/README.md`, explicando o que é o app, **como rodar** (pelo F5 e pelo terminal) e como testar. Criar o `.vscode/launch.json` e o `.vscode/tasks.json`, com as configurações do app no emulador, do app no Edge em profile, da Api no perfil http e a composta "Api + App (emulador)". Atualizar a parte "Mobile" e os comandos das notas locais do projeto, e indicar o desenho do app no passo 7.2 do plano do C#.
+- [x] **3.6** Evidências para o documento, em `docs/capturas-mobile/`, com um índice no `README.md` da pasta: login, tela inicial, QR Válido, QR Utilizado, QR Expirado, leitura da Portaria, Portaria verde, Portaria vermelha, ingressos vazios, erro com "Tentar de novo", a tela inicial em aparelho pequeno e grande, e com fonte grande, a lista com os três selos e o desenho do fluxo de navegação.
 
   | Etapa do manual | O que ela pede | O que este plano entrega |
   |---|---|---|
   | 6 (UX e UI) | Personas, fluxos de navegação, wireframes ou protótipos e análise de usabilidade | Fluxo, capturas e melhorias encontradas (decisão 4.13) |
   | 8 (LIBRAS) | Proposta de acessibilidade com princípios de LIBRAS | Registro do passo 3.2 e das respostas visuais (decisão 4.12) |
   | 9 (Mobile) | Telas responsivas, adaptação a dispositivos, integração com o back-end e capturas | Fases 2 e 3 |
-- [ ] **3.7** Roteiro de demonstração, testado do início ao fim, com as contas do passo 1.11: entrar como comprador no Edge; entrar como `ADMIN` no emulador ou no Android do colega; validar; ver o selo mudar; tentar de novo e ver a recusa. *Pronto quando:* o roteiro roda sem ajuste manual fora do que está escrito.
-- [ ] **3.8** Android de um colega (decisão 4.9): instalar o app e acessar a Api pela seção 8. *Pronto quando:* a câmera lê o QR mostrado no Edge, a Portaria fica verde e, na segunda leitura, vermelha; e as capturas da apresentação estão feitas.
+- [x] **3.7** Roteiro de demonstração, testado do início ao fim com um comprador temporário. *Pronto quando:* o roteiro abaixo roda sem ajuste manual fora do que está escrito.
+
+  1. Banco com o seed e as contas do passo 1.11. No VS Code, F5 em "Api + App (emulador)". Depois, escolha "App (Edge, profile)" e F5 de novo.
+  2. **Edge:** entre como comprador e toque em "Validar ingresso". O QR e o selo Válido aparecem.
+  3. **Emulador:** entre como `ADMIN`, toque em Portaria, digite o código que o Edge mostra e valide. A tela fica verde, com partida, setor, assento e data.
+  4. **Edge:** em até uns 5 segundos, o selo muda sozinho para Utilizado.
+  5. **Emulador:** "Ler próximo" e o mesmo código de novo. A tela fica vermelha, com "Este ingresso já foi utilizado.".
+  6. A demonstração gasta um ingresso. Para devolvê-lo: `UPDATE QRCode SET Utilizado = 0 WHERE IngressoID = <id>`.
+- [ ] **3.8** Android de um colega (decisão 4.9): cumprir o checklist abaixo. *Pronto quando:* os quatro itens estão marcados, com os números nas notas da fase.
+
+#### Checklist do aparelho físico
+
+Para o dia em que o celular estiver disponível. Preparação, uma vez:
+
+1. No celular, ligue a **Depuração USB** (Opções do desenvolvedor), conecte o cabo e aceite a autorização.
+2. No VS Code, F5 em "Api (perfil http)". Em um terminal, confira o aparelho e abra a porta pelo cabo:
+
+   ```bash
+   flutter devices
+   adb reverse tcp:5218 tcp:5218
+   ```
+3. A partir de `mobile/`, instale e abra o app, trocando `<id>` pelo id do `flutter devices`:
+
+   ```bash
+   flutter run -d <id> --dart-define=API_URL=http://localhost:5218
+   ```
+
+Depois, marque cada item:
+
+- [ ] **A. Câmera lendo um QR real.** No celular, entre como `ADMIN`, abra a Portaria e aceite a câmera. No PC, F5 em "App (Edge, profile)", entre como comprador e abra o QR. Aponte o celular para a tela: deve ficar verde, e o selo do Edge deve mudar para Utilizado. Toque em "Ler próximo" e leia de novo: deve ficar vermelho. Devolva o ingresso com o `UPDATE` do passo 3.7. Tire uma foto para o documento.
+- [ ] **B. Desempenho.** Pare o app e rode em modo profile:
+
+  ```bash
+  flutter run --profile -d <id> --dart-define=API_URL=http://localhost:5218
+  ```
+
+  Abra o endereço do DevTools que aparece no terminal, na aba **Performance**. Abra a tela inicial, role a lista, abra o QR pelo botão e volte. Anote nas notas da fase quantos quadros passaram de 16 ms. Se a bandeira do México causar engasgo ao abrir um cartão dela, pré-compile o SVG com o `vector_graphics_compiler`.
+- [ ] **C. TalkBack por gestos.** Ligue o TalkBack no celular. Deslizando para a direita, passe por cada elemento do login até o QR, e ative com dois toques. Cada elemento deve dizer o que é. Desligue no fim.
+- [ ] **D. Capturas da apresentação.** Com o app aberto, grave as telas que o grupo quiser mostrar no aparelho real:
+
+  ```bash
+  adb exec-out screencap -p > docs/capturas-mobile/celular-inicio.png
+  ```
+
+**Notas da Fase 3 (decisões tomadas durante a execução):**
+
+- **F5 testado de verdade.** A configuração composta foi executada em uma instância separada do VS Code, com perfil próprio, porque a instalação estava presa em uma atualização. As duas sessões subiram, o app mostrou os dados da Api pelo `10.0.2.2`, e parar uma encerrou a outra. A configuração do Edge em profile também abriu e funcionou.
+- **Esse teste achou um defeito que o `dotnet run` não mostra:** sob o depurador do C#, cada `RegraDeNegocioException` pausava a Api, então a Portaria ficava presa em "Não validado". O `justMyCode: false` no `launch.json` resolveu: a recusa volta em 0,06 s, e os pontos de parada normais continuam valendo.
+- **Responsividade:** 13 estados de tela, em 4 tamanhos e 3 escalas de fonte, somam 156 testes, sem nenhum estouro. No emulador, as capturas em 360×640 dp, 480×1040 dp e fonte 2,0 também não cortam nada.
+- **Acessibilidade:** as três regras do Flutter passam em 11 telas. Os testes acharam dois pontos, já corrigidos: o texto selecionável do código virava um alvo de toque de 19 de altura, e os rótulos de 11 px eram finos demais (a regra mediu 3,53 em "DATA E HORA", contra 9,06 calculados pelas cores, porque ela lê o pixel mais frequente). Os rótulos passaram a 12 px e peso 500.
+- **TalkBack no emulador:** ele liga, mostra o foco no app e o botão abre o QR. Os gestos de deslizar injetados pelo `adb` não movem o foco, então o percurso completo fica no checklist. As configurações do emulador foram restauradas depois.
+- **Desempenho:** a animação do mapa para com outra tela por cima, longe na lista rolada e com animações reduzidas, e o controller é descartado sem deixar ticker ativo (testes em `mapa_rota_test.dart`). A medição fica no checklist.
+- **Testes:** 311 passando, `flutter analyze` sem avisos e 92,8% das linhas cobertas (863 de 930). O que fica de fora depende de plataforma, como o armazenamento seguro, a câmera e a abertura do Maps, e foi exercitado no emulador na Fase 2.
+- **Roteiro:** rodou com o comprador no Edge e a Portaria no emulador, e o selo mudou no Edge. O comprador temporário foi apagado, e os 3 ingressos da conta de teste continuam válidos.
+- **Fluxo de navegação:** a imagem está em `docs/capturas-mobile/00-fluxo-de-navegacao.png`, para a Etapa 6.
 
 ---
 
@@ -439,11 +493,14 @@ Na branch `feature/mobile-app`, no padrão do histórico, com um commit por part
 | 7 | Parte 2D | `Add: tela do QR Code com consulta periódica da situação` |
 | 8 | Parte 2E | `Add: modo Portaria com leitura pela câmera e código digitado` |
 | 9 | Fase 2 | `Doc: Fase 2 do plano mobile concluída` (passos marcados e notas) |
-| 10 | Fase 3 | `Att: responsividade, acessibilidade, testes, capturas e README do app` |
+| 10 | Fase 3 | `Att: ícone do app com o troféu do logo` |
+| 11 | Fase 3 | `Add: configurações do F5 no VS Code e README do app` |
+| 12 | Fase 3 | `Att: responsividade e acessibilidade do app, com testes` |
+| 13 | Fase 3 | `Doc: capturas do app e Fase 3 do plano mobile` |
 
 ## 7. Riscos já identificados
 
-- **A câmera só será testada no fim.** O emulador não serve para ler um QR real, então a leitura depende do Android de um colega (passo 3.8). Até lá, o campo de código exercita a mesma validação.
+- **A câmera só será testada no fim.** O emulador não serve para ler um QR real, então a leitura depende do Android de um colega (checklist do passo 3.8). Até lá, o campo de código exercita a mesma validação.
 - **Senha e token trafegam sem criptografia na demonstração.** O HTTP só é aceito em debug. No emulador e pelo `adb reverse` isso fica dentro do PC ou no cabo USB, mas pelo IP do PC passa pelo Wi-Fi. Usar só contas de teste.
 - **`0.0.0.0` expõe a Api em modo Development à rede local,** inclusive o Scalar. Quando usar esse caminho, a regra de firewall (seção 8) fica restrita ao perfil de rede privada, e a Api deve ser encerrada depois.
 - **A demonstração roda em debug,** porque o build de release recusa `http://` e a Api local não tem certificado confiável para um aparelho. O app em debug é mais lento que em release.
@@ -469,6 +526,8 @@ A partir da raiz, com o banco no ar. **Use o perfil `http`.** O perfil `https` t
 | Edge (plano B, e para mostrar o QR do comprador) | Igual ao emulador | `flutter run -d edge --dart-define=API_URL=http://localhost:5218` | CORS conferido. A leitura pela câmera não foi testada |
 | Android de um colega, por USB | Igual ao emulador | `adb reverse tcp:5218 tcp:5218` e `flutter run -d <celular> --dart-define=API_URL=http://localhost:5218` | O `adb reverse` foi testado no emulador, mas **falta testar no aparelho**. Repetir ao reconectar o cabo |
 | Android de um colega, pelo IP do PC | `dotnet run --project backend/MundialTickets.Api --launch-profile http -- --urls http://0.0.0.0:5218` | `flutter run -d <celular> --dart-define=API_URL=http://<IP-do-PC>:5218` | A Api respondeu pelo IP, chamada do próprio PC. **Falta testar a partir do aparelho** |
+
+**Pelo VS Code:** com a pasta raiz aberta e o emulador ligado, escolha "Api + App (emulador)" na aba Executar e Depurar e aperte F5. O passo a passo está no `mobile/README.md`.
 
 **No emulador, `10.0.2.2` ganhou do `adb reverse`:** os dois responderam 200 no teste, mas o `10.0.2.2` não pede nenhum passo extra, enquanto o `adb reverse` se perde quando o emulador reinicia. O emulador precisa da virtualização ligada na máquina. O `adb` fica em `platform-tools`, dentro do SDK do Android (`%LOCALAPPDATA%\Android\sdk\platform-tools`).
 
