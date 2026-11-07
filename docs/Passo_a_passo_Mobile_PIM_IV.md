@@ -13,12 +13,12 @@ Fora do escopo: cadastro e compra no app (ficam no site), mapa real, funcionamen
 Marque cada fase aqui quando todos os passos dela (seção 5) estiverem concluídos.
 
 - [x] **Fase 1:** backend (dados do cartão, validação do ingresso, datas futuras e contas de teste)
-- [ ] **Fase 2:** app completo, executado em sequência, sem parar entre as partes, com um commit por parte
-  - [ ] **Parte 2A:** base do app (pacotes, tema, assets e configuração)
-  - [ ] **Parte 2B:** camada de dados e login
-  - [ ] **Parte 2C:** tela inicial com o cartão e o mapa
-  - [ ] **Parte 2D:** tela do QR Code
-  - [ ] **Parte 2E:** modo Portaria
+- [x] **Fase 2:** app completo, executado em sequência, sem parar entre as partes, com um commit por parte
+  - [x] **Parte 2A:** base do app (pacotes, tema, assets e configuração)
+  - [x] **Parte 2B:** camada de dados e login
+  - [x] **Parte 2C:** tela inicial com o cartão e o mapa
+  - [x] **Parte 2D:** tela do QR Code
+  - [x] **Parte 2E:** modo Portaria
 - [ ] **Fase 3:** acabamento (responsividade, acessibilidade, testes, capturas e README)
 
 ---
@@ -55,7 +55,7 @@ Retrato de 07/11/2026, antes da Fase 1. O que a Fase 1 mudar fica nas notas dela
 | `flutter_launcher_icons` como `dev_dependency` | Resolve na versão 0.14.4 |
 | App com `usesCleartextTraffic="false"` chamando a Api por HTTP, no emulador | Respondeu 200 por `10.0.2.2` e por `localhost` com `adb reverse`. **Confirma que o manifesto não bloqueia o HTTP do Dart** (passo 2A.6) |
 
-**Não testado** (o passo indicado confere): bloqueio de HTTP em build de release (passo 2A.6); leitura pela câmera e acesso a partir de um celular de verdade, com o firewall do Windows (passo 3.8). Hero, mapa, consulta periódica e telas não foram prototipados.
+**Não testado** (o passo indicado confere): leitura pela câmera e acesso a partir de um celular de verdade, com o firewall do Windows (passo 3.8). O resto foi conferido na Fase 2 (ver as notas dela).
 
 ---
 
@@ -286,10 +286,10 @@ Executada em sequência, sem parar entre as partes, com um commit por parte.
 
 Nada aqui chama a Api.
 
-- [ ] **2A.1** Conferir o emulador (decisão 4.9). *Pronto quando:* `flutter devices` lista o emulador e o Edge, e o app padrão roda no emulador.
-- [ ] **2A.2** No `pubspec.yaml`: a descrição do projeto, os pacotes da seção 2 (sem `cupertino_icons`), os assets e a família Poppins. O `flutter pub get` altera os registrantes gerados de `linux`, `macos` e `windows`, que estão no Git, e eles entram no commit. *Pronto quando:* `flutter pub get` passa.
-- [ ] **2A.3** Copiar os assets para `mobile/assets`, sem alterar os originais da Web:
-  - `img/logo.png`, reduzido para 768×512;
+- [x] **2A.1** Conferir o emulador (decisão 4.9). *Pronto quando:* `flutter devices` lista o emulador e o Edge, e o app padrão roda no emulador.
+- [x] **2A.2** No `pubspec.yaml`: a descrição do projeto, os pacotes da seção 2 (sem `cupertino_icons`), os assets e a família Poppins. O `flutter pub get` altera os registrantes gerados de `linux`, `macos` e `windows`, que estão no Git, e eles entram no commit. *Pronto quando:* `flutter pub get` passa.
+- [x] **2A.3** Copiar os assets para `mobile/assets`, sem alterar os originais da Web:
+  - `img/logo.png`, sem as margens transparentes do original e reduzido para 768×197;
   - `flags/`: as 12 bandeiras. Nove são cópias diretas. **México, Sérvia e Uruguai passam pelo `svgo`**, que leva as classes do `<style>` para atributos de cada elemento. A conversão é feita uma vez e o resultado entra no Git, então ninguém precisa de Node para compilar:
 
     ```bash
@@ -307,79 +307,103 @@ Nada aqui chama a Api.
   - `fonts/`: Poppins Regular, Medium, SemiBold, Bold e ExtraBold (cerca de 160 KB cada) e o `OFL.txt` da licença, do repositório `google/fonts`, pasta `ofl/poppins`.
 
   *Pronto quando:* um teste confere que as 12 bandeiras carregam e que nenhuma contém `<style`, o que protege contra alguém copiar os originais de novo; as três bandeiras convertidas têm as cores certas na tela.
-- [ ] **2A.4** Tema: `tema/cores.dart` com os valores da seção 3.5, `tema/tema_app.dart` com o `ThemeData` (Poppins, fundo, botões e campos) e os widgets `CartaoVidro` e `SeloIngresso` (Válido, Utilizado e Expirado), sem `BackdropFilter`. `MaterialApp` em pt-BR (`flutter_localizations`), sem a faixa de debug e travado em retrato. *Pronto quando:* uma tela de exemplo mostra cartão, botão e os três selos no visual do site.
-- [ ] **2A.5** Configuração: `config/configuracao_api.dart` lê `String.fromEnvironment('API_URL')`, sem valor padrão e sem IP no código. Vazio mostra uma tela explicando o `--dart-define`. Em build de release, um endereço que não seja `https://` é recusado (ver passo 2A.6). *Pronto quando:* há teste dos três casos e `grep -rE "10\.0\.2\.2|192\.168|localhost" mobile/lib` não encontra nada.
-- [ ] **2A.6** Android:
+- [x] **2A.4** Tema: `tema/cores.dart` com os valores da seção 3.5, `tema/tema_app.dart` com o `ThemeData` (Poppins, fundo, botões e campos) e os widgets `CartaoVidro` e `SeloIngresso` (Válido, Utilizado e Expirado), sem `BackdropFilter`. `MaterialApp` em pt-BR (`flutter_localizations`), sem a faixa de debug e travado em retrato. *Pronto quando:* uma tela de exemplo mostra cartão, botão e os três selos no visual do site.
+- [x] **2A.5** Configuração: `config/configuracao_api.dart` lê `String.fromEnvironment('API_URL')`, sem valor padrão e sem IP no código. Vazio mostra uma tela explicando o `--dart-define`. Em build de release, um endereço que não seja `https://` é recusado (ver passo 2A.6). *Pronto quando:* há teste dos três casos e `grep -rE "10\.0\.2\.2|192\.168|localhost" mobile/lib` não encontra nada.
+- [x] **2A.6** Android:
   - no manifesto principal: `INTERNET`, `android:label="Mundial Tickets"`, `android:allowBackup="false"` (o README do `flutter_secure_storage` avisa que o backup causa `InvalidKeyException`) e um `<queries>` para `https`, que o `canLaunchUrl` exige a partir do Android 11;
   - em `src/debug/AndroidManifest.xml`: `android:usesCleartextTraffic="true"`. **Isso não basta:** segundo a documentação do Flutter, a política do Android vale para sockets nativos, e sockets do Dart não são bloqueados. A barreira real é a recusa do passo 2A.5;
   - câmera: **uma permissão de Android vale para o app inteiro, não para uma tela.** O `mobile_scanner` já a declara, com `required=false`. O que este plano garante é que o pedido ao usuário só aparece ao abrir a Portaria (passo 2E.2);
-  - ícone (decisão 4.14): `assets/img/icone_app.png`, quadrado, com o logo centralizado sobre `#0d0d0d`, e `dart run flutter_launcher_icons` com `adaptive_icon_background` e `adaptive_icon_foreground`. As imagens geradas entram no commit;
+  - ícone (decisão 4.14): `assets/icone/icone_app.png`, quadrado, com o logo centralizado sobre `#0d0d0d`, `assets/icone/icone_app_frente.png`, só com o logo, e `dart run flutter_launcher_icons` com `adaptive_icon_background` e `adaptive_icon_foreground`. As imagens geradas entram no commit;
   - iOS: `NSCameraUsageDescription` no `Info.plist`, sem teste.
 
   *Pronto quando:* o manifesto final (`build/app/intermediates/merged_manifest/`) tem `usesCleartextTraffic` em debug e não em release, e tem `INTERNET` nos dois; o ícone e o rótulo aparecem no emulador; e um APK de release apontando para `http://` mostra a recusa.
-- [ ] **2A.7** Limpeza: trocar o `main.dart` e o teste do contador, ativar em `analysis_options.yaml` as regras `prefer_const_constructors`, `prefer_const_literals_to_create_immutables` e `prefer_const_declarations` (o `flutter_lints` 6 não as liga), e atualizar o comando de teste único nas notas locais do projeto. *Pronto quando:* `flutter analyze` e `flutter test` passam e `flutter build apk --debug` gera o APK.
+- [x] **2A.7** Limpeza: trocar o `main.dart` e o teste do contador, ativar em `analysis_options.yaml` as regras `prefer_const_constructors`, `prefer_const_literals_to_create_immutables` e `prefer_const_declarations` (o `flutter_lints` 6 não as liga), e atualizar o comando de teste único nas notas locais do projeto. *Pronto quando:* `flutter analyze` e `flutter test` passam e `flutter build apk --debug` gera o APK.
 
 #### Parte 2B: camada de dados e login
 
-- [ ] **2B.1** Modelos em `modelos/`, com `fromJson` escrito à mão: `Usuario` (com `toJson`, para guardar), `Sessao` (`token`, `expiraEm`, `usuario`), `Ingresso` e `IngressoValidado`. `numeroAssento` e `cpf` podem ser nulos; `precoPago` é lido como `num`. *Pronto quando:* há testes com JSON completo, assento nulo, `450` e `450.00`, e com a grafia `codigoQR`.
-- [ ] **2B.2** Erros em `servicos/erros_api.dart`: `ApiException` (mensagem e código), `SessaoExpiradaException` e `SemConexaoException`, e a leitura do corpo na ordem da seção 3.2. *Pronto quando:* há teste de cada linha daquela tabela, inclusive corpo vazio e HTML.
-- [ ] **2B.3** `ClienteApi`: recebe o `http.Client` e o endereço no construtor, para os testes passarem um falso. Coloca o `Authorization: Bearer`, limita cada requisição a 10 segundos **[PROPOSTA]** e lê o corpo com `utf8.decode(bodyBytes)`, por causa dos acentos. Captura `TimeoutException` e `http.ClientException`, sem importar `dart:io`, para funcionar no Edge. Não registra corpo nem cabeçalho em log.
-- [ ] **2B.4** `ArmazenamentoSessao`: interface, implementação com `flutter_secure_storage` e versão falsa para os testes. Guarda `token`, `expiraEm` e `usuario`. **A senha nunca entra.**
-- [ ] **2B.5** `AutenticacaoServico` e um `ValueNotifier<Sessao?>` no topo do app:
+- [x] **2B.1** Modelos em `modelos/`, com `fromJson` escrito à mão: `Usuario` (com `toJson`, para guardar), `Sessao` (`token`, `expiraEm`, `usuario`), `Ingresso` e `IngressoValidado`. `numeroAssento` e `cpf` podem ser nulos; `precoPago` é lido como `num`. *Pronto quando:* há testes com JSON completo, assento nulo, `450` e `450.00`, e com a grafia `codigoQR`.
+- [x] **2B.2** Erros em `servicos/erros_api.dart`: `ApiException` (mensagem e código), `SessaoExpiradaException` e `SemConexaoException`, e a leitura do corpo na ordem da seção 3.2. *Pronto quando:* há teste de cada linha daquela tabela, inclusive corpo vazio e HTML.
+- [x] **2B.3** `ClienteApi`: recebe o `http.Client` e o endereço no construtor, para os testes passarem um falso. Coloca o `Authorization: Bearer`, limita cada requisição a 10 segundos **[PROPOSTA]** e lê o corpo com `utf8.decode(bodyBytes)`, por causa dos acentos. Captura `TimeoutException` e `http.ClientException`, sem importar `dart:io`, para funcionar no Edge. Não registra corpo nem cabeçalho em log.
+- [x] **2B.4** `ArmazenamentoSessao`: interface, implementação com `flutter_secure_storage` e versão falsa para os testes. Guarda `token`, `expiraEm` e `usuario`. **A senha nunca entra.**
+- [x] **2B.5** `AutenticacaoServico` e um `ValueNotifier<Sessao?>` no topo do app:
   - `entrar`: o 401 do login vira mensagem no formulário;
   - `sair`: limpa o armazenamento;
   - `restaurar` ao abrir: sem sessão ou com `expiraEm` vencido, vai ao login. Com sessão válida, `GET /api/usuarios/me` confirma que a conta segue ativa; a falta de rede não derruba a sessão. **O perfil continua o do login**, porque é o que está no token (seção 3.1);
   - antes de cada chamada: token vencido nem sai do aparelho;
   - qualquer 401 fora do login zera o `ValueNotifier`, e o `app.dart` volta ao login, com "Sua sessão expirou".
-- [ ] **2B.6** `telas/login_tela.dart`: logo, `Form` com e-mail e senha, as mesmas mensagens do `LoginDto` ("Informe o e-mail.", "E-mail inválido.", "Informe a senha."), `autofillHints`, botão de mostrar a senha, botão desativado com indicador durante o envio, área de erro e o aviso da decisão 4.15. Rolável, para o teclado e fontes grandes não cortarem nada. Controllers descartados no `dispose`.
-- [ ] **2B.7** Testes com `MockClient`: login certo, 401 de login, 401 de outra rota derrubando a sessão, 400 com `erro`, 400 com `errors`, 500, tempo esgotado, falha de conexão, token vencido sem requisição e cabeçalho `Authorization`. Testes de widget do login: campos vazios, e-mail inválido e erro da Api.
-- [ ] **2B.8** *Pronto quando:* com a Api rodando (seção 8), o login real funciona no emulador e no Edge; senha errada mostra a mensagem da Api; fechar e abrir o app mantém a sessão; e `grep -rnE "SharedPreferences|print\(" mobile/lib` não encontra nada.
+- [x] **2B.6** `telas/login_tela.dart`: logo, `Form` com e-mail e senha, as mesmas mensagens do `LoginDto` ("Informe o e-mail.", "E-mail inválido.", "Informe a senha."), `autofillHints`, botão de mostrar a senha, botão desativado com indicador durante o envio, área de erro e o aviso da decisão 4.15. Rolável, para o teclado e fontes grandes não cortarem nada. Controllers descartados no `dispose`.
+- [x] **2B.7** Testes com `MockClient`: login certo, 401 de login, 401 de outra rota derrubando a sessão, 400 com `erro`, 400 com `errors`, 500, tempo esgotado, falha de conexão, token vencido sem requisição e cabeçalho `Authorization`. Testes de widget do login: campos vazios, e-mail inválido e erro da Api.
+- [x] **2B.8** *Pronto quando:* com a Api rodando (seção 8), o login real funciona no emulador e no Edge; senha errada mostra a mensagem da Api; fechar e abrir o app mantém a sessão; e `grep -rnE "SharedPreferences|print\(" mobile/lib` não encontra nada.
 
 #### Parte 2C: tela inicial com o cartão e o mapa
 
-- [ ] **2C.1** `IngressoServico.listarMeusIngressos()`.
-- [ ] **2C.2** Funções puras, que recebem `agora` como parâmetro:
+- [x] **2C.1** `IngressoServico.listarMeusIngressos()`.
+- [x] **2C.2** Funções puras, que recebem `agora` como parâmetro:
   - `situacaoDoIngresso(ingresso, agora)`: `utilizado` dá Utilizado; `dataJogo` menor ou igual a `agora` dá Expirado; o resto dá Válido (decisões 4.1 e 4.4);
   - `separarIngressos(lista, agora)`: o próximo é o de menor `dataJogo` entre os Válidos, desempatando por `ingressoId`. Os demais são os outros.
 
   *Pronto quando:* há testes com lista vazia, tudo usado, tudo passado, jogo em andamento, usado de jogo passado (fica Utilizado) e dois ingressos do mesmo jogo.
-- [ ] **2C.3** `telas/inicio_tela.dart`, com `RefreshIndicator`, porque a compra acontece no site e o app precisa enxergá-la sem reiniciar. Estados: carregando; vazio ("Você ainda não tem ingressos", indicando o site); erro com "Tentar de novo"; tem ingressos, mas nenhum próximo jogo (mensagem no lugar do cartão, lista abaixo). Barra superior com o logo, "Sair" e, só para `ADMIN`, "Portaria" (decisão 4.7).
-- [ ] **2C.4** `widgets/cartao_proximo_jogo.dart`: **altura mínima** de 50% da tela, nunca altura fixa, para fonte grande não estourar. Bandeiras e nomes, setor, assento (ou "—", como a Web), data e hora, estádio e cidade, selo, mapa e os botões "Como chegar" e "Validar ingresso".
-- [ ] **2C.5** `util/bandeiras.dart`: a tabela de `Bandeiras.cs` e a retirada de acentos à mão, sem pacote. Time desconhecido mostra o ⚽. *Pronto quando:* há teste dos 12 nomes do seed com acento, de `EUA` e de um time desconhecido, e cada arquivo devolvido existe nos assets.
-- [ ] **2C.6** `widgets/mapa_rota.dart`: `CustomPainter` com `Path` e `PathMetric.extractPath`, para desenhar a rota aos poucos, até uma bandeira pintada no destino, em repetição com pausa. Usa `repaint: controller`, para não reconstruir widgets a cada quadro, e `RepaintBoundary`. Um rótulo deixa claro que o mapa é ilustrativo. A animação fica parada fora da tela, sem pacote extra:
+- [x] **2C.3** `telas/inicio_tela.dart`, com `RefreshIndicator`, porque a compra acontece no site e o app precisa enxergá-la sem reiniciar. Estados: carregando; vazio ("Você ainda não tem ingressos", indicando o site); erro com "Tentar de novo"; tem ingressos, mas nenhum próximo jogo (mensagem no lugar do cartão, lista abaixo). Barra superior com o logo, "Sair" e, só para `ADMIN`, "Portaria" (decisão 4.7).
+- [x] **2C.4** `widgets/cartao_proximo_jogo.dart`: **altura mínima** de 50% da tela, nunca altura fixa, para fonte grande não estourar. Bandeiras e nomes, setor, assento (ou "—", como a Web), data e hora, estádio e cidade, selo, mapa e os botões "Como chegar" e "Validar ingresso".
+- [x] **2C.5** `util/bandeiras.dart`: a tabela de `Bandeiras.cs` e a retirada de acentos à mão, sem pacote. Time desconhecido mostra o ⚽. *Pronto quando:* há teste dos 12 nomes do seed com acento, de `EUA` e de um time desconhecido, e cada arquivo devolvido existe nos assets.
+- [x] **2C.6** `widgets/mapa_rota.dart`: `CustomPainter` com `Path` e `PathMetric.extractPath`, para desenhar a rota aos poucos, até uma bandeira pintada no destino, em repetição com pausa. Usa `repaint: controller`, para não reconstruir widgets a cada quadro, e `RepaintBoundary`. Um rótulo deixa claro que o mapa é ilustrativo. A animação fica parada fora da tela, sem pacote extra:
   - com outra tela por cima, o `Overlay` desliga os tickers (`tickerEnabled: false`, conferido em `overlay.dart` no SDK);
   - com o app em segundo plano, o Flutter não gera quadros;
   - com o cartão fora da lista rolada, a lista preguiçosa descarta o widget e o `dispose` encerra o controller. Um pouco além da borda (a margem do `cacheExtent`), ele ainda roda.
 
   Com `MediaQuery.disableAnimations`, mostra o desenho pronto, sem animar.
-- [ ] **2C.7** Lista dos outros ingressos (decisão 4.8), com cartões compactos e o selo de cada um, inclusive Expirado.
-- [ ] **2C.8** "Como chegar": `Uri.https('www.google.com', '/maps/search/', {'api': '1', 'query': '$estadio, $cidade'})` e `launchUrl` com `externalApplication`. **Montar pelo `Uri`, e não concatenando texto:** "AT&T Stadium" está no seed, e o `&` quebraria o endereço. Falha mostra um aviso. *Pronto quando:* há teste de que o `&` sai como `%26`, e o botão abre o estádio certo no emulador.
-- [ ] **2C.9** Testes de widget: os quatro estados, "Tentar de novo", campos do cartão e "Portaria" só para `ADMIN`. **Usar `pump(duração)`, e não `pumpAndSettle`,** que nunca termina com uma animação em repetição. *Pronto quando:* a tela mostra os dados reais da conta de teste.
+- [x] **2C.7** Lista dos outros ingressos (decisão 4.8), com cartões compactos e o selo de cada um, inclusive Expirado.
+- [x] **2C.8** "Como chegar": `Uri.https('www.google.com', '/maps/search/', {'api': '1', 'query': '$estadio, $cidade'})` e `launchUrl` com `externalApplication`. **Montar pelo `Uri`, e não concatenando texto:** "AT&T Stadium" está no seed, e o `&` quebraria o endereço. Falha mostra um aviso. *Pronto quando:* há teste de que o `&` sai como `%26`, e o botão abre o estádio certo no emulador.
+- [x] **2C.9** Testes de widget: os quatro estados, "Tentar de novo", campos do cartão e "Portaria" só para `ADMIN`. **Usar `pump(duração)`, e não `pumpAndSettle`,** que nunca termina com uma animação em repetição. *Pronto quando:* a tela mostra os dados reais da conta de teste.
 
 #### Parte 2D: tela do QR Code
 
-- [ ] **2D.1** Hero com a etiqueta `ingresso-$ingressoId`, única por ingresso. **O Hero envolve só o fundo de vidro**, com `Material(type: transparency)`, e o conteúdo da tela nova aparece com um fade. Se o texto ficar dentro do Hero, o voo tende a causar erro de `RenderFlex overflowed` e texto com sublinhado amarelo. *Pronto quando:* o cartão se expande sem erro no console, nas duas direções.
-- [ ] **2D.2** `QrImageView` sobre um **quadro branco opaco**, com módulos escuros, margem de silêncio e correção de erro M, usando o `codigoQR` sem alteração. O vidro escuro do tema atrapalharia a leitura da câmera. Lado entre 220 e 320, conforme a tela. Abaixo, o texto do código, como na Web, que também serve para digitar na Portaria.
-- [ ] **2D.3** `SeloIngresso` com troca animada e `Semantics(liveRegion: true)`, para o leitor de tela anunciar a mudança. Mostra partida, setor, assento e data. Um ingresso Expirado abre a tela normalmente, com o selo vermelho (decisão 4.1).
-- [ ] **2D.4** Consulta periódica (decisões 4.6 e 4.11), com um `Timer` de disparo único, reagendado **depois** que a resposta chega, para nunca sobrepor chamadas. Começa no `initState`, é cancelada no `dispose`, pausa em segundo plano (`WidgetsBindingObserver`) e **só roda enquanto o selo for Válido**: para de vez em Utilizado ou Expirado. Falha de rede não some com o QR: só mostra um aviso discreto. O 401 segue a regra do passo 2B.5. O intervalo vem por parâmetro, para os testes.
-- [ ] **2D.5** Ao voltar, a tela inicial recarrega, para o cartão refletir a validação.
-- [ ] **2D.6** Testes: serviço falso devolvendo `false` e depois `true` muda o selo; depois disso não há mais chamadas; ingresso Expirado não consulta; o jogo começar com a tela aberta muda para Expirado; fechar a tela cancela o timer (o teste falha com "A Timer is still pending" se não cancelar); falha de rede mantém o QR.
-- [ ] **2D.7** *Pronto quando:* com o QR aberto, a chamada de validação do `.http` muda o selo em até 5 segundos, e a contagem de chamadas no log da Api mostra que as consultas param ao fechar a tela.
+- [x] **2D.1** Hero com a etiqueta `ingresso-$ingressoId`, única por ingresso. **O Hero envolve só o fundo de vidro**, com `Material(type: transparency)`, e o conteúdo da tela nova aparece com um fade. Se o texto ficar dentro do Hero, o voo tende a causar erro de `RenderFlex overflowed` e texto com sublinhado amarelo. *Pronto quando:* o cartão se expande sem erro no console, nas duas direções.
+- [x] **2D.2** `QrImageView` sobre um **quadro branco opaco**, com módulos escuros, margem de silêncio e correção de erro M, usando o `codigoQR` sem alteração. O vidro escuro do tema atrapalharia a leitura da câmera. Lado entre 220 e 320, conforme a tela. Abaixo, o texto do código, como na Web, que também serve para digitar na Portaria.
+- [x] **2D.3** `SeloIngresso` com troca animada e `Semantics(liveRegion: true)`, para o leitor de tela anunciar a mudança. Mostra partida, setor, assento e data. Um ingresso Expirado abre a tela normalmente, com o selo vermelho (decisão 4.1).
+- [x] **2D.4** Consulta periódica (decisões 4.6 e 4.11), com um `Timer` de disparo único, reagendado **depois** que a resposta chega, para nunca sobrepor chamadas. Começa no `initState`, é cancelada no `dispose`, pausa em segundo plano (`WidgetsBindingObserver`) e **só roda enquanto o selo for Válido**: para de vez em Utilizado ou Expirado. Falha de rede não some com o QR: só mostra um aviso discreto. O 401 segue a regra do passo 2B.5. O intervalo vem por parâmetro, para os testes.
+- [x] **2D.5** Ao voltar, a tela inicial recarrega, para o cartão refletir a validação.
+- [x] **2D.6** Testes: serviço falso devolvendo `false` e depois `true` muda o selo; depois disso não há mais chamadas; ingresso Expirado não consulta; o jogo começar com a tela aberta muda para Expirado; fechar a tela cancela o timer (o teste falha com "A Timer is still pending" se não cancelar); falha de rede mantém o QR.
+- [x] **2D.7** *Pronto quando:* com o QR aberto, a chamada de validação do `.http` muda o selo em até 5 segundos, e a contagem de chamadas no log da Api mostra que as consultas param ao fechar a tela.
 
 #### Parte 2E: modo Portaria
 
-- [ ] **2E.1** `telas/portaria_tela.dart`, aberta pelo botão da tela inicial. A verificação no app só decide o que mostrar; quem protege é a Api. Se a Api responder 403, avisa e sugere entrar de novo (seção 3.1).
-- [ ] **2E.2** `MobileScanner` com o controller criado só nesta tela e descartado no `dispose`, para o pedido de câmera aparecer apenas aqui. Permissão negada (`MobileScannerErrorCode.permissionDenied`) mostra uma explicação no lugar da câmera, e o campo do passo 2E.3 continua funcionando. Em segundo plano, a câmera para, seguindo a seção "Lifecycle changes" do README do pacote.
-- [ ] **2E.3** Máquina de estados simples: `lendo`, `validando`, `resultado`. Dois caminhos levam à **mesma validação**: a câmera e um campo para digitar ou colar o código (decisão 4.10). O campo tira os espaços das pontas e não envia vazio. **O `onDetect` é ignorado fora de `lendo`.** A câmera detecta o mesmo QR repetidamente: sem essa trava, a segunda leitura trocaria o verde por um vermelho de "já utilizado". O botão "Ler próximo" limpa o campo e volta a `lendo`.
-- [ ] **2E.4** `IngressoServico.validar(codigo)`, com `POST /api/vendas/validar`. O 400 vira recusa com o `erro` da Api.
-- [ ] **2E.5** Resultado em tela cheia, com cor, ícone e texto juntos, sem depender só da cor, e `Semantics(liveRegion: true)`:
+- [x] **2E.1** `telas/portaria_tela.dart`, aberta pelo botão da tela inicial. A verificação no app só decide o que mostrar; quem protege é a Api. Se a Api responder 403, avisa e sugere entrar de novo (seção 3.1).
+- [x] **2E.2** `MobileScanner` com o controller criado só nesta tela e descartado no `dispose`, para o pedido de câmera aparecer apenas aqui. Permissão negada (`MobileScannerErrorCode.permissionDenied`) mostra uma explicação no lugar da câmera, e o campo do passo 2E.3 continua funcionando. Em segundo plano, a câmera para: sem receber um controller, o `MobileScanner` cuida disso sozinho, e por isso o formato QR é filtrado no Dart.
+- [x] **2E.3** Máquina de estados simples: `lendo`, `validando`, `resultado`. Dois caminhos levam à **mesma validação**: a câmera e um campo para digitar ou colar o código (decisão 4.10). O campo tira os espaços das pontas e não envia vazio. **O `onDetect` é ignorado fora de `lendo`.** A câmera detecta o mesmo QR repetidamente: sem essa trava, a segunda leitura trocaria o verde por um vermelho de "já utilizado". O botão "Ler próximo" limpa o campo e volta a `lendo`.
+- [x] **2E.4** `IngressoServico.validar(codigo)`, com `POST /api/vendas/validar`. O 400 vira recusa com o `erro` da Api.
+- [x] **2E.5** Resultado em tela cheia, com cor, ícone e texto juntos, sem depender só da cor, e `Semantics(liveRegion: true)`:
   - verde `#277234` com texto branco: "Entrada liberada", partida, setor, assento e data;
   - vermelho `#ff4d4d` com texto `#0d0d0d`: "Entrada recusada" e o motivo;
   - **falha de rede ou tempo esgotado não é recusa:** usa uma terceira aparência, neutra, com "Não foi possível validar. Tente de novo.".
 
   Vibração com `HapticFeedback`, que já vem no Flutter.
-- [ ] **2E.6** Testes de widget, com o leitor trocado por um falso (a câmera não existe no teste): liberado, recusado com motivo, falha de rede, duas detecções seguidas gerando **uma** chamada, código digitado passando pela mesma chamada, campo vazio sem chamada, e "Ler próximo".
-- [ ] **2E.7** *Pronto quando:* no emulador (decisão 4.9), o `ADMIN` valida pelo campo de código o ingresso de um comprador; o verde aparece; a segunda tentativa fica vermelha, com o motivo; o selo do comprador vira Utilizado; e um `CLIENTE` não vê o botão. A leitura pela câmera fica para o passo 3.8.
+- [x] **2E.6** Testes de widget, com o leitor trocado por um falso (a câmera não existe no teste): liberado, recusado com motivo, falha de rede, duas detecções seguidas gerando **uma** chamada, código digitado passando pela mesma chamada, campo vazio sem chamada, e "Ler próximo".
+- [x] **2E.7** *Pronto quando:* no emulador (decisão 4.9), o `ADMIN` valida pelo campo de código o ingresso de um comprador; o verde aparece; a segunda tentativa fica vermelha, com o motivo; o selo do comprador vira Utilizado; e um `CLIENTE` não vê o botão. A leitura pela câmera fica para o passo 3.8.
+
+**Notas da Fase 2 (decisões tomadas durante a execução):**
+
+- **Verificação no emulador, contra a Api local,** com um comprador temporário, apagado no fim:
+  - **Login:** senha errada mostra a mensagem da Api, e a sessão continua ao fechar e abrir o app.
+  - **Comprador:** o cartão do próximo jogo traz bandeiras, campos e mapa animado, e o Hero abre a tela do QR nas duas direções, sem erro no log.
+  - **Consulta periódica:** 4 consultas em 16 segundos com o QR aberto, e nenhuma depois de Utilizado ou com a tela fechada. O selo mudou cerca de 5 segundos depois da validação.
+  - **Portaria:** o pedido de câmera só aparece nesta tela. Com a permissão negada, a explicação aparece e o campo continua funcionando. Com ela aceita, a câmera virtual do emulador abre. Pelo campo, o código válido deu verde com os dados, o repetido e o inexistente deram vermelho com o motivo, e o campo vazio não chamou a Api.
+  - **Selo do comprador:** depois da validação na Portaria, o comprador entra e vê o ingresso como Utilizado.
+  - **Expirado:** com a data de um jogo no passado por um `UPDATE` temporário, o selo vira Expirado e a tela do QR não consulta.
+  - **401 real:** ao apagar a conta com a sessão aberta, o app volta ao login com "Sua sessão expirou".
+  - **Como chegar:** abriu o Google Maps no AT&T Stadium, com o `&` certo.
+  - **Release:** o APK com `http://` mostra a recusa, e o manifesto final de release não tem `usesCleartextTraffic`.
+- **Edge:** o login real funcionou, com a pré-verificação de CORS em 204 e as chamadas em 200, dirigido por um roteiro no Edge sem janela. A compilação foi em modo profile, porque o `flutter build web` padrão é release e recusa `http://`. O `flutter run -d edge` usa debug.
+- **Testes:** 133 testes passando e `flutter analyze` sem nenhum aviso.
+- **Defeitos que os testes e a leitura do pacote pegaram, já corrigidos:**
+  - se o jogo começasse com a tela do QR aberta, a consulta parava sem redesenhar, e o selo continuava Válido;
+  - com um controller próprio, o `MobileScanner` não para a câmera em segundo plano. Passou a usar o controller interno dele.
+- **O voo do Hero** começa opaco, para cobrir o conteúdo que fica para trás, e termina transparente, para mostrar a tela nova. A rota é um fade de 450 ms (`rotaDoCartao`), e não uma `MaterialPageRoute`.
+- **Terceira aparência da Portaria:** "NÃO VALIDADO", em fundo escuro e ícone amarelo, para falha de rede, 403 e erro do servidor. O botão é "Tentar de novo", e o código continua no campo.
+- **O cartão ocupa cerca de 57% da tela** no aparelho de 2424 px. É altura mínima de 50%, e os dois botões empilhados pesam mais que o previsto.
+- **O logo é largo e fica pequeno no ícone do app.** Ele aparece certo, mas o texto não se lê nesse tamanho. Só o troféu ficaria mais legível, se o grupo preferir.
+- **O `provider` não entrou:** o `ValueNotifier` da sessão bastou. Os serviços são passados por construtor.
+- **Limite:** a leitura de um QR real pela câmera continua sem teste (passo 3.8), e o TalkBack fica para o passo 3.2.
 
 ### Fase 3: acabamento (responsividade, acessibilidade, testes, capturas e README)
 
@@ -414,7 +438,8 @@ Na branch `feature/mobile-app`, no padrão do histórico, com um commit por part
 | 6 | Parte 2C | `Add: tela inicial do app com o cartão do próximo jogo e o mapa animado` |
 | 7 | Parte 2D | `Add: tela do QR Code com consulta periódica da situação` |
 | 8 | Parte 2E | `Add: modo Portaria com leitura pela câmera e código digitado` |
-| 9 | Fase 3 | `Att: responsividade, acessibilidade, testes, capturas e README do app` |
+| 9 | Fase 2 | `Doc: Fase 2 do plano mobile concluída` (passos marcados e notas) |
+| 10 | Fase 3 | `Att: responsividade, acessibilidade, testes, capturas e README do app` |
 
 ## 7. Riscos já identificados
 
@@ -428,7 +453,8 @@ Na branch `feature/mobile-app`, no padrão do histórico, com um commit por part
 - **Chave do JWT no `appsettings.json`** (risco aceito na seção 7 do plano do C#). Agora ela também permitiria forjar um `ADMIN` que gasta ingressos.
 - **Token no Edge:** o README do `flutter_secure_storage` chama a versão web de experimental, com os dados no `localStorage`, e só funciona em HTTPS ou `localhost`. O Edge serve para desenvolver e mostrar o QR, não como uso real.
 - **`qr_flutter` sem atualização desde 2023.** Funcionou com o Flutter 3.47.9. Plano B: o pacote `qr`, que ele já usa, com um `CustomPainter`.
-- **Relógios diferentes:** o app escolhe o próximo jogo pelo relógio do aparelho, e a Portaria decide pelo do servidor. Podem discordar perto do início do jogo.
+- **Relógios diferentes:** o app escolhe o próximo jogo pelo relógio do aparelho, e a Portaria decide pelo do servidor. Podem discordar perto do início do jogo. O emulador usa o fuso UTC, então fica 3 horas à frente do PC.
+- **Pedido de câmera repetido:** com a permissão negada, cada volta à leitura pede de novo, até o Android parar de perguntar. Com a permissão aceita, não pede mais.
 - **Tamanho do app:** o `mobile_scanner` acrescenta de 3 a 10 MB (README). A versão que baixa pelo Google Play Services reduz isso, mas exige o serviço no aparelho. O APK de debug do teste teve 178 MB, o que não representa o de release.
 
 ---
