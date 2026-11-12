@@ -76,5 +76,20 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+
+    @* VLibras: tradutor para a Língua Brasileira de Sinais (plugin do governo federal).
+       Depende de internet: o script é carregado de vlibras.gov.br. *@
+    <div vw class="enabled">
+        <div vw-access-button class="active"></div>
+        <div vw-plugin-wrapper>
+            <div class="vw-plugin-top-wrapper"></div>
+        </div>
+    </div>
+    <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            new window.VLibras.Widget('https://vlibras.gov.br/app');
+        });
+    </script>
 </body>
 </html>
